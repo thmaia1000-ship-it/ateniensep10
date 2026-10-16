@@ -1075,40 +1075,6 @@
                   </div>
                 </div>
               </div>
-
-              <!-- BARRA DE SELEÇÃO RÁPIDA: CONTRATO, TERMO, CARNÊ, FICHA -->
-              <div class="card border-0 shadow-sm p-3 mb-3 bg-white no-print">
-                <div class="row g-3 align-items-center">
-                  <div class="col-lg-6 col-md-12">
-                    <label class="form-label small fw-bold text-secondary mb-1 d-block">VISUALIZAR DOCUMENTO:</label>
-                    <div class="btn-group w-100" role="group" id="btnGroupTipoDocumento">
-                      <button type="button" class="btn btn-primary active fw-bold" id="btnTipo_contrato" onclick="App.selecionarTipoDocumentoAtivo('contrato')">
-                        <i class="bi bi-file-earmark-ruled me-1"></i> Contrato
-                      </button>
-                      <button type="button" class="btn btn-outline-primary fw-bold" id="btnTipo_termo" onclick="App.selecionarTipoDocumentoAtivo('termo')">
-                        <i class="bi bi-shield-check me-1"></i> Termo
-                      </button>
-                      <button type="button" class="btn btn-outline-primary fw-bold" id="btnTipo_carne" onclick="App.selecionarTipoDocumentoAtivo('carne')">
-                        <i class="bi bi-receipt me-1"></i> Carnê
-                      </button>
-                      <button type="button" class="btn btn-outline-primary fw-bold" id="btnTipo_ficha" onclick="App.selecionarTipoDocumentoAtivo('ficha')">
-                        <i class="bi bi-person-vcard me-1"></i> Ficha
-                      </button>
-                    </div>
-                  </div>
-                  <div class="col-lg-4 col-md-8">
-                    <label class="form-label small fw-bold text-secondary mb-1">CONTRATO ATIVO *</label>
-                    <select id="contratoMensalidadeSelect" class="form-select" onchange="App.onContratoMensalidadeChanged()">
-                      <option value="">Selecione o contrato...</option>
-                    </select>
-                  </div>
-                  <div class="col-lg-2 col-md-4 d-flex align-items-end">
-                    <button class="btn btn-success w-100 fw-bold" onclick="App.imprimirContratoAtivo()">
-                      <i class="bi bi-printer me-1"></i> Imprimir (A4)
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <!-- CONTAINER TIMBRADO OFICIAL (A4) -->

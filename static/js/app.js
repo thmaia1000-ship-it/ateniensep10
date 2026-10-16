@@ -1872,6 +1872,7 @@ const App = {
   },
 
   async ativarContratoVinculado(mensalidadeId, tipo, abrirModal = true) {
+    this.contratoAtivoId = mensalidadeId;
     const selContrato = document.getElementById('contratoMensalidadeSelect');
     if (selContrato) selContrato.value = mensalidadeId;
 
@@ -1880,20 +1881,6 @@ const App = {
       tipoBase = 'contrato';
     }
     this.tipoDocumentoAtivo = tipoBase;
-
-    // Atualiza botões superiores
-    ['contrato', 'termo', 'carne', 'ficha'].forEach(t => {
-      const btn = document.getElementById(`btnTipo_${t}`);
-      if (btn) {
-        if (t === tipoBase) {
-          btn.classList.add('btn-primary', 'active');
-          btn.classList.remove('btn-outline-primary');
-        } else {
-          btn.classList.remove('btn-primary', 'active');
-          btn.classList.add('btn-outline-primary');
-        }
-      }
-    });
 
     // Destaca o card ativo
     document.querySelectorAll('[id^="cardContrato_"]').forEach(el => el.classList.remove('border-primary', 'bg-light'));
@@ -1907,7 +1894,7 @@ const App = {
   },
 
   onContratoMensalidadeChanged() {
-    const mensalidadeId = document.getElementById('contratoMensalidadeSelect')?.value;
+    const mensalidadeId = document.getElementById('contratoMensalidadeSelect')?.value || this.contratoAtivoId;
     const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno || document.getElementById('contratoAlunoSelect')?.value;
     if (mensalidadeId) {
       this.selecionarTipoDocumentoAtivo(this.tipoDocumentoAtivo || 'contrato');
@@ -1918,7 +1905,7 @@ const App = {
 
   async carregarContrato(alunoIdForced = null, mensalidadeIdForced = null, tipoForced = null, abrirModal = true) {
     const alunoId = alunoIdForced || this.alunoSelecionadoContratos?.aluno?.ID_aluno || document.getElementById('contratoAlunoSelect')?.value;
-    const mensalidadeId = mensalidadeIdForced || document.getElementById('contratoMensalidadeSelect')?.value || '';
+    const mensalidadeId = mensalidadeIdForced || this.contratoAtivoId || document.getElementById('contratoMensalidadeSelect')?.value || '';
     const tipo = tipoForced || this.tipoDocumentoAtivo || 'normal';
     const container = document.getElementById('contratoDocumentContainer');
 
