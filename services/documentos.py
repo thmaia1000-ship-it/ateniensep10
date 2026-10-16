@@ -357,6 +357,15 @@ def get_contrato_dados(tipo, aluno_id=None, mensalidade_id=None, extra=None):
     except Exception:
         data_ini_dt = datetime(int(ano_letivo), 1, 9)
         
+    try:
+        id_mens_int = int(m_dict.get('ID_mensalidade') or 100)
+    except Exception:
+        id_mens_int = 100
+    try:
+        id_aluno_int = int(aluno_id or 0)
+    except Exception:
+        id_aluno_int = 0
+
     for i in range(1, n_parcelas + 1):
         m_idx = (data_ini_dt.month - 1 + (i - 1)) % 12 + 1
         ano_parc = data_ini_dt.year + (data_ini_dt.month - 1 + (i - 1)) // 12
@@ -370,7 +379,7 @@ def get_contrato_dados(tipo, aluno_id=None, mensalidade_id=None, extra=None):
             'vencimento_str': venc_str,
             'valor_fmt': format_moeda(valor_parcela),
             'status': status_parc,
-            'codigo_referencia': f"35062.{m_dict.get('ID_mensalidade') or 100:05d} {aluno_id:05d}.{i:02d}000 00000.000000 1 {int(valor_parcela * 100):010d}"
+            'codigo_referencia': f"35062.{id_mens_int:05d} {id_aluno_int:05d}.{i:02d}000 00000.000000 1 {int(valor_parcela * 100):010d}"
         })
         
     contratada = {
