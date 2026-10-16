@@ -2501,8 +2501,22 @@ const App = {
             <p class="mb-1">
               <strong>CLÁUSULA 6 -</strong> Havendo atraso do pagamento superior a 90 (noventa) dias, o <strong>CONTRATANTE</strong> autoriza a <strong>CONTRATADA</strong> a: I. negativar o devedor em cadastros ou serviços de proteção ao crédito (SPC, Serasa e afins); II. promover o protesto do título em cartório competente; III. promover cobrança extrajudicial especializada; IV. promover cobrança e execução judicial; V. não renovar a matrícula do aluno para o período seguinte (art. 5º da Lei 9.870/99).
             </p>
-            <p class="mb-0">
+            <p class="mb-1">
               <strong>CLÁUSULA 7 -</strong> A guarda de documentos pela <strong>CONTRATADA</strong> obedecerá ao prazo de 2 (dois) anos após o término do contrato, findo o qual os documentos poderão ser devidamente descartados, conforme os ditames previstos na Lei Geral de Proteção de Dados Pessoais (LGPD - Lei 13.709/2018).
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 8 -</strong> É de exclusiva responsabilidade do <strong>CONTRATANTE</strong> a aquisição do Material Escolar individual constante na Lista de Materiais entregue na matrícula, não se confundindo este com o valor da anuidade.<br>
+              <em>Parágrafo Único:</em> No que tange à taxa de papelaria, em caso de desistência formal prévia haverá devolução máxima de 20% do valor pago a este título.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 9 -</strong> Ao firmar o presente, o <strong>CONTRATANTE</strong> submete-se ao Regimento Escolar e às obrigações decorrentes da legislação aplicável à área educacional.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 10 -</strong> Os valores acordados referem-se à carga horária curricular obrigatória aprovada pelos órgãos de ensino.<br>
+              <em>Parágrafo Único:</em> Serviços extraordinários efetivamente prestados terão cobrança conforme tabela regimental: Segunda chamada de provas, exames, segunda via de boletins e declarações (taxa de R$ 50,00); Segunda via de histórico escolar e transferência (taxa de R$ 50,00). A permanência do aluno na escola após o horário e tolerância regular (45 minutos) acarretará taxa de R$ 50,00 por hora excedente. Fica terminantemente proibido o aluno portar dinheiro ou utilizar telefone celular na escola.
+            </p>
+            <p class="mb-0">
+              <strong>CLÁUSULA 11 -</strong> A <strong>CONTRATADA</strong> não se responsabiliza por objetos de uso pessoal (aparelhos móveis, celulares, joias, relógios, quantias em dinheiro ou materiais) perdidos nas dependências da escola, estacionamento ou imediações.
             </p>
           </div>
         </div>
@@ -2521,21 +2535,7 @@ const App = {
             <span>Aluno(a): <strong>${a.nome_aluno || '-'}</strong> (Matr. #${a.ID_aluno}) - Ano ${data.ano_letivo} | <strong>Folha 2/2</strong></span>
           </div>
 
-          <div style="font-size: 7.35pt; line-height: 1.22; text-align: justify;">
-            <p class="mb-1">
-              <strong>CLÁUSULA 8 -</strong> É de exclusiva responsabilidade do <strong>CONTRATANTE</strong> a aquisição do Material Escolar individual constante na Lista de Materiais entregue na matrícula, não se confundindo este com o valor da anuidade.<br>
-              <em>Parágrafo Único:</em> No que tange à taxa de papelaria, em caso de desistência formal prévia haverá devolução máxima de 20% do valor pago a este título.
-            </p>
-            <p class="mb-1">
-              <strong>CLÁUSULA 9 -</strong> Ao firmar o presente, o <strong>CONTRATANTE</strong> submete-se ao Regimento Escolar e às obrigações decorrentes da legislação aplicável à área educacional.
-            </p>
-            <p class="mb-1">
-              <strong>CLÁUSULA 10 -</strong> Os valores acordados referem-se à carga horária curricular obrigatória aprovada pelos órgãos de ensino.<br>
-              <em>Parágrafo Único:</em> Serviços extraordinários efetivamente prestados terão cobrança conforme tabela regimental: Segunda chamada de provas, exames, segunda via de boletins e declarações (taxa de R$ 50,00); Segunda via de histórico escolar e transferência (taxa de R$ 50,00). A permanência do aluno na escola após o horário e tolerância regular (45 minutos) acarretará taxa de R$ 50,00 por hora excedente. Fica terminantemente proibido o aluno portar dinheiro ou utilizar telefone celular na escola.
-            </p>
-            <p class="mb-1">
-              <strong>CLÁUSULA 11 -</strong> A <strong>CONTRATADA</strong> não se responsabiliza por objetos de uso pessoal (aparelhos móveis, celulares, joias, relógios, quantias em dinheiro ou materiais) perdidos nas dependências da escola, estacionamento ou imediações.
-            </p>
+          <div style="font-size: 7.4pt; line-height: 1.24; text-align: justify;">
             <p class="mb-1">
               <strong>CLÁUSULA 12 -</strong> O presente Contrato tem duração até o final do Ano Letivo contratado, salvo se rescindido nas seguintes hipóteses:<br>
               1) Pela Escola: a) Por desligamento regimental; b) Por ausência injustificada por mais de 90 dias consecutivos.<br>
