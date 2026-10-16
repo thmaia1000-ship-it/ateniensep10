@@ -1076,29 +1076,34 @@
                 </div>
               </div>
 
-              <!-- BARRA DE SELEÇÃO DE TIPO DE DOCUMENTO PARA IMPRESSÃO -->
-              <div class="card border-0 shadow-sm p-3 mb-3 bg-white">
+              <!-- BARRA DE SELEÇÃO RÁPIDA: CONTRATO, TERMO, CARNÊ, FICHA -->
+              <div class="card border-0 shadow-sm p-3 mb-3 bg-white no-print">
                 <div class="row g-3 align-items-center">
-                  <div class="col-md-4">
-                    <label class="form-label small fw-bold text-secondary mb-1">MODELO DO DOCUMENTO *</label>
-                    <select id="contratoTipoSelect" class="form-select" onchange="App.onTipoContratoChange()">
-                      <option value="normal">📄 Contrato de Prestação de Serviços (Período Normal)</option>
-                      <option value="integral">🌟 Contrato de Prestação de Serviços (Período Integral)</option>
-                      <option value="meio_periodo">⏰ Contrato de Prestação de Serviços (Meio Período)</option>
-                      <option value="2027">📑 Contrato de Prestação de Serviços (Ano Letivo 2027)</option>
-                      <option value="termo">🤝 Termo de Responsabilidade e Matrícula</option>
-                      <option value="carne">💳 Carnê Escolar Ateniense (Mensalidades)</option>
-                      <option value="ficha">📋 Ficha Individual e Cadastral do Aluno</option>
-                    </select>
+                  <div class="col-lg-6 col-md-12">
+                    <label class="form-label small fw-bold text-secondary mb-1 d-block">VISUALIZAR DOCUMENTO:</label>
+                    <div class="btn-group w-100" role="group" id="btnGroupTipoDocumento">
+                      <button type="button" class="btn btn-primary active fw-bold" id="btnTipo_contrato" onclick="App.selecionarTipoDocumentoAtivo('contrato')">
+                        <i class="bi bi-file-earmark-ruled me-1"></i> Contrato
+                      </button>
+                      <button type="button" class="btn btn-outline-primary fw-bold" id="btnTipo_termo" onclick="App.selecionarTipoDocumentoAtivo('termo')">
+                        <i class="bi bi-shield-check me-1"></i> Termo
+                      </button>
+                      <button type="button" class="btn btn-outline-primary fw-bold" id="btnTipo_carne" onclick="App.selecionarTipoDocumentoAtivo('carne')">
+                        <i class="bi bi-receipt me-1"></i> Carnê
+                      </button>
+                      <button type="button" class="btn btn-outline-primary fw-bold" id="btnTipo_ficha" onclick="App.selecionarTipoDocumentoAtivo('ficha')">
+                        <i class="bi bi-person-vcard me-1"></i> Ficha
+                      </button>
+                    </div>
                   </div>
-                  <div class="col-md-5">
+                  <div class="col-lg-4 col-md-8">
                     <label class="form-label small fw-bold text-secondary mb-1">CONTRATO ATIVO *</label>
                     <select id="contratoMensalidadeSelect" class="form-select" onchange="App.onContratoMensalidadeChanged()">
                       <option value="">Selecione o contrato...</option>
                     </select>
                   </div>
-                  <div class="col-md-3 d-flex align-items-end">
-                    <button class="btn btn-primary w-100 fw-bold" onclick="window.print()">
+                  <div class="col-lg-2 col-md-4 d-flex align-items-end">
+                    <button class="btn btn-success w-100 fw-bold" onclick="window.print()">
                       <i class="bi bi-printer me-1"></i> Imprimir (A4)
                     </button>
                   </div>

@@ -1827,12 +1827,73 @@ const App = {
     }
   },
 
+  tipoDocumentoAtivo: 'contrato',
+
+  selecionarTipoDocumentoAtivo(tipoBase) {
+    this.tipoDocumentoAtivo = tipoBase;
+
+    // Atualiza botões superiores
+    ['contrato', 'termo', 'carne', 'ficha'].forEach(t => {
+      const btn = document.getElementById(`btnTipo_${t}`);
+      if (btn) {
+        if (t === tipoBase) {
+          btn.classList.add('btn-primary', 'active');
+          btn.classList.remove('btn-outline-primary');
+        } else {
+          btn.classList.remove('btn-primary', 'active');
+          btn.classList.add('btn-outline-primary');
+        }
+      }
+    });
+
+    const mensalidadeId = document.getElementById('contratoMensalidadeSelect')?.value || '';
+    const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno || document.getElementById('contratoAlunoSelect')?.value;
+
+    let tipoFinal = tipoBase;
+    if (tipoBase === 'contrato') {
+      const contratoAtivo = this.alunoContratosAtuais.find(c => String(c.ID_mensalidade) === String(mensalidadeId)) || this.alunoContratosAtuais[0];
+      if (contratoAtivo) {
+        const tUp = (contratoAtivo.contrato_turno || '').toUpperCase();
+        if (String(contratoAtivo.ano_letivo) === '2027') {
+          tipoFinal = '2027';
+        } else if (tUp.includes('INTEGRAL')) {
+          tipoFinal = 'integral';
+        } else if (tUp.includes('M. PERIODO') || tUp.includes('MEIO')) {
+          tipoFinal = 'meio_periodo';
+        } else {
+          tipoFinal = 'normal';
+        }
+      } else {
+        tipoFinal = 'normal';
+      }
+    }
+
+    this.carregarContrato(alunoId, mensalidadeId, tipoFinal);
+  },
+
   async ativarContratoVinculado(mensalidadeId, tipo) {
     const selContrato = document.getElementById('contratoMensalidadeSelect');
     if (selContrato) selContrato.value = mensalidadeId;
 
-    const selTipo = document.getElementById('contratoTipoSelect');
-    if (selTipo) selTipo.value = tipo;
+    let tipoBase = tipo;
+    if (['normal', 'integral', 'meio_periodo', '2027'].includes(tipo)) {
+      tipoBase = 'contrato';
+    }
+    this.tipoDocumentoAtivo = tipoBase;
+
+    // Atualiza botões superiores
+    ['contrato', 'termo', 'carne', 'ficha'].forEach(t => {
+      const btn = document.getElementById(`btnTipo_${t}`);
+      if (btn) {
+        if (t === tipoBase) {
+          btn.classList.add('btn-primary', 'active');
+          btn.classList.remove('btn-outline-primary');
+        } else {
+          btn.classList.remove('btn-primary', 'active');
+          btn.classList.add('btn-outline-primary');
+        }
+      }
+    });
 
     // Destaca o card ativo
     document.querySelectorAll('[id^="cardContrato_"]').forEach(el => el.classList.remove('border-primary', 'bg-light'));
@@ -1841,46 +1902,33 @@ const App = {
       cardAtivo.classList.add('border-primary', 'bg-light');
     }
 
-    const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno;
+    const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno || document.getElementById('contratoAlunoSelect')?.value;
     await this.carregarContrato(alunoId, mensalidadeId, tipo);
   },
 
   onContratoMensalidadeChanged() {
     const mensalidadeId = document.getElementById('contratoMensalidadeSelect')?.value;
-    const tipo = document.getElementById('contratoTipoSelect')?.value || 'normal';
-    const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno;
+    const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno || document.getElementById('contratoAlunoSelect')?.value;
     if (mensalidadeId) {
-      this.ativarContratoVinculado(mensalidadeId, tipo);
+      this.selecionarTipoDocumentoAtivo(this.tipoDocumentoAtivo || 'contrato');
     } else {
-      this.carregarContrato(alunoId, null, tipo);
+      this.carregarContrato(alunoId, null, this.tipoDocumentoAtivo || 'contrato');
     }
-  },
-
-  onTipoContratoChange() {
-    const mensalidadeId = document.getElementById('contratoMensalidadeSelect')?.value;
-    const tipo = document.getElementById('contratoTipoSelect')?.value || 'normal';
-    const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno;
-    this.carregarContrato(alunoId, mensalidadeId, tipo);
   },
 
   async carregarContrato(alunoIdForced = null, mensalidadeIdForced = null, tipoForced = null) {
-    const alunoId = alunoIdForced || document.getElementById('contratoAlunoSelect')?.value;
+    const alunoId = alunoIdForced || this.alunoSelecionadoContratos?.aluno?.ID_aluno || document.getElementById('contratoAlunoSelect')?.value;
     const mensalidadeId = mensalidadeIdForced || document.getElementById('contratoMensalidadeSelect')?.value || '';
-    const tipo = tipoForced || document.getElementById('contratoTipoSelect')?.value || 'normal';
+    const tipo = tipoForced || this.tipoDocumentoAtivo || 'normal';
     const container = document.getElementById('contratoDocumentContainer');
-
-    if (tipoForced) {
-      const selTipo = document.getElementById('contratoTipoSelect');
-      if (selTipo) selTipo.value = tipoForced;
-    }
 
     if (!alunoId && !mensalidadeId) {
       if (container) {
         container.innerHTML = `
           <div class="text-center text-muted p-5 bg-white rounded border shadow-sm">
-            <i class="bi bi-file-earmark-ruled display-4 text-secondary mb-2 d-block"></i>
+            <i class="bi bi-person-search display-4 text-secondary mb-2 d-block"></i>
             <h5 class="fw-bold text-secondary">Nenhum Contrato Selecionado</h5>
-            <p class="mt-2 text-muted">Selecione o tipo de contrato e o aluno acima para visualizar e imprimir o documento timbrado oficial.</p>
+            <p class="mt-2 text-muted">Consulte ou selecione um aluno para visualizar e imprimir o documento timbrado oficial.</p>
           </div>
         `;
       }
@@ -1892,7 +1940,7 @@ const App = {
         container.innerHTML = `
           <div class="text-center text-muted p-5 bg-white rounded border shadow-sm">
             <div class="spinner-border text-primary mb-3" role="status"></div>
-            <p class="mb-0">Gerando documento contratual timbrado oficial...</p>
+            <p class="mb-0">Buscando dados no sistema e gerando visualização oficial...</p>
           </div>
         `;
       }
@@ -1907,7 +1955,7 @@ const App = {
           container.innerHTML = `
             <div class="alert alert-danger p-4 text-center">
               <i class="bi bi-exclamation-triangle-fill fs-3 mb-2 d-block"></i>
-              <strong>Erro ao emitir contrato:</strong> ${data.error}
+              <strong>Erro ao emitir documento:</strong> ${data.error}
             </div>
           `;
         }
@@ -1916,6 +1964,13 @@ const App = {
 
       this.cacheContratoDados = data;
       this.renderContrato(data);
+
+      setTimeout(() => {
+        const docElem = document.getElementById('contratoDocumentContainer');
+        if (docElem) {
+          docElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 60);
 
     } catch (e) {
       console.error('Erro ao emitir documento de contrato:', e);
@@ -2025,19 +2080,8 @@ const App = {
 
   async visualizarContratoEspecifico(mensalidadeId, alunoId, tipo) {
     this.alternarModoContratos('doc');
-    const selAluno = document.getElementById('contratoAlunoSelect');
-    if (selAluno) selAluno.value = alunoId;
-    
-    const selTipo = document.getElementById('contratoTipoSelect');
-    if (selTipo) selTipo.value = tipo;
-
-    const selContrato = document.getElementById('contratoMensalidadeSelect');
-    if (selContrato) {
-      selContrato.innerHTML = `<option value="${mensalidadeId}">Contrato Selecionado #${mensalidadeId}</option>`;
-      selContrato.value = mensalidadeId;
-    }
-
-    await this.carregarContrato(alunoId, mensalidadeId, tipo);
+    await this.selecionarAlunoParaContratos(alunoId);
+    await this.ativarContratoVinculado(mensalidadeId, tipo);
   },
 
   renderContrato(data) {
