@@ -2439,60 +2439,75 @@ const App = {
       docHtml = `
       <!-- PÁGINA 1 (FOLHA 1/2) -->
       <div class="print-page">
-        ${headerHtml}
-        <div class="print-title my-1 text-center" style="font-size: 10.5pt; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 2px 0;">
-          ${tituloContrato}
+        <div>
+          ${headerHtml}
+          <div class="print-title my-1 text-center" style="font-size: 10pt; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 2px 0;">
+            ${tituloContrato}
+          </div>
+
+          <table class="table table-bordered table-sm mb-1" style="font-size: 7.2pt; line-height: 1.2;">
+            <tbody>
+              <tr>
+                <td style="width: 50%; vertical-align: top;" class="p-1">
+                  <strong class="d-block text-uppercase border-bottom pb-1 mb-1 bg-light px-1">CONTRATADA</strong>
+                  <strong>${c.razao_social || 'I. M. AZULAY ME'}</strong> (${c.nome_fantasia || 'Centro Educacional Ateniense'})<br>
+                  CNPJ: ${c.cnpj || '35.062.987/0001-53'} | Inscrição Estadual: Isento<br>
+                  Endereço: ${c.endereco}
+                </td>
+                <td style="width: 50%; vertical-align: top;" class="p-1">
+                  <strong class="d-block text-uppercase border-bottom pb-1 mb-1 bg-light px-1">CONTRATANTE / RESPONSÁVEL</strong>
+                  <strong>${respNome}</strong> | CPF: ${respCpf} | RG: ${respRg} (${respOrgao})<br>
+                  Endereço: ${respEnd}<br>
+                  Aluno(a): <strong>${a.nome_aluno || '-'}</strong> (Matrícula #${a.ID_aluno}) | ${cursoStr} - Turno: ${turnoStr} (${data.ano_letivo})
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="font-size: 7.35pt; line-height: 1.22; text-align: justify;">
+            <p class="mb-1">
+              Têm como certo e ajustada a prestação de serviços educacionais, mediante as condições e cláusulas a seguir alinhadas:
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 1 -</strong> O presente Contrato é celebrado sob a égide dos artigos 1º, inciso IV, 5º, inciso II; 173 parágrafo IV; 206, incisos II e III, da Constituição Federal; Lei nº 8.069/90 (Estatuto da Criança e do Adolescente), da Lei nº 8.078/90 (Código do Consumidor), preventemente (Art. 62, infine, da Constituição Federal) e Medida Provisória nº 1.477-28, de 26 de setembro de 1996.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 2 -</strong> Este contrato tem como objeto a prestação anual de serviços educacionais de ensino infantil e fundamental, oferecidos e ministrados pela <strong>CONTRATADA</strong>, e demais atividades acadêmicas, devendo o plano de estudos, programas, currículo e calendário estarem em conformidade com o disposto na legislação em vigor.<br>
+              <em>Parágrafo Primeiro:</em> As aulas presenciais serão ministradas nas salas ou locais em que a <strong>CONTRATADA</strong> indicar, tendo em vista a natureza do conteúdo e da técnica pedagógica que se fizer necessária.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 3 -</strong> O presente Contrato é de natureza adesiva, adotado sem distinção para todos os discentes, sendo proibida e nula a alteração de seu texto para caso específico, conforme previsão contida no art. 54, da Lei 8.078, de 11/09/1990.<br>
+              <em>Parágrafo Primeiro:</em> A configuração formal do ato da matrícula/rematrícula se dá mediante: I. o deferimento da matrícula; II. o pagamento da primeira parcela da semestralidade/anuidade; III. o aceite do presente contrato pelo <strong>CONTRATANTE</strong>.<br>
+              <em>Parágrafo Segundo:</em> Os procedimentos acima referidos configuram-se como condições suspensivas para o início da vigência deste pacto, nos termos dos artigos 125 e 332 do Código Civil.<br>
+              <em>Parágrafo Terceiro:</em> A partir da matrícula, ainda que antes do início das aulas, a <strong>CONTRATADA</strong> já presta serviços preparatórios ao <strong>CONTRATANTE</strong>: preparação da acolhida, organização de salas, diários e quadro docente.<br>
+              <em>Parágrafo Quarto:</em> Para adesão a este Contrato, o <strong>CONTRATANTE</strong> não deve estar inadimplente com a <strong>CONTRATADA</strong>.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 4 -</strong> O valor da anuidade será pago pelo <strong>CONTRATANTE</strong> pelos serviços educacionais lhe proporcionados, apurado de acordo com a Lei nº 9.870/1999, e será de <strong>${m.valor_total_fmt} (${m.valor_total_extenso})</strong>.<br>
+              <em>Parágrafo Primeiro:</em> O valor da anuidade será reajustado sempre no início do ano civil e será comunicado pela direção da <strong>CONTRATADA</strong>.<br>
+              <em>Parágrafo Segundo:</em> O valor do contrato anual poderá ser pago à vista ou dividido em <strong>${m.n_parcelas} (${m.n_parcelas_extenso}) parcelas mensais</strong>, no valor de <strong>${m.valor_parcela_fmt} (${m.valor_parcela_extenso})</strong>.<br>
+              <em>Parágrafo Terceiro:</em> A primeira parcela terá vencimento no ato da matrícula, sendo imprescindível sua quitação para celebração deste contrato.<br>
+              <em>Parágrafo Quarto:</em> O pagamento das parcelas subsequentes obedecerá à data do <strong>5º dia útil</strong> (ou dia 30 de cada mês), excetuando fevereiro (dia 28) e dezembro (dia 29).<br>
+              <em>Parágrafo Quinto:</em> As datas acordadas expressam a vontade mútua de ambas as partes.<br>
+              <em>Parágrafo Sexto:</em> As parcelas somente poderão ser pagas na Tesouraria da <strong>CONTRATADA</strong> ou através de Cobrança Bancária / PIX autorizado.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 5 -</strong> Obriga-se o <strong>CONTRATANTE</strong>, durante o respectivo ano letivo, a pagar o valor da anuidade acadêmica nas condições pactuadas.<br>
+              <em>Parágrafo Primeiro:</em> A falta do pagamento de qualquer parcela após o 5º dia útil do vencimento constituirá em mora de pleno direito o <strong>CONTRATANTE</strong>, implicando acréscimo de juros moratórios legais (art. 406 do CC) e multa moratória de 2% (dois por cento) sobre o débito.<br>
+              <em>Parágrafo Segundo:</em> O <strong>CONTRATANTE</strong> responderá pelas despesas, custas e honorários advocatícios à base de 20% (vinte por cento) sobre o valor total do débito exigido com a cobrança judicial ou extrajudicial (art. 389 do Código Civil), no caso de parcelas com atraso superior a 90 dias.<br>
+              <em>Parágrafo Terceiro:</em> Independentemente do disposto no parágrafo anterior, quando o atraso de parcela for superior a 90 (noventa) dias, a <strong>CONTRATADA</strong> poderá acionar a competente Execução de Título Extrajudicial (artigos 205, 465 a 467 do Código Civil e art. 6º da Lei 9.870/99).<br>
+              <em>Parágrafo Quarto:</em> O não comparecimento do ALUNO às aulas não confere direito à recusa de pagamento das mensalidades contratadas.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 6 -</strong> Havendo atraso do pagamento superior a 90 (noventa) dias, o <strong>CONTRATANTE</strong> autoriza a <strong>CONTRATADA</strong> a: I. negativar o devedor em cadastros ou serviços de proteção ao crédito (SPC, Serasa e afins); II. promover o protesto do título em cartório competente; III. promover cobrança extrajudicial especializada; IV. promover cobrança e execução judicial; V. não renovar a matrícula do aluno para o período seguinte (art. 5º da Lei 9.870/99).
+            </p>
+            <p class="mb-0">
+              <strong>CLÁUSULA 7 -</strong> A guarda de documentos pela <strong>CONTRATADA</strong> obedecerá ao prazo de 2 (dois) anos após o término do contrato, findo o qual os documentos poderão ser devidamente descartados, conforme os ditames previstos na Lei Geral de Proteção de Dados Pessoais (LGPD - Lei 13.709/2018).
+            </p>
+          </div>
         </div>
 
-        <table class="table table-bordered table-sm mb-2" style="font-size: 7.5pt; line-height: 1.25;">
-          <tbody>
-            <tr>
-              <td style="width: 50%; vertical-align: top;" class="p-1">
-                <strong class="d-block text-uppercase border-bottom pb-1 mb-1 bg-light px-1">CONTRATADA</strong>
-                <strong>${c.razao_social || 'I. M. AZULAY ME'}</strong> (${c.nome_fantasia || 'Centro Educacional Ateniense'})<br>
-                CNPJ: ${c.cnpj || '35.062.987/0001-53'} | Inscrição Estadual: Isento<br>
-                Endereço: ${c.endereco}
-              </td>
-              <td style="width: 50%; vertical-align: top;" class="p-1">
-                <strong class="d-block text-uppercase border-bottom pb-1 mb-1 bg-light px-1">CONTRATANTE / RESPONSÁVEL</strong>
-                <strong>${respNome}</strong> | CPF: ${respCpf} | RG: ${respRg} (${respOrgao})<br>
-                Endereço: ${respEnd}<br>
-                Aluno(a): <strong>${a.nome_aluno || '-'}</strong> (Matrícula #${a.ID_aluno}) | ${cursoStr} - Turno: ${turnoStr} (${data.ano_letivo})
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div style="font-size: 7.8pt; line-height: 1.25; text-align: justify;">
-          <p class="mb-1">
-            Têm como certo e ajustada a prestação de serviços educacionais, mediante as condições e cláusulas a seguir alinhadas:
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 1 -</strong> O presente Contrato é celebrado sob a égide dos artigos 1º, inciso IV, 5º, inciso II; 173 parágrafo IV; 206, incisos II e III, da Constituição Federal; Lei nº 8.069/90 (Estatuto da Criança e do Adolescente), da Lei nº 8.078/90 (Código do Consumidor), preventemente (Art. 62, infine, da Constituição Federal) e Medida Provisória nº 1.477-28, de 26 de setembro de 1996.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 2 -</strong> Este contrato tem como objeto a prestação anual de serviços educacionais de ensino infantil e fundamental, oferecidos e ministrados pela <strong>CONTRATADA</strong>, e demais atividades acadêmicas, devendo o plano de estudos, programas, currículo e calendário estarem em conformidade com o disposto na legislação em vigor.<br>
-            <em>Parágrafo Primeiro:</em> As aulas presenciais serão ministradas nas salas ou locais em que a <strong>CONTRATADA</strong> indicar, tendo em vista a natureza do conteúdo e da técnica pedagógica que se fizer necessária.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 3 -</strong> O presente Contrato é de natureza adesiva, adotado sem distinção para todos os discentes, sendo proibida e nula a alteração de seu texto para caso específico, conforme previsão contida no art. 54, da Lei 8.078, de 11/09/1990.<br>
-            <em>Parágrafo Primeiro:</em> A configuração formal do ato da matrícula/rematrícula se dá mediante: I. o deferimento da matrícula; II. o pagamento da primeira parcela da semestralidade/anuidade; III. o aceite do presente contrato pelo <strong>CONTRATANTE</strong>.<br>
-            <em>Parágrafo Segundo:</em> Os procedimentos acima referidos configuram-se como condições suspensivas para o início da vigência deste pacto, nos termos dos artigos 125 e 332 do Código Civil.<br>
-            <em>Parágrafo Terceiro:</em> A partir da matrícula, ainda que antes do início das aulas, a <strong>CONTRATADA</strong> já presta serviços preparatórios ao <strong>CONTRATANTE</strong>: preparação da acolhida, organização de salas, diários e quadro docente.<br>
-            <em>Parágrafo Quarto:</em> Para adesão a este Contrato, o <strong>CONTRATANTE</strong> não deve estar inadimplente com a <strong>CONTRATADA</strong>.
-          </p>
-          <p class="mb-0">
-            <strong>CLÁUSULA 4 -</strong> O valor da anuidade será pago pelo <strong>CONTRATANTE</strong> pelos serviços educacionais lhe proporcionados, apurado de acordo com a Lei nº 9.870/1999, e será de <strong>${m.valor_total_fmt} (${m.valor_total_extenso})</strong>.<br>
-            <em>Parágrafo Primeiro:</em> O valor da anuidade será reajustado sempre no início do ano civil e será comunicado pela direção da <strong>CONTRATADA</strong>.<br>
-            <em>Parágrafo Segundo:</em> O valor do contrato anual poderá ser pago à vista ou dividido em <strong>${m.n_parcelas} (${m.n_parcelas_extenso}) parcelas mensais</strong>, no valor de <strong>${m.valor_parcela_fmt} (${m.valor_parcela_extenso})</strong>.<br>
-            <em>Parágrafo Terceiro:</em> A primeira parcela terá vencimento no ato da matrícula, sendo imprescindível sua quitação para celebração deste contrato.<br>
-            <em>Parágrafo Quarto:</em> O pagamento das parcelas subsequentes obedecerá à data do <strong>5º dia útil</strong> (ou dia 30 de cada mês), excetuando fevereiro (dia 28) e dezembro (dia 29).<br>
-            <em>Parágrafo Quinto:</em> As datas acordadas expressam a vontade mútua de ambas as partes.<br>
-            <em>Parágrafo Sexto:</em> As parcelas somente poderão ser pagas na Tesouraria da <strong>CONTRATADA</strong> ou através de Cobrança Bancária / PIX autorizado.
-          </p>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center border-top mt-2 pt-1 text-muted" style="font-size: 7pt;">
+        <div class="d-flex justify-content-between align-items-center border-top pt-1 mt-1 text-muted" style="font-size: 7pt;">
           <span>Centro Educacional Ateniense - Contrato de Prestação de Serviços</span>
           <span>Rubricas: CONTRATANTE: ___________ / CONTRATADA: ___________ | <strong>Folha 1/2</strong></span>
         </div>
@@ -2500,102 +2515,93 @@ const App = {
 
       <!-- PÁGINA 2 (FOLHA 2/2) -->
       <div class="print-page">
-        <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2 text-muted" style="font-size: 7.5pt;">
-          <span><strong class="text-dark">ESCOLA INFANTIL ATENIENSE</strong> | Contrato de Prestação de Serviços Educacionais</span>
-          <span>Aluno(a): <strong>${a.nome_aluno || '-'}</strong> (Matr. #${a.ID_aluno}) - Ano ${data.ano_letivo} | <strong>Folha 2/2</strong></span>
-        </div>
-
-        <div style="font-size: 7.8pt; line-height: 1.25; text-align: justify;">
-          <p class="mb-1">
-            <strong>CLÁUSULA 5 -</strong> Obriga-se o <strong>CONTRATANTE</strong>, durante o respectivo ano letivo, a pagar o valor da anuidade acadêmica nas condições pactuadas.<br>
-            <em>Parágrafo Primeiro:</em> A falta do pagamento de qualquer parcela após o 5º dia útil do vencimento constituirá em mora de pleno direito o <strong>CONTRATANTE</strong>, implicando acréscimo de juros moratórios legais (art. 406 do CC) e multa moratória de 2% (dois por cento) sobre o débito.<br>
-            <em>Parágrafo Segundo:</em> O <strong>CONTRATANTE</strong> responderá pelas despesas, custas e honorários advocatícios à base de 20% (vinte por cento) sobre o valor total do débito exigido com a cobrança judicial ou extrajudicial (art. 389 do Código Civil), no caso de parcelas com atraso superior a 90 dias.<br>
-            <em>Parágrafo Terceiro:</em> Independentemente do disposto no parágrafo anterior, quando o atraso de parcela for superior a 90 (noventa) dias, a <strong>CONTRATADA</strong> poderá acionar a competente Execução de Título Extrajudicial (artigos 205, 465 a 467 do Código Civil e art. 6º da Lei 9.870/99).<br>
-            <em>Parágrafo Quarto:</em> O não comparecimento do ALUNO às aulas não confere direito à recusa de pagamento das mensalidades contratadas.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 6 -</strong> Havendo atraso do pagamento superior a 90 (noventa) dias, o <strong>CONTRATANTE</strong> autoriza a <strong>CONTRATADA</strong> a: I. negativar o devedor em cadastros ou serviços de proteção ao crédito (SPC, Serasa e afins); II. promover o protesto do título em cartório competente; III. promover cobrança extrajudicial especializada; IV. promover cobrança e execução judicial; V. não renovar a matrícula do aluno para o período seguinte (art. 5º da Lei 9.870/99).
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 7 -</strong> A guarda de documentos pela <strong>CONTRATADA</strong> obedecerá ao prazo de 2 (dois) anos após o término do contrato, findo o qual os documentos poderão ser devidamente descartados, conforme os ditames previstos na Lei Geral de Proteção de Dados Pessoais (LGPD - Lei 13.709/2018).
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 8 -</strong> É de exclusiva responsabilidade do <strong>CONTRATANTE</strong> a aquisição do Material Escolar individual constante na Lista de Materiais entregue na matrícula, não se confundindo este com o valor da anuidade.<br>
-            <em>Parágrafo Único:</em> No que tange à taxa de papelaria, em caso de desistência formal prévia haverá devolução máxima de 20% do valor pago a este título.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 9 -</strong> Ao firmar o presente, o <strong>CONTRATANTE</strong> submete-se ao Regimento Escolar e às obrigações decorrentes da legislação aplicável à área educacional.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 10 -</strong> Os valores acordados referem-se à carga horária curricular obrigatória aprovada pelos órgãos de ensino.<br>
-            <em>Parágrafo Único:</em> Serviços extraordinários efetivamente prestados terão cobrança conforme tabela regimental: Segunda chamada de provas, exames, segunda via de boletins e declarações (taxa de R$ 50,00); Segunda via de histórico escolar e transferência (taxa de R$ 50,00). A permanência do aluno na escola após o horário e tolerância regular (45 minutos) acarretará taxa de R$ 50,00 por hora excedente. Fica terminantemente proibido o aluno portar dinheiro ou utilizar telefone celular na escola.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 11 -</strong> A <strong>CONTRATADA</strong> não se responsabiliza por objetos de uso pessoal (aparelhos móveis, celulares, joias, relógios, quantias em dinheiro ou materiais) perdidos nas dependências da escola, estacionamento ou imediações.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 12 -</strong> O presente Contrato tem duração até o final do Ano Letivo contratado, salvo se rescindido nas seguintes hipóteses:<br>
-            1) Pela Escola: a) Por desligamento regimental; b) Por ausência injustificada por mais de 90 dias consecutivos.<br>
-            2) Pelo Responsável: a) Por desistência formal expressa por escrito; b) Por pedido formal de transferência escolar.<br>
-            <em>Parágrafo Primeiro:</em> Em caso de rescisão, não haverá devolução das parcelas já vencidas e pagas, permanecendo o CONTRATANTE responsável pelos valores devidos até a data formal do distrato.<br>
-            <em>Parágrafo Segundo:</em> Em caso de rescisão antecipada por solicitação do CONTRATANTE, este obriga-se a pagar multa rescisória no importe de 10% (dez por cento) sobre o saldo de mensalidades residuais vincendas.<br>
-            <em>Parágrafo Terceiro:</em> Em cancelamento antes do início efetivo das aulas, a CONTRATADA reterá 50% do valor da matrícula para custeio das despesas administrativas e preparatórias.<br>
-            <em>Parágrafo Quarto:</em> Não será admitida a rescisão contratual quando restar pendente apenas a última parcela do ano letivo.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 13 -</strong> O <strong>CONTRATANTE</strong> concede à <strong>CONTRATADA</strong> o direito gratuito de utilização da imagem e voz do estudante exclusivamente para fins institucionais e pedagógicos em redes sociais, folders, murais e divulgação institucional da Escola.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 14 -</strong> Para segurança de toda a comunidade escolar, funcionam câmeras de monitoramento em circuito fechado nas dependências da Instituição.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 15 -</strong> Obriga-se o <strong>CONTRATANTE</strong> a zelar pelo cumprimento do Calendário e o uso diário obrigatório do uniforme escolar completo (calça/bermuda/short-saia, camiseta da escola e tênis preto, azul ou branco).
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 16 -</strong> O <strong>CONTRATANTE</strong> declara verdadeiras todas as informações e documentos fornecidos no ato da matrícula.
-          </p>
-          <p class="mb-2">
-            <strong>CLÁUSULA 17 -</strong> Para dirimir quaisquer litígios oriundos deste Contrato, fica eleito o Foro da Comarca da Cidade de Manaus/AM, com renúncia de qualquer outro.
-          </p>
-        </div>
-
-        <div class="text-end my-2" style="font-size: 8.5pt;">
-          <strong>${data.data_extenso}</strong>
-        </div>
-
-        <div class="print-footer mt-2 pt-2">
-          <div class="row g-3 mb-2 text-center">
-            <div class="col-6">
-              <div class="print-signature" style="padding-top: 3px; font-size: 8pt;">
-                <strong>${respNome}</strong><br>
-                <span class="small text-muted">CONTRATANTE (CPF: ${respCpf})</span>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="print-signature" style="padding-top: 3px; font-size: 8pt;">
-                <strong>CENTRO EDUCACIONAL ATENIENSE</strong><br>
-                <span class="small text-muted">CONTRATADA (I. M. AZULAY ME)</span>
-              </div>
-            </div>
+        <div>
+          <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2 text-muted" style="font-size: 7.2pt;">
+            <span><strong class="text-dark">ESCOLA INFANTIL ATENIENSE</strong> | Contrato de Prestação de Serviços Educacionais</span>
+            <span>Aluno(a): <strong>${a.nome_aluno || '-'}</strong> (Matr. #${a.ID_aluno}) - Ano ${data.ano_letivo} | <strong>Folha 2/2</strong></span>
           </div>
-          <div class="row g-3 mt-1 text-center">
-            <div class="col-6">
-              <div class="print-signature" style="padding-top: 3px; font-size: 7.5pt;">
-                TESTEMUNHA 1: ____________________________<br>
-                <span class="small text-muted">CPF: ____________________________________</span>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="print-signature" style="padding-top: 3px; font-size: 7.5pt;">
-                TESTEMUNHA 2: ____________________________<br>
-                <span class="small text-muted">CPF: ____________________________________</span>
-              </div>
-            </div>
+
+          <div style="font-size: 7.35pt; line-height: 1.22; text-align: justify;">
+            <p class="mb-1">
+              <strong>CLÁUSULA 8 -</strong> É de exclusiva responsabilidade do <strong>CONTRATANTE</strong> a aquisição do Material Escolar individual constante na Lista de Materiais entregue na matrícula, não se confundindo este com o valor da anuidade.<br>
+              <em>Parágrafo Único:</em> No que tange à taxa de papelaria, em caso de desistência formal prévia haverá devolução máxima de 20% do valor pago a este título.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 9 -</strong> Ao firmar o presente, o <strong>CONTRATANTE</strong> submete-se ao Regimento Escolar e às obrigações decorrentes da legislação aplicável à área educacional.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 10 -</strong> Os valores acordados referem-se à carga horária curricular obrigatória aprovada pelos órgãos de ensino.<br>
+              <em>Parágrafo Único:</em> Serviços extraordinários efetivamente prestados terão cobrança conforme tabela regimental: Segunda chamada de provas, exames, segunda via de boletins e declarações (taxa de R$ 50,00); Segunda via de histórico escolar e transferência (taxa de R$ 50,00). A permanência do aluno na escola após o horário e tolerância regular (45 minutos) acarretará taxa de R$ 50,00 por hora excedente. Fica terminantemente proibido o aluno portar dinheiro ou utilizar telefone celular na escola.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 11 -</strong> A <strong>CONTRATADA</strong> não se responsabiliza por objetos de uso pessoal (aparelhos móveis, celulares, joias, relógios, quantias em dinheiro ou materiais) perdidos nas dependências da escola, estacionamento ou imediações.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 12 -</strong> O presente Contrato tem duração até o final do Ano Letivo contratado, salvo se rescindido nas seguintes hipóteses:<br>
+              1) Pela Escola: a) Por desligamento regimental; b) Por ausência injustificada por mais de 90 dias consecutivos.<br>
+              2) Pelo Responsável: a) Por desistência formal expressa por escrito; b) Por pedido formal de transferência escolar.<br>
+              <em>Parágrafo Primeiro:</em> Em caso de rescisão, não haverá devolução das parcelas já vencidas e pagas, permanecendo o CONTRATANTE responsável pelos valores devidos até a data formal do distrato.<br>
+              <em>Parágrafo Segundo:</em> Em caso de rescisão antecipada por solicitação do CONTRATANTE, este obriga-se a pagar multa rescisória no importe de 10% (dez por cento) sobre o saldo de mensalidades residuais vincendas.<br>
+              <em>Parágrafo Terceiro:</em> Em cancelamento antes do início efetivo das aulas, a CONTRATADA reterá 50% do valor da matrícula para custeio das despesas administrativas e preparatórias.<br>
+              <em>Parágrafo Quarto:</em> Não será admitida a rescisão contratual quando restar pendente apenas a última parcela do ano letivo.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 13 -</strong> O <strong>CONTRATANTE</strong> concede à <strong>CONTRATADA</strong> o direito gratuito de utilização da imagem e voz do estudante exclusivamente para fins institucionais e pedagógicos em redes sociais, folders, murais e divulgação institucional da Escola.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 14 -</strong> Para segurança de toda a comunidade escolar, funcionam câmeras de monitoramento em circuito fechado nas dependências da Instituição.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 15 -</strong> Obriga-se o <strong>CONTRATANTE</strong> a zelar pelo cumprimento do Calendário e o uso diário obrigatório do uniforme escolar completo (calça/bermuda/short-saia, camiseta da escola e tênis preto, azul ou branco).
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 16 -</strong> O <strong>CONTRATANTE</strong> declara verdadeiras todas as informações e documentos fornecidos no ato da matrícula.
+            </p>
+            <p class="mb-1">
+              <strong>CLÁUSULA 17 -</strong> Para dirimir quaisquer litígios oriundos deste Contrato, fica eleito o Foro da Comarca da Cidade de Manaus/AM, com renúncia de qualquer outro.
+            </p>
           </div>
         </div>
 
-        <div class="text-center text-muted mt-2 pt-1 border-top" style="font-size: 6.8pt;">
-          Centro Educacional Ateniense - Documento oficial timbrado gerado eletronicamente em ${data.hoje_formatado}.
+        <div>
+          <div class="text-end my-1" style="font-size: 8pt;">
+            <strong>Manaus/AM, ${data.data_extenso}</strong>
+          </div>
+
+          <div class="print-footer mt-1 pt-1">
+            <div class="row g-2 mb-2 text-center">
+              <div class="col-6">
+                <div class="print-signature" style="margin-top: 15px; padding-top: 3px; font-size: 7.8pt;">
+                  <strong>${respNome}</strong><br>
+                  <span class="small text-muted">CONTRATANTE (CPF: ${respCpf})</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="print-signature" style="margin-top: 15px; padding-top: 3px; font-size: 7.8pt;">
+                  <strong>CENTRO EDUCACIONAL ATENIENSE</strong><br>
+                  <span class="small text-muted">CONTRATADA (I. M. AZULAY ME)</span>
+                </div>
+              </div>
+            </div>
+            <div class="row g-2 text-center">
+              <div class="col-6">
+                <div class="print-signature" style="margin-top: 15px; padding-top: 3px; font-size: 7.2pt;">
+                  TESTEMUNHA 1: ____________________________<br>
+                  <span class="small text-muted">CPF: ____________________________________</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="print-signature" style="margin-top: 15px; padding-top: 3px; font-size: 7.2pt;">
+                  TESTEMUNHA 2: ____________________________<br>
+                  <span class="small text-muted">CPF: ____________________________________</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center text-muted mt-2 pt-1 border-top" style="font-size: 6.8pt;">
+            Centro Educacional Ateniense - Documento oficial timbrado gerado eletronicamente em ${data.hoje_formatado}.
+          </div>
         </div>
       </div>
     `;

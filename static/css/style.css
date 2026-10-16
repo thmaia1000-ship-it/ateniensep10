@@ -396,8 +396,9 @@ body {
   }
   .print-page {
     width: 100% !important;
-    min-height: auto !important;
-    max-height: 275mm !important;
+    height: 279mm !important;
+    min-height: 279mm !important;
+    max-height: 279mm !important;
     margin: 0 !important;
     padding: 0 !important;
     box-shadow: none !important;
@@ -408,10 +409,15 @@ body {
     break-inside: avoid !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
   }
   .print-page:last-child {
     page-break-after: auto !important;
     break-after: auto !important;
+    height: 279mm !important;
+    max-height: 279mm !important;
   }
   .carne-slip {
     border: 1px dashed #000;
@@ -479,12 +485,15 @@ body {
   width: 210mm;
   min-height: 297mm;
   margin: 0 auto 20px;
-  padding: 12mm 15mm;
+  padding: 10mm 12mm;
   box-shadow: 0 0 15px rgba(0,0,0,0.1);
   font-family: 'Times New Roman', Times, serif;
   color: #000;
   position: relative;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .carne-slip {
