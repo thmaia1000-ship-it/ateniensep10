@@ -385,21 +385,29 @@ body {
   .content-body {
     padding: 0 !important;
   }
-  .print-document, .print-page {
+  .print-document {
     width: 100% !important;
     min-height: auto !important;
     margin: 0 !important;
-    padding: 10mm !important;
+    padding: 5mm 0 !important;
     box-shadow: none !important;
     border: none !important;
   }
   .print-page {
-    page-break-after: always;
-    break-after: page;
+    width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
   }
   .print-page:last-child {
-    page-break-after: auto;
-    break-after: auto;
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
   .carne-slip {
     border: 1px dashed #000;
@@ -408,7 +416,7 @@ body {
   }
   @page {
     size: A4 portrait;
-    margin: 15mm;
+    margin: 8mm 10mm;
   }
 
   /* Impressão direta de dentro de Modals */
@@ -463,8 +471,8 @@ body {
   background-color: #fff;
   width: 210mm;
   min-height: 297mm;
-  margin: 0 auto 30px;
-  padding: 18mm 20mm;
+  margin: 0 auto 20px;
+  padding: 12mm 15mm;
   box-shadow: 0 0 15px rgba(0,0,0,0.1);
   font-family: 'Times New Roman', Times, serif;
   color: #000;

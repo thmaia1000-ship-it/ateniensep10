@@ -2092,17 +2092,18 @@ const App = {
     let nomeTitulo = 'Contrato de Prestação de Serviços';
 
     const headerHtml = `
-      <div class="print-header">
-        <div class="row align-items-center">
-          <div class="col-3 text-start">
-            <img src="/static/img/LogoAteniense.png" class="print-logo" alt="Logo Ateniense" style="height: 70px;">
+      <div class="print-header mb-2 pb-1" style="border-bottom: 2px solid #000 !important;">
+        <div class="row align-items-center g-2">
+          <div class="col-2 text-start">
+            <img src="/static/img/LogoAteniense.png" class="print-logo" alt="Logo Ateniense" style="height: 50px;">
           </div>
-          <div class="col-9 text-center pe-4">
-            <h4 class="fw-bold mb-0 text-dark" style="letter-spacing: 1px; font-size: 16pt;">ESCOLA INFANTIL ATENIENSE</h4>
-            <div class="small fw-bold text-secondary" style="font-size: 9pt;">CENTRO EDUCACIONAL ATENIENSE | I. M. AZULAY ME</div>
-            <div class="small text-muted" style="font-size: 8pt;">CNPJ: 35.062.987/0001-53 | Inscrição Estadual: Isento</div>
-            <div class="small text-muted" style="font-size: 8pt;">Rua Rosalind Franklin, Nº 25 - Parque 10 de Novembro - CEP 69.054-731 - Manaus/AM</div>
-            <div class="small text-muted" style="font-size: 8pt;">Contato: (92) 98450-3988 | Email: ceateniensep10@hotmail.com</div>
+          <div class="col-10 text-center pe-3">
+            <h4 class="fw-bold mb-0 text-dark" style="letter-spacing: 0.5px; font-size: 13pt;">ESCOLA INFANTIL ATENIENSE</h4>
+            <div class="fw-bold text-secondary" style="font-size: 8pt;">CENTRO EDUCACIONAL ATENIENSE | I. M. AZULAY ME</div>
+            <div class="text-muted" style="font-size: 7.2pt; line-height: 1.2;">
+              CNPJ: 35.062.987/0001-53 | Rua Rosalind Franklin, Nº 25 - Parque 10 de Novembro - Manaus/AM<br>
+              Contato: (92) 98450-3988 | Email: ceateniensep10@hotmail.com
+            </div>
           </div>
         </div>
       </div>
@@ -2436,35 +2437,33 @@ const App = {
       const turnoStr = (m.turno || a.turno || 'NORMAL').toUpperCase();
 
       docHtml = `
-      <!-- PÁGINA 1 -->
+      <!-- PÁGINA 1 (FOLHA 1/2) -->
       <div class="print-page">
         ${headerHtml}
-        <div class="print-title mt-2 mb-3 text-center" style="font-size: 12.5pt; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px 0;">
+        <div class="print-title my-1 text-center" style="font-size: 10.5pt; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 2px 0;">
           ${tituloContrato}
         </div>
 
-        <table class="table table-bordered table-sm mb-3" style="font-size: 8pt; line-height: 1.3;">
-          <thead class="table-light">
-            <tr><th colspan="2" class="text-center text-uppercase fw-bold py-1 bg-light">CONTRATADA</th></tr>
-          </thead>
+        <table class="table table-bordered table-sm mb-2" style="font-size: 7.5pt; line-height: 1.25;">
           <tbody>
-            <tr><td style="width: 25%; font-weight: bold;">Razão Social:</td><td>${c.razao_social || 'I. M. AZULAY ME'}</td></tr>
-            <tr><td style="font-weight: bold;">CNPJ:</td><td>${c.cnpj || '35.062.987/0001-53'}</td></tr>
-            <tr><td style="font-weight: bold;">Endereço:</td><td>${c.endereco}</td></tr>
-          </tbody>
-          <thead class="table-light">
-            <tr><th colspan="2" class="text-center text-uppercase fw-bold py-1 bg-light">CONTRATANTE</th></tr>
-          </thead>
-          <tbody>
-            <tr><td style="font-weight: bold;">Nome do Responsável:</td><td><strong>${respNome}</strong></td></tr>
-            <tr><td style="font-weight: bold;">CPF / RG:</td><td>CPF nº ${respCpf} | RG nº ${respRg} (${respOrgao})</td></tr>
-            <tr><td style="font-weight: bold;">Endereço Residencial:</td><td>${respEnd}</td></tr>
-            <tr><td style="font-weight: bold;">Representante do Aluno(a):</td><td><strong>${a.nome_aluno || '-'}</strong> (Matrícula #${a.ID_aluno})</td></tr>
-            <tr><td style="font-weight: bold;">Série / Turma / Período:</td><td>${cursoStr} | Turno: ${turnoStr} | Ano Letivo: ${data.ano_letivo}</td></tr>
+            <tr>
+              <td style="width: 50%; vertical-align: top;" class="p-1">
+                <strong class="d-block text-uppercase border-bottom pb-1 mb-1 bg-light px-1">CONTRATADA</strong>
+                <strong>${c.razao_social || 'I. M. AZULAY ME'}</strong> (${c.nome_fantasia || 'Centro Educacional Ateniense'})<br>
+                CNPJ: ${c.cnpj || '35.062.987/0001-53'} | Inscrição Estadual: Isento<br>
+                Endereço: ${c.endereco}
+              </td>
+              <td style="width: 50%; vertical-align: top;" class="p-1">
+                <strong class="d-block text-uppercase border-bottom pb-1 mb-1 bg-light px-1">CONTRATANTE / RESPONSÁVEL</strong>
+                <strong>${respNome}</strong> | CPF: ${respCpf} | RG: ${respRg} (${respOrgao})<br>
+                Endereço: ${respEnd}<br>
+                Aluno(a): <strong>${a.nome_aluno || '-'}</strong> (Matrícula #${a.ID_aluno}) | ${cursoStr} - Turno: ${turnoStr} (${data.ano_letivo})
+              </td>
+            </tr>
           </tbody>
         </table>
 
-        <div style="font-size: 8pt; line-height: 1.35; text-align: justify;">
+        <div style="font-size: 7.8pt; line-height: 1.25; text-align: justify;">
           <p class="mb-1">
             Têm como certo e ajustada a prestação de serviços educacionais, mediante as condições e cláusulas a seguir alinhadas:
           </p>
@@ -2491,25 +2490,32 @@ const App = {
             <em>Parágrafo Quinto:</em> As datas acordadas expressam a vontade mútua de ambas as partes.<br>
             <em>Parágrafo Sexto:</em> As parcelas somente poderão ser pagas na Tesouraria da <strong>CONTRATADA</strong> ou através de Cobrança Bancária / PIX autorizado.
           </p>
-          <p class="mb-0">
-            <strong>CLÁUSULA 5 -</strong> Obriga-se o <strong>CONTRATANTE</strong>, durante o respectivo ano letivo, a pagar o valor da anuidade acadêmica nas condições pactuadas.<br>
-            <em>Parágrafo Primeiro:</em> A falta do pagamento de qualquer parcela após o 5º dia útil do vencimento constituirá em mora de pleno direito o <strong>CONTRATANTE</strong>, implicando acréscimo de juros moratórios legais (art. 406 do CC) e multa moratória de 2% (dois por cento) sobre o débito.
-          </p>
-        </div>
-      </div>
-
-      <!-- PÁGINA 2 -->
-      <div class="print-page">
-        ${headerHtml}
-        <div style="font-size: 8pt; line-height: 1.35; text-align: justify;">
           <p class="mb-1">
-            <em>Parágrafo Segundo (continuação da Cláusula 5):</em> O <strong>CONTRATANTE</strong> responderá pelas despesas, custas e honorários advocatícios à base de 20% (vinte por cento) sobre o valor total do débito exigido com a cobrança judicial ou extrajudicial (art. 389 do Código Civil), no caso de parcelas com atraso superior a 90 dias.<br>
+            <strong>CLÁUSULA 5 -</strong> Obriga-se o <strong>CONTRATANTE</strong>, durante o respectivo ano letivo, a pagar o valor da anuidade acadêmica nas condições pactuadas.<br>
+            <em>Parágrafo Primeiro:</em> A falta do pagamento de qualquer parcela após o 5º dia útil do vencimento constituirá em mora de pleno direito o <strong>CONTRATANTE</strong>, implicando acréscimo de juros moratórios legais (art. 406 do CC) e multa moratória de 2% (dois por cento) sobre o débito.<br>
+            <em>Parágrafo Segundo:</em> O <strong>CONTRATANTE</strong> responderá pelas despesas, custas e honorários advocatícios à base de 20% (vinte por cento) sobre o valor total do débito exigido com a cobrança judicial ou extrajudicial (art. 389 do Código Civil), no caso de parcelas com atraso superior a 90 dias.<br>
             <em>Parágrafo Terceiro:</em> Independentemente do disposto no parágrafo anterior, quando o atraso de parcela for superior a 90 (noventa) dias, a <strong>CONTRATADA</strong> poderá acionar a competente Execução de Título Extrajudicial (artigos 205, 465 a 467 do Código Civil e art. 6º da Lei 9.870/99).<br>
             <em>Parágrafo Quarto:</em> O não comparecimento do ALUNO às aulas não confere direito à recusa de pagamento das mensalidades contratadas.
           </p>
-          <p class="mb-1">
+          <p class="mb-0">
             <strong>CLÁUSULA 6 -</strong> Havendo atraso do pagamento superior a 90 (noventa) dias, o <strong>CONTRATANTE</strong> autoriza a <strong>CONTRATADA</strong> a: I. negativar o devedor em cadastros ou serviços de proteção ao crédito (SPC, Serasa e afins); II. promover o protesto do título em cartório competente; III. promover cobrança extrajudicial especializada; IV. promover cobrança e execução judicial; V. não renovar a matrícula do aluno para o período seguinte (art. 5º da Lei 9.870/99).
           </p>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center border-top mt-2 pt-1 text-muted" style="font-size: 7pt;">
+          <span>Centro Educacional Ateniense - Contrato de Prestação de Serviços</span>
+          <span>Rubricas: CONTRATANTE: ___________ / CONTRATADA: ___________ | <strong>Folha 1/2</strong></span>
+        </div>
+      </div>
+
+      <!-- PÁGINA 2 (FOLHA 2/2) -->
+      <div class="print-page">
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2 text-muted" style="font-size: 7.5pt;">
+          <span><strong class="text-dark">ESCOLA INFANTIL ATENIENSE</strong> | Contrato de Prestação de Serviços Educacionais</span>
+          <span>Aluno(a): <strong>${a.nome_aluno || '-'}</strong> (Matr. #${a.ID_aluno}) - Ano ${data.ano_letivo} | <strong>Folha 2/2</strong></span>
+        </div>
+
+        <div style="font-size: 7.8pt; line-height: 1.25; text-align: justify;">
           <p class="mb-1">
             <strong>CLÁUSULA 7 -</strong> A guarda de documentos pela <strong>CONTRATADA</strong> obedecerá ao prazo de 2 (dois) anos após o término do contrato, findo o qual os documentos poderão ser devidamente descartados, conforme os ditames previstos na Lei Geral de Proteção de Dados Pessoais (LGPD - Lei 13.709/2018).
           </p>
@@ -2553,39 +2559,43 @@ const App = {
           </p>
         </div>
 
-        <div class="text-end my-3" style="font-size: 10pt;">
+        <div class="text-end my-2" style="font-size: 8.5pt;">
           <strong>${data.data_extenso}</strong>
         </div>
 
-        <div class="print-footer mt-4 pt-2">
-          <div class="row g-4 mb-4">
+        <div class="print-footer mt-2 pt-2">
+          <div class="row g-3 mb-2 text-center">
             <div class="col-6">
-              <div class="print-signature">
+              <div class="print-signature" style="padding-top: 3px; font-size: 8pt;">
                 <strong>${respNome}</strong><br>
                 <span class="small text-muted">CONTRATANTE (CPF: ${respCpf})</span>
               </div>
             </div>
             <div class="col-6">
-              <div class="print-signature">
+              <div class="print-signature" style="padding-top: 3px; font-size: 8pt;">
                 <strong>CENTRO EDUCACIONAL ATENIENSE</strong><br>
                 <span class="small text-muted">CONTRATADA (I. M. AZULAY ME)</span>
               </div>
             </div>
           </div>
-          <div class="row g-4 mt-2">
+          <div class="row g-3 mt-1 text-center">
             <div class="col-6">
-              <div class="print-signature">
+              <div class="print-signature" style="padding-top: 3px; font-size: 7.5pt;">
                 TESTEMUNHA 1: ____________________________<br>
                 <span class="small text-muted">CPF: ____________________________________</span>
               </div>
             </div>
             <div class="col-6">
-              <div class="print-signature">
+              <div class="print-signature" style="padding-top: 3px; font-size: 7.5pt;">
                 TESTEMUNHA 2: ____________________________<br>
                 <span class="small text-muted">CPF: ____________________________________</span>
               </div>
             </div>
           </div>
+        </div>
+
+        <div class="text-center text-muted mt-2 pt-1 border-top" style="font-size: 6.8pt;">
+          Centro Educacional Ateniense - Documento oficial timbrado gerado eletronicamente em ${data.hoje_formatado}.
         </div>
       </div>
     `;
