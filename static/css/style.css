@@ -410,6 +410,52 @@ body {
     size: A4 portrait;
     margin: 15mm;
   }
+
+  /* Impressão direta de dentro de Modals */
+  body.modal-open {
+    overflow: visible !important;
+  }
+  body.modal-open .main-wrapper {
+    display: none !important;
+  }
+  body.modal-open .modal {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  body.modal-open .modal-dialog {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+  body.modal-open .modal-content {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+  body.modal-open .modal-body {
+    padding: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  body.modal-open .modal-backdrop {
+    display: none !important;
+  }
+}
+
+#contratoModalBody .print-document,
+#contratoModalBody .print-page {
+  box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Multi-page and Carnê printing extensions */

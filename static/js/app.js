@@ -1820,7 +1820,7 @@ const App = {
         tipoSugerido = 'meio_periodo';
       }
 
-      await this.ativarContratoVinculado(primeiro.ID_mensalidade, tipoSugerido);
+      await this.ativarContratoVinculado(primeiro.ID_mensalidade, tipoSugerido, false);
 
     } catch (e) {
       console.error('Erro ao selecionar aluno para contratos:', e);
@@ -1868,10 +1868,10 @@ const App = {
       }
     }
 
-    this.carregarContrato(alunoId, mensalidadeId, tipoFinal);
+    this.carregarContrato(alunoId, mensalidadeId, tipoFinal, true);
   },
 
-  async ativarContratoVinculado(mensalidadeId, tipo) {
+  async ativarContratoVinculado(mensalidadeId, tipo, abrirModal = true) {
     const selContrato = document.getElementById('contratoMensalidadeSelect');
     if (selContrato) selContrato.value = mensalidadeId;
 
@@ -1903,7 +1903,7 @@ const App = {
     }
 
     const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno || document.getElementById('contratoAlunoSelect')?.value;
-    await this.carregarContrato(alunoId, mensalidadeId, tipo);
+    await this.carregarContrato(alunoId, mensalidadeId, tipo, abrirModal);
   },
 
   onContratoMensalidadeChanged() {
@@ -1912,11 +1912,11 @@ const App = {
     if (mensalidadeId) {
       this.selecionarTipoDocumentoAtivo(this.tipoDocumentoAtivo || 'contrato');
     } else {
-      this.carregarContrato(alunoId, null, this.tipoDocumentoAtivo || 'contrato');
+      this.carregarContrato(alunoId, null, this.tipoDocumentoAtivo || 'contrato', true);
     }
   },
 
-  async carregarContrato(alunoIdForced = null, mensalidadeIdForced = null, tipoForced = null) {
+  async carregarContrato(alunoIdForced = null, mensalidadeIdForced = null, tipoForced = null, abrirModal = true) {
     const alunoId = alunoIdForced || this.alunoSelecionadoContratos?.aluno?.ID_aluno || document.getElementById('contratoAlunoSelect')?.value;
     const mensalidadeId = mensalidadeIdForced || document.getElementById('contratoMensalidadeSelect')?.value || '';
     const tipo = tipoForced || this.tipoDocumentoAtivo || 'normal';
@@ -1938,9 +1938,9 @@ const App = {
     try {
       if (container) {
         container.innerHTML = `
-          <div class="text-center text-muted p-5 bg-white rounded border shadow-sm">
-            <div class="spinner-border text-primary mb-3" role="status"></div>
-            <p class="mb-0">Buscando dados no sistema e gerando visualização oficial...</p>
+          <div class="text-center text-muted p-4 bg-white rounded border shadow-sm">
+            <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+            <p class="mb-0 small">Buscando dados no sistema e gerando visualização oficial...</p>
           </div>
         `;
       }
@@ -1963,14 +1963,7 @@ const App = {
       }
 
       this.cacheContratoDados = data;
-      this.renderContrato(data);
-
-      setTimeout(() => {
-        const docElem = document.getElementById('contratoDocumentContainer');
-        if (docElem) {
-          docElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 60);
+      this.renderContrato(data, abrirModal);
 
     } catch (e) {
       console.error('Erro ao emitir documento de contrato:', e);
@@ -2081,12 +2074,12 @@ const App = {
   async visualizarContratoEspecifico(mensalidadeId, alunoId, tipo) {
     this.alternarModoContratos('doc');
     await this.selecionarAlunoParaContratos(alunoId);
-    await this.ativarContratoVinculado(mensalidadeId, tipo);
+    await this.ativarContratoVinculado(mensalidadeId, tipo, true);
   },
 
-  renderContrato(data) {
+  renderContrato(data, abrirModal = true) {
     const container = document.getElementById('contratoDocumentContainer');
-    if (!container) return;
+    const modalBody = document.getElementById('contratoModalBody');
 
     const tipo = data.tipo || 'normal';
     const a = data.aluno || {};
@@ -2094,6 +2087,9 @@ const App = {
     const ra = data.resp_acad || {};
     const m = data.mensalidade || {};
     const c = data.contratada || {};
+
+    let docHtml = '';
+    let nomeTitulo = 'Contrato de Prestação de Serviços';
 
     const headerHtml = `
       <div class="print-header">
@@ -2236,7 +2232,8 @@ const App = {
         `;
       }
 
-      container.innerHTML = `
+      nomeTitulo = 'Carnê de Pagamento Escolar';
+      docHtml = `
         <div class="print-document">
           ${headerHtml}
           <div class="print-title mt-2 mb-3">CARNÊ DE PAGAMENTO DE MENSALIDADES ESCOLARES (${data.ano_letivo})</div>
@@ -2249,18 +2246,15 @@ const App = {
           </div>
         </div>
       `;
-      return;
-    }
-
-    // 2. TERMO DE RESPONSABILIDADE E MATRÍCULA
-    if (tipo === 'termo') {
+    } else if (tipo === 'termo') {
       const respNome = ra.nome || rf.nome || a.mae || a.pai || 'Responsável Legal';
       const respCpf = ra.cpf || rf.cpf || '-';
       const respRg = ra.rg || rf.rg || '-';
       const respTel = ra.telefone || rf.telefone || '-';
       const respPar = ra.parentesco || rf.parentesco || 'Responsável';
 
-      container.innerHTML = `
+      nomeTitulo = 'Termo de Responsabilidade e Matrícula';
+      docHtml = `
         <div class="print-document">
           ${headerHtml}
           <div class="print-title mt-3 mb-2">TERMO DE RESPONSABILIDADE E COMPROMISSO DE MATRÍCULA</div>
@@ -2326,15 +2320,12 @@ const App = {
           </div>
         </div>
       `;
-      return;
-    }
-
-    // 3. FICHA INDIVIDUAL E CADASTRAL DO ALUNO
-    if (tipo === 'ficha') {
+    } else if (tipo === 'ficha') {
       const respFinNome = rf.nome || '-';
       const respAcadNome = ra.nome || '-';
 
-      container.innerHTML = `
+      nomeTitulo = 'Ficha Individual e Cadastral do Aluno';
+      docHtml = `
         <div class="print-document">
           ${headerHtml}
           <div class="print-title mt-3 mb-2">FICHA INDIVIDUAL E CADASTRAL DO(A) ESTUDANTE</div>
@@ -2421,28 +2412,30 @@ const App = {
           </div>
         </div>
       `;
-      return;
-    }
+    } else {
+      // 4. CONTRATOS DE PRESTAÇÃO DE SERVIÇOS (NORMAL, INTEGRAL, MEIO PERÍODO, 2027)
+      let tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - PERÍODO NORMAL (${data.ano_letivo})`;
+      nomeTitulo = 'Contrato de Ensino - Período Normal';
+      if (tipo === 'integral') {
+        tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - PERÍODO INTEGRAL (${data.ano_letivo})`;
+        nomeTitulo = 'Contrato de Ensino - Período Integral';
+      } else if (tipo === 'meio_periodo') {
+        tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - MEIO PERÍODO (${data.ano_letivo})`;
+        nomeTitulo = 'Contrato de Ensino - Meio Período';
+      } else if (tipo === '2027') {
+        tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - ANO LETIVO 2027`;
+        nomeTitulo = 'Contrato de Ensino - Ano Letivo 2027';
+      }
 
-    // 4. CONTRATOS DE PRESTAÇÃO DE SERVIÇOS (NORMAL, INTEGRAL, MEIO PERÍODO, 2027)
-    let tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - PERÍODO NORMAL (${data.ano_letivo})`;
-    if (tipo === 'integral') {
-      tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - PERÍODO INTEGRAL (${data.ano_letivo})`;
-    } else if (tipo === 'meio_periodo') {
-      tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - MEIO PERÍODO (${data.ano_letivo})`;
-    } else if (tipo === '2027') {
-      tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - ANO LETIVO 2027`;
-    }
+      const respNome = rf.nome || ra.nome || 'Responsável Legal';
+      const respCpf = rf.cpf || '-';
+      const respRg = rf.rg || '-';
+      const respOrgao = rf.orgao_emissor || 'SSP/AM';
+      const respEnd = `${rf.rua || a.rua || '-'}, Nº ${rf.numero || a.numero || 'S/N'} - Bairro: ${rf.bairro || a.bairro || '-'}, CEP: ${rf.cep || a.cep || '-'}`;
+      const cursoStr = (m.curso || a.etapa || a.nome_turma || 'Educação Básica').toUpperCase();
+      const turnoStr = (m.turno || a.turno || 'NORMAL').toUpperCase();
 
-    const respNome = rf.nome || ra.nome || 'Responsável Legal';
-    const respCpf = rf.cpf || '-';
-    const respRg = rf.rg || '-';
-    const respOrgao = rf.orgao_emissor || 'SSP/AM';
-    const respEnd = `${rf.rua || a.rua || '-'}, Nº ${rf.numero || a.numero || 'S/N'} - Bairro: ${rf.bairro || a.bairro || '-'}, CEP: ${rf.cep || a.cep || '-'}`;
-    const cursoStr = (m.curso || a.etapa || a.nome_turma || 'Educação Básica').toUpperCase();
-    const turnoStr = (m.turno || a.turno || 'NORMAL').toUpperCase();
-
-    container.innerHTML = `
+      docHtml = `
       <!-- PÁGINA 1 -->
       <div class="print-page">
         ${headerHtml}
@@ -2596,6 +2589,85 @@ const App = {
         </div>
       </div>
     `;
+    }
+
+    // 1. Injeta o documento gerado dentro do Modal Popup
+    if (modalBody) {
+      modalBody.innerHTML = docHtml;
+    }
+
+    // 2. Atualiza títulos do Modal Popup
+    const titleElem = document.getElementById('modalContratoViewerTitle');
+    const subElem = document.getElementById('modalContratoViewerSubtitle');
+    if (titleElem) {
+      titleElem.textContent = `${nomeTitulo} - ${a.nome_aluno || 'Estudante'}`;
+    }
+    if (subElem) {
+      subElem.textContent = `Matrícula #${a.ID_aluno || '-'} • Ano Letivo ${data.ano_letivo || '-'} • Contrato #${m.ID_mensalidade || '-'}`;
+    }
+
+    // 3. Atualiza container da página com resumo e botões de ação limpos
+    if (container) {
+      container.innerHTML = `
+        <div class="card border-0 shadow-sm p-4 text-center bg-white rounded no-print">
+          <div class="d-flex flex-column align-items-center">
+            <div class="rounded-circle bg-primary-subtle text-primary p-3 mb-2">
+              <i class="bi bi-window-fullscreen fs-2"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">${nomeTitulo}</h5>
+            <p class="text-muted small mb-3">
+              Aluno: <strong>${a.nome_aluno || '-'}</strong> (Matrícula #${a.ID_aluno || '-'}) • Ano Letivo ${data.ano_letivo || '-'} • Contrato #${m.ID_mensalidade || '-'}
+            </p>
+            <div class="d-flex gap-2">
+              <button class="btn btn-primary fw-bold px-4" onclick="App.reabrirModalContrato()">
+                <i class="bi bi-window-stack me-1"></i> Abrir Documento em Popup
+              </button>
+              <button class="btn btn-success fw-bold px-4" onclick="App.imprimirDocumentoModal()">
+                <i class="bi bi-printer me-1"></i> Imprimir (A4)
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 4. Abre o popup modal
+    if (abrirModal) {
+      const modalElem = document.getElementById('modalContratoViewer');
+      if (modalElem) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalElem);
+        modal.show();
+      }
+    }
+  },
+
+  reabrirModalContrato() {
+    const modalElem = document.getElementById('modalContratoViewer');
+    if (modalElem) {
+      const modal = bootstrap.Modal.getOrCreateInstance(modalElem);
+      modal.show();
+    }
+  },
+
+  imprimirDocumentoModal() {
+    window.print();
+  },
+
+  imprimirContratoAtivo() {
+    const modalElem = document.getElementById('modalContratoViewer');
+    if (modalElem) {
+      if (!modalElem.classList.contains('show')) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalElem);
+        modal.show();
+        setTimeout(() => {
+          window.print();
+        }, 350);
+      } else {
+        window.print();
+      }
+    } else {
+      window.print();
+    }
   },
 
   async setupBoletim() {

@@ -1103,7 +1103,7 @@
                     </select>
                   </div>
                   <div class="col-lg-2 col-md-4 d-flex align-items-end">
-                    <button class="btn btn-success w-100 fw-bold" onclick="window.print()">
+                    <button class="btn btn-success w-100 fw-bold" onclick="App.imprimirContratoAtivo()">
                       <i class="bi bi-printer me-1"></i> Imprimir (A4)
                     </button>
                   </div>
@@ -2212,6 +2212,43 @@
           </div>
         </div>
         <div class="modal-body p-0" id="documentoModalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: VISUALIZADOR DE CONTRATOS E DOCUMENTOS ================= -->
+  <div class="modal fade" id="modalContratoViewer" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-dark text-white no-print py-2 px-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-richtext-fill fs-4 text-warning"></i>
+            <div>
+              <h5 class="modal-title fw-bold mb-0 text-white" id="modalContratoViewerTitle" style="font-size: 1.1rem;">Visualização do Documento</h5>
+              <small class="text-white-50" id="modalContratoViewerSubtitle">Centro Educacional Ateniense</small>
+            </div>
+          </div>
+          <div class="ms-auto d-flex gap-2 align-items-center">
+            <button type="button" class="btn btn-success btn-sm fw-bold px-3" onclick="App.imprimirDocumentoModal()">
+              <i class="bi bi-printer me-1"></i> Imprimir (A4)
+            </button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+        </div>
+        <div class="modal-body p-3 bg-light" id="contratoModalBody">
+          <!-- Conteúdo gerado do contrato/documento -->
+        </div>
+        <div class="modal-footer bg-white border-top no-print d-flex justify-content-between py-2 px-3">
+          <div class="small text-muted">
+            <i class="bi bi-check-circle-fill text-success me-1"></i> Documento timbrado oficial formatado para papel A4.
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            <button type="button" class="btn btn-success btn-sm fw-bold px-3" onclick="App.imprimirDocumentoModal()">
+              <i class="bi bi-printer me-1"></i> Imprimir (A4)
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
