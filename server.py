@@ -353,6 +353,23 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 self.send_json(dados)
                 return
 
+            if path == '/api/documentos/contratos':
+                ano = query.get('ano', [None])[0]
+                busca = query.get('busca', [None])[0]
+                turno = query.get('turno', [None])[0]
+                lista = documentos_service.get_contratos_lista(ano, busca, turno)
+                self.send_json({'contratos': lista, 'total': len(lista)})
+                return
+
+            if path == '/api/documentos/contrato':
+                tipo = query.get('tipo', ['normal'])[0]
+                aluno_id = query.get('aluno_id', [None])[0]
+                mensalidade_id = query.get('mensalidade_id', [None])[0]
+                extra = {k: v[0] for k, v in query.items() if k not in ['tipo', 'aluno_id', 'mensalidade_id']}
+                dados = documentos_service.get_contrato_dados(tipo, aluno_id, mensalidade_id, extra)
+                self.send_json(dados)
+                return
+
             # Usuários
             if path == '/api/usuarios':
                 self.send_json({'usuarios': auth_service.list_users()})

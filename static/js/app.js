@@ -173,6 +173,9 @@ const App = {
       case 'secretaria-declaracoes':
         await this.setupDeclaracoes();
         break;
+      case 'secretaria-contratos':
+        await this.setupContratos();
+        break;
       case 'secretaria-resp-acad':
         await this.loadResponsaveis('academico');
         break;
@@ -1527,7 +1530,799 @@ const App = {
     `;
   },
 
-  // 4. ACADÊMICO - BOLETIM ESCOLAR
+  // ================= SECRETARIA: CONTRATOS E TERMOS OFICIAIS =================
+  cacheContratoDados: null,
+  contratosDBLista: [],
+
+  async setupContratos() {
+    try {
+      // 1. Carrega turmas no select de filtro
+      const dataTurmas = await this.api('/api/turmas');
+      const selTurma = document.getElementById('contratoTurmaSelect');
+      if (selTurma) {
+        selTurma.innerHTML = '<option value="">Todas as Turmas...</option>' + 
+          (dataTurmas.turmas || []).map(t => {
+            const anoStr = t.ano_letivo ? ` (${t.ano_letivo})` : '';
+            return `<option value="${t.id}">${t.nome_turma}${anoStr}</option>`;
+          }).join('');
+      }
+
+      // 2. Carrega lista de alunos
+      await this.carregarAlunosParaContratos();
+
+      // 3. Carrega lista de contratos do DB para o badge e tabela
+      await this.carregarTabelaContratos();
+
+    } catch (e) {
+      console.error('Erro ao configurar tela de contratos:', e);
+    }
+  },
+
+  alternarModoContratos(modo) {
+    const btnDoc = document.getElementById('btnModoContratoDoc');
+    const btnTab = document.getElementById('btnModoContratoTabela');
+    const divDoc = document.getElementById('contratoDocViewMode');
+    const divTab = document.getElementById('contratoTableViewMode');
+
+    if (modo === 'doc') {
+      btnDoc?.classList.add('active');
+      btnTab?.classList.remove('active');
+      divDoc?.classList.remove('d-none');
+      divTab?.classList.add('d-none');
+    } else {
+      btnTab?.classList.add('active');
+      btnDoc?.classList.remove('active');
+      divTab?.classList.remove('d-none');
+      divDoc?.classList.add('d-none');
+      this.carregarTabelaContratos();
+    }
+  },
+
+  async carregarAlunosParaContratos(turmaId = '') {
+    try {
+      const url = turmaId ? `/api/turmas/${encodeURIComponent(turmaId)}/alunos` : '/api/alunos?limit=350';
+      const data = await this.api(url);
+      const select = document.getElementById('contratoAlunoSelect');
+      if (select) {
+        const alunos = data.alunos || [];
+        select.innerHTML = '<option value="">Selecione o aluno...</option>' + 
+          alunos.map(a => `<option value="${a.id}">${a.nome} (Matrícula #${a.id})</option>`).join('');
+
+        if (alunos.length > 0 && !select.value) {
+          select.value = alunos[0].id;
+          await this.onAlunoContratoSelected();
+        }
+      }
+    } catch (e) {
+      console.error('Erro ao carregar alunos para contratos:', e);
+    }
+  },
+
+  async filtrarAlunosContratos() {
+    const turmaId = document.getElementById('contratoTurmaSelect')?.value || '';
+    await this.carregarAlunosParaContratos(turmaId);
+  },
+
+  async onAlunoContratoSelected() {
+    const alunoId = document.getElementById('contratoAlunoSelect')?.value;
+    if (!alunoId) return;
+
+    try {
+      // Busca contratos específicos do aluno
+      const data = await this.api(`/api/documentos/contratos?busca=${encodeURIComponent(alunoId)}`);
+      const selContrato = document.getElementById('contratoMensalidadeSelect');
+      if (selContrato) {
+        const contratos = (data.contratos || []).filter(c => String(c.idaluno) === String(alunoId));
+        if (contratos.length > 0) {
+          selContrato.innerHTML = contratos.map(c => 
+            `<option value="${c.ID_mensalidade}">Contrato #${c.ID_mensalidade} - ${c.ano_letivo} (${c.contrato_turno || c.curso || 'Normal'}) - ${c.n_parcelas}x ${c.valor_parcela_fmt}</option>`
+          ).join('');
+        } else {
+          selContrato.innerHTML = '<option value="">Sem contrato vinculado no DB (Emitir Padrão)</option>';
+        }
+      }
+      await this.carregarContrato();
+    } catch (e) {
+      console.error('Erro ao buscar contratos do aluno:', e);
+      await this.carregarContrato();
+    }
+  },
+
+  onTipoContratoChange() {
+    this.carregarContrato();
+  },
+
+  async carregarContrato(alunoIdForced = null, mensalidadeIdForced = null, tipoForced = null) {
+    const alunoId = alunoIdForced || document.getElementById('contratoAlunoSelect')?.value;
+    const mensalidadeId = mensalidadeIdForced || document.getElementById('contratoMensalidadeSelect')?.value || '';
+    const tipo = tipoForced || document.getElementById('contratoTipoSelect')?.value || 'normal';
+    const container = document.getElementById('contratoDocumentContainer');
+
+    if (tipoForced) {
+      const selTipo = document.getElementById('contratoTipoSelect');
+      if (selTipo) selTipo.value = tipoForced;
+    }
+
+    if (!alunoId && !mensalidadeId) {
+      if (container) {
+        container.innerHTML = `
+          <div class="text-center text-muted p-5 bg-white rounded border shadow-sm">
+            <i class="bi bi-file-earmark-ruled display-4 text-secondary mb-2 d-block"></i>
+            <h5 class="fw-bold text-secondary">Nenhum Contrato Selecionado</h5>
+            <p class="mt-2 text-muted">Selecione o tipo de contrato e o aluno acima para visualizar e imprimir o documento timbrado oficial.</p>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    try {
+      if (container) {
+        container.innerHTML = `
+          <div class="text-center text-muted p-5 bg-white rounded border shadow-sm">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <p class="mb-0">Gerando documento contratual timbrado oficial...</p>
+          </div>
+        `;
+      }
+
+      let url = `/api/documentos/contrato?tipo=${encodeURIComponent(tipo)}`;
+      if (alunoId) url += `&aluno_id=${encodeURIComponent(alunoId)}`;
+      if (mensalidadeId) url += `&mensalidade_id=${encodeURIComponent(mensalidadeId)}`;
+
+      const data = await this.api(url);
+      if (data.error) {
+        if (container) {
+          container.innerHTML = `
+            <div class="alert alert-danger p-4 text-center">
+              <i class="bi bi-exclamation-triangle-fill fs-3 mb-2 d-block"></i>
+              <strong>Erro ao emitir contrato:</strong> ${data.error}
+            </div>
+          `;
+        }
+        return;
+      }
+
+      this.cacheContratoDados = data;
+      this.renderContrato(data);
+
+    } catch (e) {
+      console.error('Erro ao emitir documento de contrato:', e);
+      if (container) {
+        container.innerHTML = `
+          <div class="alert alert-danger p-4 text-center">
+            <strong>Falha de comunicação:</strong> ${e.message}
+          </div>
+        `;
+      }
+    }
+  },
+
+  async carregarTabelaContratos() {
+    try {
+      const busca = document.getElementById('inputBuscaContratosTabela')?.value || '';
+      const ano = document.getElementById('selectAnoContratosTabela')?.value || '';
+      const turno = document.getElementById('selectTurnoContratosTabela')?.value || '';
+
+      let url = '/api/documentos/contratos?';
+      if (ano) url += `ano=${encodeURIComponent(ano)}&`;
+      if (turno) url += `turno=${encodeURIComponent(turno)}&`;
+      if (busca) url += `busca=${encodeURIComponent(busca)}&`;
+
+      const data = await this.api(url);
+      const contratos = data.contratos || [];
+      this.contratosDBLista = contratos;
+
+      const badgeTop = document.getElementById('totalContratosBadge');
+      const badgeTab = document.getElementById('tabelaContratosCount');
+      if (badgeTop) badgeTop.textContent = `${data.total || contratos.length} contratos`;
+      if (badgeTab) badgeTab.textContent = `${contratos.length} contrato(s) encontrado(s)`;
+
+      const tbody = document.getElementById('tabelaContratosBody');
+      if (!tbody) return;
+
+      if (contratos.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" class="text-center py-4 text-muted">
+              Nenhum contrato encontrado para os filtros selecionados.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = contratos.map(c => {
+        const pagas = c.parcelas_pagas || 0;
+        const totalParc = c.n_parcelas || 12;
+        const badgeColor = pagas >= totalParc ? 'bg-success' : (pagas > 0 ? 'bg-info text-dark' : 'bg-warning text-dark');
+        
+        // Define o tipo de contrato sugerido pelo turno e ano
+        let tipoSugerido = 'normal';
+        const tUp = (c.contrato_turno || '').toUpperCase();
+        if (String(c.ano_letivo) === '2027') {
+          tipoSugerido = '2027';
+        } else if (tUp.includes('INTEGRAL')) {
+          tipoSugerido = 'integral';
+        } else if (tUp.includes('M. PERIODO') || tUp.includes('MEIO')) {
+          tipoSugerido = 'meio_periodo';
+        }
+
+        return `
+          <tr>
+            <td class="ps-3 fw-bold text-muted">#${c.ID_mensalidade}</td>
+            <td>
+              <div class="fw-bold text-dark">${c.nome_aluno || 'Aluno sem nome'}</div>
+              <small class="text-muted">Matrícula #${c.idaluno}</small>
+            </td>
+            <td>
+              <div>${c.resp_nome || '<span class="text-muted fst-italic">Não informado</span>'}</div>
+              <small class="text-muted">${c.resp_cpf ? 'CPF: ' + c.resp_cpf : ''}</small>
+            </td>
+            <td>${c.curso || c.aluno_etapa || c.nome_turma || '-'}</td>
+            <td><span class="badge bg-light text-dark border">${c.contrato_turno || c.aluno_turno || 'NORMAL'}</span></td>
+            <td class="text-center fw-bold">${c.ano_letivo}</td>
+            <td class="text-end fw-bold text-primary">${c.valor_parcela_fmt}</td>
+            <td class="text-end text-muted">${c.valor_total_fmt}</td>
+            <td class="text-center">
+              <span class="badge ${badgeColor}">${pagas}/${totalParc}</span>
+            </td>
+            <td class="pe-3 text-center">
+              <div class="btn-group btn-group-sm" role="group">
+                <button class="btn btn-outline-primary" title="Visualizar Contrato" onclick="App.visualizarContratoEspecifico(${c.ID_mensalidade}, ${c.idaluno}, '${tipoSugerido}')">
+                  <i class="bi bi-file-earmark-text"></i> Contrato
+                </button>
+                <button class="btn btn-outline-secondary" title="Termo de Responsabilidade" onclick="App.visualizarContratoEspecifico(${c.ID_mensalidade}, ${c.idaluno}, 'termo')">
+                  <i class="bi bi-shield-check"></i> Termo
+                </button>
+                <button class="btn btn-outline-success" title="Carnê Escolar" onclick="App.visualizarContratoEspecifico(${c.ID_mensalidade}, ${c.idaluno}, 'carne')">
+                  <i class="bi bi-receipt"></i> Carnê
+                </button>
+                <button class="btn btn-outline-info" title="Ficha Individual" onclick="App.visualizarContratoEspecifico(${c.ID_mensalidade}, ${c.idaluno}, 'ficha')">
+                  <i class="bi bi-person-vcard"></i> Ficha
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+    } catch (e) {
+      console.error('Erro ao carregar tabela de contratos:', e);
+    }
+  },
+
+  async visualizarContratoEspecifico(mensalidadeId, alunoId, tipo) {
+    this.alternarModoContratos('doc');
+    const selAluno = document.getElementById('contratoAlunoSelect');
+    if (selAluno) selAluno.value = alunoId;
+    
+    const selTipo = document.getElementById('contratoTipoSelect');
+    if (selTipo) selTipo.value = tipo;
+
+    const selContrato = document.getElementById('contratoMensalidadeSelect');
+    if (selContrato) {
+      selContrato.innerHTML = `<option value="${mensalidadeId}">Contrato Selecionado #${mensalidadeId}</option>`;
+      selContrato.value = mensalidadeId;
+    }
+
+    await this.carregarContrato(alunoId, mensalidadeId, tipo);
+  },
+
+  renderContrato(data) {
+    const container = document.getElementById('contratoDocumentContainer');
+    if (!container) return;
+
+    const tipo = data.tipo || 'normal';
+    const a = data.aluno || {};
+    const rf = data.resp_fin || {};
+    const ra = data.resp_acad || {};
+    const m = data.mensalidade || {};
+    const c = data.contratada || {};
+
+    const headerHtml = `
+      <div class="print-header">
+        <div class="row align-items-center">
+          <div class="col-3 text-start">
+            <img src="/static/img/LogoAteniense.png" class="print-logo" alt="Logo Ateniense" style="height: 70px;">
+          </div>
+          <div class="col-9 text-center pe-4">
+            <h4 class="fw-bold mb-0 text-dark" style="letter-spacing: 1px; font-size: 16pt;">ESCOLA INFANTIL ATENIENSE</h4>
+            <div class="small fw-bold text-secondary" style="font-size: 9pt;">CENTRO EDUCACIONAL ATENIENSE | I. M. AZULAY ME</div>
+            <div class="small text-muted" style="font-size: 8pt;">CNPJ: 35.062.987/0001-53 | Inscrição Estadual: Isento</div>
+            <div class="small text-muted" style="font-size: 8pt;">Rua Rosalind Franklin, Nº 25 - Parque 10 de Novembro - CEP 69.054-731 - Manaus/AM</div>
+            <div class="small text-muted" style="font-size: 8pt;">Contato: (92) 98450-3988 | Email: ceateniensep10@hotmail.com</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 1. CARNÊ ESCOLAR
+    if (tipo === 'carne') {
+      const parcelas = data.carne_parcelas || [];
+      const respNome = rf.nome || ra.nome || 'Responsável Financeiro';
+      const respCpf = rf.cpf || '-';
+      const respEnd = `${rf.rua || a.rua || 'Rua'}, Nº ${rf.numero || a.numero || 'S/N'} - ${rf.bairro || a.bairro || 'Bairro'} - ${rf.cidade || a.cidade || 'Manaus'}/${rf.UF || a.UF || 'AM'}`;
+      const cursoStr = m.curso || a.etapa || a.nome_turma || 'Educação Básica';
+      const turnoStr = m.turno || a.turno || 'NORMAL';
+
+      let slipsHtml = '';
+      for (let i = 0; i < parcelas.length; i++) {
+        const p = parcelas[i];
+        slipsHtml += `
+          <div class="carne-slip">
+            <div class="row g-2">
+              <!-- CANHOTO DA ESCOLA / RECIBO DO ALUNO (28%) -->
+              <div class="col-3 carne-canhoto">
+                <div class="text-center border-bottom pb-1 mb-1">
+                  <strong style="font-size: 7.5pt; display: block;">ESCOLA ATENIENSE</strong>
+                  <span style="font-size: 6.5pt; color: #555;">COMPROVANTE ESCOLAR</span>
+                </div>
+                <div class="carne-campo-box">
+                  <span class="carne-campo-label">PARCELA</span>
+                  <span class="carne-campo-valor text-primary">${p.parcela_str} (${data.ano_letivo})</span>
+                </div>
+                <div class="carne-campo-box">
+                  <span class="carne-campo-label">VENCIMENTO</span>
+                  <span class="carne-campo-valor">${p.vencimento_str}</span>
+                </div>
+                <div class="carne-campo-box">
+                  <span class="carne-campo-label">VALOR DO DOCUMENTO</span>
+                  <span class="carne-campo-valor text-success">${p.valor_fmt}</span>
+                </div>
+                <div class="carne-campo-box">
+                  <span class="carne-campo-label">ALUNO(A)</span>
+                  <span style="font-size: 7pt; font-weight: bold; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${a.nome_aluno || '-'}</span>
+                </div>
+                <div class="carne-campo-box">
+                  <span class="carne-campo-label">STATUS</span>
+                  <span class="badge ${p.status === 'PAGO' ? 'bg-success' : 'bg-warning text-dark'}" style="font-size: 6.5pt;">${p.status}</span>
+                </div>
+                <div class="text-center mt-2 pt-1 border-top" style="font-size: 6.5pt; color: #777;">
+                  Autenticação Mecânica / Visto
+                </div>
+              </div>
+
+              <!-- FICHA DE COMPENSAÇÃO / RECIBO PRINCIPAL (72%) -->
+              <div class="col-9 ps-2">
+                <div class="d-flex justify-content-between align-items-center carne-header">
+                  <div class="d-flex align-items-center gap-2">
+                    <img src="/static/img/LogoAteniense.png" style="height: 24px;" alt="Logo">
+                    <strong style="font-size: 8pt; color: #00005b;">CENTRO EDUCACIONAL ATENIENSE</strong>
+                  </div>
+                  <div class="carne-linha-digitavel">${p.codigo_referencia}</div>
+                </div>
+
+                <div class="row g-1 mb-1">
+                  <div class="col-8">
+                    <div class="carne-campo-box">
+                      <span class="carne-campo-label">LOCAL DE PAGAMENTO</span>
+                      <span style="font-size: 7.5pt; font-weight: bold;">SECRETARIA DA ESCOLA OU CHAVE PIX / CONTA BANCÁRIA OFICIAL</span>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="carne-campo-box bg-light">
+                      <span class="carne-campo-label">VENCIMENTO</span>
+                      <span class="carne-campo-valor text-danger">${p.vencimento_str}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row g-1 mb-1">
+                  <div class="col-5">
+                    <div class="carne-campo-box">
+                      <span class="carne-campo-label">BENEFICIÁRIO / CEDENTE</span>
+                      <span style="font-size: 7pt; font-weight: bold;">I. M. AZULAY ME (CNPJ 35.062.987/0001-53)</span>
+                    </div>
+                  </div>
+                  <div class="col-3">
+                    <div class="carne-campo-box">
+                      <span class="carne-campo-label">AGÊNCIA / CÓDIGO</span>
+                      <span style="font-size: 7pt;">0001 / 35062-9</span>
+                    </div>
+                  </div>
+                  <div class="col-2">
+                    <div class="carne-campo-box">
+                      <span class="carne-campo-label">PARCELA</span>
+                      <span class="carne-campo-valor">${p.parcela_str}</span>
+                    </div>
+                  </div>
+                  <div class="col-2">
+                    <div class="carne-campo-box bg-light">
+                      <span class="carne-campo-label">VALOR DO DOC.</span>
+                      <span class="carne-campo-valor text-success">${p.valor_fmt}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="carne-campo-box mb-1" style="min-height: 38px;">
+                  <span class="carne-campo-label">INSTRUÇÕES DE PAGAMENTO / ENCARGOS</span>
+                  <div style="font-size: 6.8pt; line-height: 1.25; color: #222;">
+                    • Sr. Caixa, cobrar até o 5º dia útil do mês de vencimento.<br>
+                    • Após o vencimento, cobrar juros de mora de 1% a.m. e multa contratual de 2%.<br>
+                    • Aluno(a): <strong>${a.nome_aluno || '-'}</strong> (Matrícula #${a.ID_aluno}) - Turma/Curso: <strong>${cursoStr} (${turnoStr})</strong>.
+                  </div>
+                </div>
+
+                <div class="row g-1">
+                  <div class="col-12">
+                    <div class="carne-campo-box">
+                      <span class="carne-campo-label">PAGADOR / RESPONSÁVEL FINANCEIRO</span>
+                      <div style="font-size: 7.2pt;">
+                        <strong>${respNome}</strong> - CPF: <strong>${respCpf}</strong><br>
+                        Endereço: ${respEnd}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="print-document">
+          ${headerHtml}
+          <div class="print-title mt-2 mb-3">CARNÊ DE PAGAMENTO DE MENSALIDADES ESCOLARES (${data.ano_letivo})</div>
+          <div class="p-2 mb-3 bg-light rounded border text-muted" style="font-size: 8.5pt;">
+            <strong>ALUNO(A):</strong> ${a.nome_aluno || '-'} | <strong>RESPONSÁVEL:</strong> ${respNome} (CPF: ${respCpf}) | <strong>ANO:</strong> ${data.ano_letivo} | <strong>CONTRATO:</strong> #${m.ID_mensalidade || '-'}
+          </div>
+          ${slipsHtml}
+          <div class="text-center mt-3 text-muted small">
+            <em>Centro Educacional Ateniense - Carnê Escolar Oficial emitido em ${data.hoje_formatado}.</em>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // 2. TERMO DE RESPONSABILIDADE E MATRÍCULA
+    if (tipo === 'termo') {
+      const respNome = ra.nome || rf.nome || a.mae || a.pai || 'Responsável Legal';
+      const respCpf = ra.cpf || rf.cpf || '-';
+      const respRg = ra.rg || rf.rg || '-';
+      const respTel = ra.telefone || rf.telefone || '-';
+      const respPar = ra.parentesco || rf.parentesco || 'Responsável';
+
+      container.innerHTML = `
+        <div class="print-document">
+          ${headerHtml}
+          <div class="print-title mt-3 mb-2">TERMO DE RESPONSABILIDADE E COMPROMISSO DE MATRÍCULA</div>
+          <p class="text-center text-muted small mb-4">ANO LETIVO DE ${data.ano_letivo}</p>
+
+          <div class="p-3 bg-light rounded border mb-3 font-monospace" style="font-size: 10pt; line-height: 1.6;">
+            <div class="row g-2">
+              <div class="col-8"><strong>ALUNO(A):</strong> ${a.nome_aluno || '-'}</div>
+              <div class="col-4"><strong>MATRÍCULA:</strong> #${a.ID_aluno}</div>
+              <div class="col-6"><strong>DATA NASC.:</strong> ${a.datanasc_formatada || '-'}</div>
+              <div class="col-6"><strong>NATURALIDADE:</strong> ${a.cidade || 'Manaus'}/${a.UF || 'AM'}</div>
+              <div class="col-6"><strong>SÉRIE / ETAPA:</strong> ${m.curso || a.etapa || a.nome_turma || '-'}</div>
+              <div class="col-6"><strong>TURNO:</strong> ${m.turno || a.turno || '-'}</div>
+              <div class="col-12"><strong>FILIAÇÃO:</strong> Mãe: ${a.mae || '-'} | Pai: ${a.pai || '-'}</div>
+              <div class="col-8"><strong>RESPONSÁVEL ACADÊMICO:</strong> ${respNome} (${respPar})</div>
+              <div class="col-4"><strong>CPF:</strong> ${respCpf}</div>
+              <div class="col-6"><strong>RG:</strong> ${respRg}</div>
+              <div class="col-6"><strong>TELEFONE:</strong> ${respTel}</div>
+            </div>
+          </div>
+
+          <div class="print-body" style="font-size: 11.5pt; line-height: 1.8; text-align: justify;">
+            <p>
+              Por este instrumento particular, eu, <strong>${respNome}</strong>, acima qualificado(a), na qualidade de responsável pelo(a) estudante 
+              <strong>${a.nome_aluno || '-'}</strong>, declaro para os devidos fins de direito perante o <strong>CENTRO EDUCACIONAL ATENIENSE</strong> que:
+            </p>
+            <p>
+              <strong>1. COMPROMISSO PEDAGÓGICO E REGIMENTAL:</strong> Assumo integral responsabilidade pelo acompanhamento pedagógico, disciplinar 
+              e moral do(a) discente, declarando pleno conhecimento e expressa adesão às normas contidas no Regimento Escolar Interno da Instituição.
+            </p>
+            <p>
+              <strong>2. PONTUALIDADE E HORÁRIOS:</strong> Comprometo-me a zelar pela assiduidade e pontualidade, respeitando rigorosamente os 
+              horários de entrada e saída das aulas. Estou ciente de que a tolerância máxima após o término do turno é de 45 (quarenta e cinco) minutos, 
+              sendo devida a taxa regimental de permanência após esse período para cobertura dos custos de supervisão e monitoria.
+            </p>
+            <p>
+              <strong>3. UNIFORME ESCOLAR OBRIGATÓRIO:</strong> Reconheço a obrigatoriedade incondicional do uso do uniforme escolar completo e 
+              padronizado nas dependências do colégio e em atividades externas orientadas.
+            </p>
+            <p>
+              <strong>4. MATERIAL ESCOLAR E SAÚDE:</strong> Garanto o fornecimento tempestivo dos materiais didáticos individuais solicitados na 
+              lista pedagógica e obrigo-me a comunicar imediatamente à coordenação quaisquer intercorrências de saúde, alergias, medicações de uso 
+              contínuo ou alterações cadastrais/telefônicas.
+            </p>
+            <p>
+              <strong>5. COMUNICAÇÃO ESCOLAR:</strong> Comprometo-me a comparecer às reuniões de pais e mestres, convocatórias da direção escolar e a 
+              manter canal ativo de comunicação com a Secretaria através dos telefones e e-mails oficiais fornecidos.
+            </p>
+            <p>
+              E, por ser a expressão fiel da verdade e do compromisso assumido, assino o presente Termo para que surta seus jurídicos e legais efeitos.
+            </p>
+          </div>
+
+          <div class="text-end my-4" style="font-size: 11.5pt;">
+            <strong>${data.data_extenso}</strong>
+          </div>
+
+          <div class="print-footer mt-5 pt-4">
+            <div class="row">
+              <div class="col-6"><div class="print-signature">${respNome}<br><span class="small text-muted">Responsável Legal</span></div></div>
+              <div class="col-6"><div class="print-signature">Coordenação Pedagógica / Direção<br><span class="small text-muted">Centro Educacional Ateniense</span></div></div>
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // 3. FICHA INDIVIDUAL E CADASTRAL DO ALUNO
+    if (tipo === 'ficha') {
+      const respFinNome = rf.nome || '-';
+      const respAcadNome = ra.nome || '-';
+
+      container.innerHTML = `
+        <div class="print-document">
+          ${headerHtml}
+          <div class="print-title mt-3 mb-2">FICHA INDIVIDUAL E CADASTRAL DO(A) ESTUDANTE</div>
+          <p class="text-center text-muted small mb-3">HISTÓRICO INSTITUCIONAL E DADOS DE MATRÍCULA - ANO LETIVO ${data.ano_letivo}</p>
+
+          <div class="card border mb-3">
+            <div class="card-header bg-light py-1 fw-bold small text-uppercase">1. Identificação do(a) Aluno(a)</div>
+            <div class="card-body p-2" style="font-size: 9.5pt; line-height: 1.6;">
+              <div class="row">
+                <div class="col-8"><strong>Nome Completo:</strong> ${a.nome_aluno || '-'}</div>
+                <div class="col-4"><strong>Nº Matrícula:</strong> #${a.ID_aluno}</div>
+                <div class="col-4"><strong>Data de Nascimento:</strong> ${a.datanasc_formatada || '-'}</div>
+                <div class="col-4"><strong>Sexo:</strong> ${a.sexo || '-'}</div>
+                <div class="col-4"><strong>Cor / Raça:</strong> ${a.cor || '-'}</div>
+                <div class="col-6"><strong>Naturalidade / UF:</strong> ${a.cidade || 'Manaus'} - ${a.UF || 'AM'}</div>
+                <div class="col-6"><strong>Nacionalidade:</strong> ${a.nacionalidade || 'Brasileira'}</div>
+                <div class="col-12"><strong>Endereço Residencial:</strong> ${a.rua || '-'}, Nº ${a.numero || 'S/N'} - Bairro: ${a.bairro || '-'} - CEP: ${a.cep || '-'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border mb-3">
+            <div class="card-header bg-light py-1 fw-bold small text-uppercase">2. Filiação e Dados Familiares</div>
+            <div class="card-body p-2" style="font-size: 9.5pt; line-height: 1.6;">
+              <div class="row">
+                <div class="col-12 mb-1"><strong>Nome da Mãe:</strong> ${a.mae || 'Não informado'}</div>
+                <div class="col-12"><strong>Nome do Pai:</strong> ${a.pai || 'Não informado'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <div class="card border h-100">
+                <div class="card-header bg-light py-1 fw-bold small text-uppercase">3. Responsável Acadêmico</div>
+                <div class="card-body p-2" style="font-size: 9pt; line-height: 1.5;">
+                  <div><strong>Nome:</strong> ${respAcadNome}</div>
+                  <div><strong>Parentesco:</strong> ${ra.parentesco || '-'}</div>
+                  <div><strong>CPF:</strong> ${ra.cpf || '-'} | <strong>RG:</strong> ${ra.rg || '-'}</div>
+                  <div><strong>Telefone:</strong> ${ra.telefone || '-'}</div>
+                  <div><strong>Profissão:</strong> ${ra.profissao || '-'}</div>
+                  <div><strong>Email:</strong> ${ra.email || '-'}</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="card border h-100">
+                <div class="card-header bg-light py-1 fw-bold small text-uppercase">4. Responsável Financeiro</div>
+                <div class="card-body p-2" style="font-size: 9pt; line-height: 1.5;">
+                  <div><strong>Nome:</strong> ${respFinNome}</div>
+                  <div><strong>Parentesco:</strong> ${rf.parentesco || '-'}</div>
+                  <div><strong>CPF:</strong> ${rf.cpf || '-'} | <strong>RG:</strong> ${rf.rg || '-'}</div>
+                  <div><strong>Telefone:</strong> ${rf.telefone || '-'}</div>
+                  <div><strong>Profissão:</strong> ${rf.profissao || '-'}</div>
+                  <div><strong>Endereço:</strong> ${rf.rua || '-'}, Nº ${rf.numero || '-'} - ${rf.bairro || '-'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border mb-4">
+            <div class="card-header bg-light py-1 fw-bold small text-uppercase">5. Dados Contratuais e Acadêmicos</div>
+            <div class="card-body p-2" style="font-size: 9.5pt; line-height: 1.6;">
+              <div class="row">
+                <div class="col-4"><strong>Série / Etapa:</strong> ${m.curso || a.etapa || a.nome_turma || '-'}</div>
+                <div class="col-4"><strong>Turno Contratado:</strong> ${m.turno || a.turno || '-'}</div>
+                <div class="col-4"><strong>Ano Letivo:</strong> ${data.ano_letivo}</div>
+                <div class="col-4"><strong>Contrato Nº:</strong> #${m.ID_mensalidade || '-'}</div>
+                <div class="col-4"><strong>Plano:</strong> ${m.n_parcelas} parcelas de ${m.valor_parcela_fmt}</div>
+                <div class="col-4"><strong>Total Anual:</strong> ${m.valor_total_fmt}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-end my-3" style="font-size: 11pt;">
+            <strong>${data.data_extenso}</strong>
+          </div>
+
+          <div class="print-footer mt-4 pt-3">
+            <div class="row">
+              <div class="col-6"><div class="print-signature">Responsável Legal do Aluno</div></div>
+              <div class="col-6"><div class="print-signature">Secretaria Geral / Matrículas</div></div>
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // 4. CONTRATOS DE PRESTAÇÃO DE SERVIÇOS (NORMAL, INTEGRAL, MEIO PERÍODO, 2027)
+    let tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - PERÍODO NORMAL (${data.ano_letivo})`;
+    if (tipo === 'integral') {
+      tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - PERÍODO INTEGRAL (${data.ano_letivo})`;
+    } else if (tipo === 'meio_periodo') {
+      tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - MEIO PERÍODO (${data.ano_letivo})`;
+    } else if (tipo === '2027') {
+      tituloContrato = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS - ANO LETIVO 2027`;
+    }
+
+    const respNome = rf.nome || ra.nome || 'Responsável Legal';
+    const respCpf = rf.cpf || '-';
+    const respRg = rf.rg || '-';
+    const respOrgao = rf.orgao_emissor || 'SSP/AM';
+    const respEnd = `${rf.rua || a.rua || '-'}, Nº ${rf.numero || a.numero || 'S/N'} - Bairro: ${rf.bairro || a.bairro || '-'}, CEP: ${rf.cep || a.cep || '-'}`;
+    const cursoStr = (m.curso || a.etapa || a.nome_turma || 'Educação Básica').toUpperCase();
+    const turnoStr = (m.turno || a.turno || 'NORMAL').toUpperCase();
+
+    container.innerHTML = `
+      <!-- PÁGINA 1 -->
+      <div class="print-page">
+        ${headerHtml}
+        <div class="print-title mt-2 mb-3 text-center" style="font-size: 12.5pt; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 4px 0;">
+          ${tituloContrato}
+        </div>
+
+        <table class="table table-bordered table-sm mb-3" style="font-size: 8pt; line-height: 1.3;">
+          <thead class="table-light">
+            <tr><th colspan="2" class="text-center text-uppercase fw-bold py-1 bg-light">CONTRATADA</th></tr>
+          </thead>
+          <tbody>
+            <tr><td style="width: 25%; font-weight: bold;">Razão Social:</td><td>${c.razao_social || 'I. M. AZULAY ME'}</td></tr>
+            <tr><td style="font-weight: bold;">CNPJ:</td><td>${c.cnpj || '35.062.987/0001-53'}</td></tr>
+            <tr><td style="font-weight: bold;">Endereço:</td><td>${c.endereco}</td></tr>
+          </tbody>
+          <thead class="table-light">
+            <tr><th colspan="2" class="text-center text-uppercase fw-bold py-1 bg-light">CONTRATANTE</th></tr>
+          </thead>
+          <tbody>
+            <tr><td style="font-weight: bold;">Nome do Responsável:</td><td><strong>${respNome}</strong></td></tr>
+            <tr><td style="font-weight: bold;">CPF / RG:</td><td>CPF nº ${respCpf} | RG nº ${respRg} (${respOrgao})</td></tr>
+            <tr><td style="font-weight: bold;">Endereço Residencial:</td><td>${respEnd}</td></tr>
+            <tr><td style="font-weight: bold;">Representante do Aluno(a):</td><td><strong>${a.nome_aluno || '-'}</strong> (Matrícula #${a.ID_aluno})</td></tr>
+            <tr><td style="font-weight: bold;">Série / Turma / Período:</td><td>${cursoStr} | Turno: ${turnoStr} | Ano Letivo: ${data.ano_letivo}</td></tr>
+          </tbody>
+        </table>
+
+        <div style="font-size: 8pt; line-height: 1.35; text-align: justify;">
+          <p class="mb-1">
+            Têm como certo e ajustada a prestação de serviços educacionais, mediante as condições e cláusulas a seguir alinhadas:
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 1 -</strong> O presente Contrato é celebrado sob a égide dos artigos 1º, inciso IV, 5º, inciso II; 173 parágrafo IV; 206, incisos II e III, da Constituição Federal; Lei nº 8.069/90 (Estatuto da Criança e do Adolescente), da Lei nº 8.078/90 (Código do Consumidor), preventemente (Art. 62, infine, da Constituição Federal) e Medida Provisória nº 1.477-28, de 26 de setembro de 1996.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 2 -</strong> Este contrato tem como objeto a prestação anual de serviços educacionais de ensino infantil e fundamental, oferecidos e ministrados pela <strong>CONTRATADA</strong>, e demais atividades acadêmicas, devendo o plano de estudos, programas, currículo e calendário estarem em conformidade com o disposto na legislação em vigor.<br>
+            <em>Parágrafo Primeiro:</em> As aulas presenciais serão ministradas nas salas ou locais em que a <strong>CONTRATADA</strong> indicar, tendo em vista a natureza do conteúdo e da técnica pedagógica que se fizer necessária.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 3 -</strong> O presente Contrato é de natureza adesiva, adotado sem distinção para todos os discentes, sendo proibida e nula a alteração de seu texto para caso específico, conforme previsão contida no art. 54, da Lei 8.078, de 11/09/1990.<br>
+            <em>Parágrafo Primeiro:</em> A configuração formal do ato da matrícula/rematrícula se dá mediante: I. o deferimento da matrícula; II. o pagamento da primeira parcela da semestralidade/anuidade; III. o aceite do presente contrato pelo <strong>CONTRATANTE</strong>.<br>
+            <em>Parágrafo Segundo:</em> Os procedimentos acima referidos configuram-se como condições suspensivas para o início da vigência deste pacto, nos termos dos artigos 125 e 332 do Código Civil.<br>
+            <em>Parágrafo Terceiro:</em> A partir da matrícula, ainda que antes do início das aulas, a <strong>CONTRATADA</strong> já presta serviços preparatórios ao <strong>CONTRATANTE</strong>: preparação da acolhida, organização de salas, diários e quadro docente.<br>
+            <em>Parágrafo Quarto:</em> Para adesão a este Contrato, o <strong>CONTRATANTE</strong> não deve estar inadimplente com a <strong>CONTRATADA</strong>.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 4 -</strong> O valor da anuidade será pago pelo <strong>CONTRATANTE</strong> pelos serviços educacionais lhe proporcionados, apurado de acordo com a Lei nº 9.870/1999, e será de <strong>${m.valor_total_fmt} (${m.valor_total_extenso})</strong>.<br>
+            <em>Parágrafo Primeiro:</em> O valor da anuidade será reajustado sempre no início do ano civil e será comunicado pela direção da <strong>CONTRATADA</strong>.<br>
+            <em>Parágrafo Segundo:</em> O valor do contrato anual poderá ser pago à vista ou dividido em <strong>${m.n_parcelas} (${m.n_parcelas_extenso}) parcelas mensais</strong>, no valor de <strong>${m.valor_parcela_fmt} (${m.valor_parcela_extenso})</strong>.<br>
+            <em>Parágrafo Terceiro:</em> A primeira parcela terá vencimento no ato da matrícula, sendo imprescindível sua quitação para celebração deste contrato.<br>
+            <em>Parágrafo Quarto:</em> O pagamento das parcelas subsequentes obedecerá à data do <strong>5º dia útil</strong> (ou dia 30 de cada mês), excetuando fevereiro (dia 28) e dezembro (dia 29).<br>
+            <em>Parágrafo Quinto:</em> As datas acordadas expressam a vontade mútua de ambas as partes.<br>
+            <em>Parágrafo Sexto:</em> As parcelas somente poderão ser pagas na Tesouraria da <strong>CONTRATADA</strong> ou através de Cobrança Bancária / PIX autorizado.
+          </p>
+          <p class="mb-0">
+            <strong>CLÁUSULA 5 -</strong> Obriga-se o <strong>CONTRATANTE</strong>, durante o respectivo ano letivo, a pagar o valor da anuidade acadêmica nas condições pactuadas.<br>
+            <em>Parágrafo Primeiro:</em> A falta do pagamento de qualquer parcela após o 5º dia útil do vencimento constituirá em mora de pleno direito o <strong>CONTRATANTE</strong>, implicando acréscimo de juros moratórios legais (art. 406 do CC) e multa moratória de 2% (dois por cento) sobre o débito.
+          </p>
+        </div>
+      </div>
+
+      <!-- PÁGINA 2 -->
+      <div class="print-page">
+        ${headerHtml}
+        <div style="font-size: 8pt; line-height: 1.35; text-align: justify;">
+          <p class="mb-1">
+            <em>Parágrafo Segundo (continuação da Cláusula 5):</em> O <strong>CONTRATANTE</strong> responderá pelas despesas, custas e honorários advocatícios à base de 20% (vinte por cento) sobre o valor total do débito exigido com a cobrança judicial ou extrajudicial (art. 389 do Código Civil), no caso de parcelas com atraso superior a 90 dias.<br>
+            <em>Parágrafo Terceiro:</em> Independentemente do disposto no parágrafo anterior, quando o atraso de parcela for superior a 90 (noventa) dias, a <strong>CONTRATADA</strong> poderá acionar a competente Execução de Título Extrajudicial (artigos 205, 465 a 467 do Código Civil e art. 6º da Lei 9.870/99).<br>
+            <em>Parágrafo Quarto:</em> O não comparecimento do ALUNO às aulas não confere direito à recusa de pagamento das mensalidades contratadas.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 6 -</strong> Havendo atraso do pagamento superior a 90 (noventa) dias, o <strong>CONTRATANTE</strong> autoriza a <strong>CONTRATADA</strong> a: I. negativar o devedor em cadastros ou serviços de proteção ao crédito (SPC, Serasa e afins); II. promover o protesto do título em cartório competente; III. promover cobrança extrajudicial especializada; IV. promover cobrança e execução judicial; V. não renovar a matrícula do aluno para o período seguinte (art. 5º da Lei 9.870/99).
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 7 -</strong> A guarda de documentos pela <strong>CONTRATADA</strong> obedecerá ao prazo de 2 (dois) anos após o término do contrato, findo o qual os documentos poderão ser devidamente descartados, conforme os ditames previstos na Lei Geral de Proteção de Dados Pessoais (LGPD - Lei 13.709/2018).
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 8 -</strong> É de exclusiva responsabilidade do <strong>CONTRATANTE</strong> a aquisição do Material Escolar individual constante na Lista de Materiais entregue na matrícula, não se confundindo este com o valor da anuidade.<br>
+            <em>Parágrafo Único:</em> No que tange à taxa de papelaria, em caso de desistência formal prévia haverá devolução máxima de 20% do valor pago a este título.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 9 -</strong> Ao firmar o presente, o <strong>CONTRATANTE</strong> submete-se ao Regimento Escolar e às obrigações decorrentes da legislação aplicável à área educacional.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 10 -</strong> Os valores acordados referem-se à carga horária curricular obrigatória aprovada pelos órgãos de ensino.<br>
+            <em>Parágrafo Único:</em> Serviços extraordinários efetivamente prestados terão cobrança conforme tabela regimental: Segunda chamada de provas, exames, segunda via de boletins e declarações (taxa de R$ 50,00); Segunda via de histórico escolar e transferência (taxa de R$ 50,00). A permanência do aluno na escola após o horário e tolerância regular (45 minutos) acarretará taxa de R$ 50,00 por hora excedente. Fica terminantemente proibido o aluno portar dinheiro ou utilizar telefone celular na escola.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 11 -</strong> A <strong>CONTRATADA</strong> não se responsabiliza por objetos de uso pessoal (aparelhos móveis, celulares, joias, relógios, quantias em dinheiro ou materiais) perdidos nas dependências da escola, estacionamento ou imediações.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 12 -</strong> O presente Contrato tem duração até o final do Ano Letivo contratado, salvo se rescindido nas seguintes hipóteses:<br>
+            1) Pela Escola: a) Por desligamento regimental; b) Por ausência injustificada por mais de 90 dias consecutivos.<br>
+            2) Pelo Responsável: a) Por desistência formal expressa por escrito; b) Por pedido formal de transferência escolar.<br>
+            <em>Parágrafo Primeiro:</em> Em caso de rescisão, não haverá devolução das parcelas já vencidas e pagas, permanecendo o CONTRATANTE responsável pelos valores devidos até a data formal do distrato.<br>
+            <em>Parágrafo Segundo:</em> Em caso de rescisão antecipada por solicitação do CONTRATANTE, este obriga-se a pagar multa rescisória no importe de 10% (dez por cento) sobre o saldo de mensalidades residuais vincendas.<br>
+            <em>Parágrafo Terceiro:</em> Em cancelamento antes do início efetivo das aulas, a CONTRATADA reterá 50% do valor da matrícula para custeio das despesas administrativas e preparatórias.<br>
+            <em>Parágrafo Quarto:</em> Não será admitida a rescisão contratual quando restar pendente apenas a última parcela do ano letivo.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 13 -</strong> O <strong>CONTRATANTE</strong> concede à <strong>CONTRATADA</strong> o direito gratuito de utilização da imagem e voz do estudante exclusivamente para fins institucionais e pedagógicos em redes sociais, folders, murais e divulgação institucional da Escola.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 14 -</strong> Para segurança de toda a comunidade escolar, funcionam câmeras de monitoramento em circuito fechado nas dependências da Instituição.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 15 -</strong> Obriga-se o <strong>CONTRATANTE</strong> a zelar pelo cumprimento do Calendário e o uso diário obrigatório do uniforme escolar completo (calça/bermuda/short-saia, camiseta da escola e tênis preto, azul ou branco).
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 16 -</strong> O <strong>CONTRATANTE</strong> declara verdadeiras todas as informações e documentos fornecidos no ato da matrícula.
+          </p>
+          <p class="mb-2">
+            <strong>CLÁUSULA 17 -</strong> Para dirimir quaisquer litígios oriundos deste Contrato, fica eleito o Foro da Comarca da Cidade de Manaus/AM, com renúncia de qualquer outro.
+          </p>
+        </div>
+
+        <div class="text-end my-3" style="font-size: 10pt;">
+          <strong>${data.data_extenso}</strong>
+        </div>
+
+        <div class="print-footer mt-4 pt-2">
+          <div class="row g-4 mb-4">
+            <div class="col-6">
+              <div class="print-signature">
+                <strong>${respNome}</strong><br>
+                <span class="small text-muted">CONTRATANTE (CPF: ${respCpf})</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="print-signature">
+                <strong>CENTRO EDUCACIONAL ATENIENSE</strong><br>
+                <span class="small text-muted">CONTRATADA (I. M. AZULAY ME)</span>
+              </div>
+            </div>
+          </div>
+          <div class="row g-4 mt-2">
+            <div class="col-6">
+              <div class="print-signature">
+                TESTEMUNHA 1: ____________________________<br>
+                <span class="small text-muted">CPF: ____________________________________</span>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="print-signature">
+                TESTEMUNHA 2: ____________________________<br>
+                <span class="small text-muted">CPF: ____________________________________</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
   async setupBoletim() {
     try {
       // Carrega turmas no select de filtro

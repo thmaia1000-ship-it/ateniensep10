@@ -385,7 +385,7 @@ body {
   .content-body {
     padding: 0 !important;
   }
-  .print-document {
+  .print-document, .print-page {
     width: 100% !important;
     min-height: auto !important;
     margin: 0 !important;
@@ -393,8 +393,85 @@ body {
     box-shadow: none !important;
     border: none !important;
   }
+  .print-page {
+    page-break-after: always;
+    break-after: page;
+  }
+  .print-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+  .carne-slip {
+    border: 1px dashed #000;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
   @page {
     size: A4 portrait;
     margin: 15mm;
   }
 }
+
+/* Multi-page and Carnê printing extensions */
+.print-page {
+  background-color: #fff;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto 30px;
+  padding: 18mm 20mm;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  font-family: 'Times New Roman', Times, serif;
+  color: #000;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.carne-slip {
+  border: 1px dashed #666;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 8.5pt;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.carne-canhoto {
+  border-right: 1px dashed #888;
+  padding-right: 10px;
+}
+
+.carne-header {
+  border-bottom: 1px solid #000;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+
+.carne-linha-digitavel {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 9.5pt;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.carne-campo-box {
+  border: 1px solid #bbb;
+  padding: 2px 5px;
+  margin-bottom: 4px;
+}
+
+.carne-campo-label {
+  font-size: 6.5pt;
+  text-transform: uppercase;
+  color: #555;
+  font-weight: bold;
+  display: block;
+}
+
+.carne-campo-valor {
+  font-size: 8.5pt;
+  font-weight: bold;
+  color: #000;
+}
+
