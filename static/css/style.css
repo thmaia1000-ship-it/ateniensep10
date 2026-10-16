@@ -378,13 +378,14 @@ body {
   .sidebar, .topbar, .no-print, .btn, .modal-backdrop, .modal-header, .modal-footer {
     display: none !important;
   }
-  .main-wrapper {
-    margin-left: 0 !important;
-    padding: 0 !important;
+  
+  /* Se houver modal aberto (.modal.show), esconde o main-wrapper e TODOS os outros modais inativos */
+  body.modal-open .main-wrapper,
+  body.modal-open .modal:not(.show),
+  .modal:not(.show) {
+    display: none !important;
   }
-  .content-body {
-    padding: 0 !important;
-  }
+
   .print-document {
     width: 100% !important;
     min-height: auto !important;
@@ -396,7 +397,7 @@ body {
   .print-page {
     width: 100% !important;
     min-height: auto !important;
-    height: auto !important;
+    max-height: 275mm !important;
     margin: 0 !important;
     padding: 0 !important;
     box-shadow: none !important;
@@ -404,6 +405,9 @@ body {
     page-break-after: always !important;
     break-after: page !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
   }
   .print-page:last-child {
     page-break-after: auto !important;
@@ -419,14 +423,11 @@ body {
     margin: 8mm 10mm;
   }
 
-  /* Impressão direta de dentro de Modals */
+  /* Impressão direta de dentro de Modals - APENAS o modal aberto (.modal.show) */
   body.modal-open {
     overflow: visible !important;
   }
-  body.modal-open .main-wrapper {
-    display: none !important;
-  }
-  body.modal-open .modal {
+  body.modal-open .modal.show {
     position: static !important;
     display: block !important;
     overflow: visible !important;
@@ -435,24 +436,30 @@ body {
     padding: 0 !important;
     margin: 0 !important;
   }
-  body.modal-open .modal-dialog {
+  body.modal-open .modal.show .modal-dialog {
     max-width: 100% !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     transform: none !important;
+    overflow: visible !important;
   }
-  body.modal-open .modal-content {
+  body.modal-open .modal.show .modal-content {
     border: none !important;
     box-shadow: none !important;
     background: transparent !important;
     overflow: visible !important;
   }
-  body.modal-open .modal-body {
+  body.modal-open .modal.show .modal-body {
     padding: 0 !important;
+    margin: 0 !important;
     background: transparent !important;
     overflow: visible !important;
     max-height: none !important;
+  }
+  body.modal-open .modal.show .modal-header,
+  body.modal-open .modal.show .modal-footer {
+    display: none !important;
   }
   body.modal-open .modal-backdrop {
     display: none !important;

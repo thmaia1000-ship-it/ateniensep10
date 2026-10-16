@@ -2481,7 +2481,7 @@ const App = {
             <em>Parágrafo Terceiro:</em> A partir da matrícula, ainda que antes do início das aulas, a <strong>CONTRATADA</strong> já presta serviços preparatórios ao <strong>CONTRATANTE</strong>: preparação da acolhida, organização de salas, diários e quadro docente.<br>
             <em>Parágrafo Quarto:</em> Para adesão a este Contrato, o <strong>CONTRATANTE</strong> não deve estar inadimplente com a <strong>CONTRATADA</strong>.
           </p>
-          <p class="mb-1">
+          <p class="mb-0">
             <strong>CLÁUSULA 4 -</strong> O valor da anuidade será pago pelo <strong>CONTRATANTE</strong> pelos serviços educacionais lhe proporcionados, apurado de acordo com a Lei nº 9.870/1999, e será de <strong>${m.valor_total_fmt} (${m.valor_total_extenso})</strong>.<br>
             <em>Parágrafo Primeiro:</em> O valor da anuidade será reajustado sempre no início do ano civil e será comunicado pela direção da <strong>CONTRATADA</strong>.<br>
             <em>Parágrafo Segundo:</em> O valor do contrato anual poderá ser pago à vista ou dividido em <strong>${m.n_parcelas} (${m.n_parcelas_extenso}) parcelas mensais</strong>, no valor de <strong>${m.valor_parcela_fmt} (${m.valor_parcela_extenso})</strong>.<br>
@@ -2489,16 +2489,6 @@ const App = {
             <em>Parágrafo Quarto:</em> O pagamento das parcelas subsequentes obedecerá à data do <strong>5º dia útil</strong> (ou dia 30 de cada mês), excetuando fevereiro (dia 28) e dezembro (dia 29).<br>
             <em>Parágrafo Quinto:</em> As datas acordadas expressam a vontade mútua de ambas as partes.<br>
             <em>Parágrafo Sexto:</em> As parcelas somente poderão ser pagas na Tesouraria da <strong>CONTRATADA</strong> ou através de Cobrança Bancária / PIX autorizado.
-          </p>
-          <p class="mb-1">
-            <strong>CLÁUSULA 5 -</strong> Obriga-se o <strong>CONTRATANTE</strong>, durante o respectivo ano letivo, a pagar o valor da anuidade acadêmica nas condições pactuadas.<br>
-            <em>Parágrafo Primeiro:</em> A falta do pagamento de qualquer parcela após o 5º dia útil do vencimento constituirá em mora de pleno direito o <strong>CONTRATANTE</strong>, implicando acréscimo de juros moratórios legais (art. 406 do CC) e multa moratória de 2% (dois por cento) sobre o débito.<br>
-            <em>Parágrafo Segundo:</em> O <strong>CONTRATANTE</strong> responderá pelas despesas, custas e honorários advocatícios à base de 20% (vinte por cento) sobre o valor total do débito exigido com a cobrança judicial ou extrajudicial (art. 389 do Código Civil), no caso de parcelas com atraso superior a 90 dias.<br>
-            <em>Parágrafo Terceiro:</em> Independentemente do disposto no parágrafo anterior, quando o atraso de parcela for superior a 90 (noventa) dias, a <strong>CONTRATADA</strong> poderá acionar a competente Execução de Título Extrajudicial (artigos 205, 465 a 467 do Código Civil e art. 6º da Lei 9.870/99).<br>
-            <em>Parágrafo Quarto:</em> O não comparecimento do ALUNO às aulas não confere direito à recusa de pagamento das mensalidades contratadas.
-          </p>
-          <p class="mb-0">
-            <strong>CLÁUSULA 6 -</strong> Havendo atraso do pagamento superior a 90 (noventa) dias, o <strong>CONTRATANTE</strong> autoriza a <strong>CONTRATADA</strong> a: I. negativar o devedor em cadastros ou serviços de proteção ao crédito (SPC, Serasa e afins); II. promover o protesto do título em cartório competente; III. promover cobrança extrajudicial especializada; IV. promover cobrança e execução judicial; V. não renovar a matrícula do aluno para o período seguinte (art. 5º da Lei 9.870/99).
           </p>
         </div>
 
@@ -2516,6 +2506,16 @@ const App = {
         </div>
 
         <div style="font-size: 7.8pt; line-height: 1.25; text-align: justify;">
+          <p class="mb-1">
+            <strong>CLÁUSULA 5 -</strong> Obriga-se o <strong>CONTRATANTE</strong>, durante o respectivo ano letivo, a pagar o valor da anuidade acadêmica nas condições pactuadas.<br>
+            <em>Parágrafo Primeiro:</em> A falta do pagamento de qualquer parcela após o 5º dia útil do vencimento constituirá em mora de pleno direito o <strong>CONTRATANTE</strong>, implicando acréscimo de juros moratórios legais (art. 406 do CC) e multa moratória de 2% (dois por cento) sobre o débito.<br>
+            <em>Parágrafo Segundo:</em> O <strong>CONTRATANTE</strong> responderá pelas despesas, custas e honorários advocatícios à base de 20% (vinte por cento) sobre o valor total do débito exigido com a cobrança judicial ou extrajudicial (art. 389 do Código Civil), no caso de parcelas com atraso superior a 90 dias.<br>
+            <em>Parágrafo Terceiro:</em> Independentemente do disposto no parágrafo anterior, quando o atraso de parcela for superior a 90 (noventa) dias, a <strong>CONTRATADA</strong> poderá acionar a competente Execução de Título Extrajudicial (artigos 205, 465 a 467 do Código Civil e art. 6º da Lei 9.870/99).<br>
+            <em>Parágrafo Quarto:</em> O não comparecimento do ALUNO às aulas não confere direito à recusa de pagamento das mensalidades contratadas.
+          </p>
+          <p class="mb-1">
+            <strong>CLÁUSULA 6 -</strong> Havendo atraso do pagamento superior a 90 (noventa) dias, o <strong>CONTRATANTE</strong> autoriza a <strong>CONTRATADA</strong> a: I. negativar o devedor em cadastros ou serviços de proteção ao crédito (SPC, Serasa e afins); II. promover o protesto do título em cartório competente; III. promover cobrança extrajudicial especializada; IV. promover cobrança e execução judicial; V. não renovar a matrícula do aluno para o período seguinte (art. 5º da Lei 9.870/99).
+          </p>
           <p class="mb-1">
             <strong>CLÁUSULA 7 -</strong> A guarda de documentos pela <strong>CONTRATADA</strong> obedecerá ao prazo de 2 (dois) anos após o término do contrato, findo o qual os documentos poderão ser devidamente descartados, conforme os ditames previstos na Lei Geral de Proteção de Dados Pessoais (LGPD - Lei 13.709/2018).
           </p>
