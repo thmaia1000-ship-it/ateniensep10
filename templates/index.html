@@ -91,6 +91,7 @@
             <li><a class="sub-link" data-view="secretaria-resp-fin"><i class="bi bi-wallet2 me-1"></i> Resp. Financeiro</a></li>
             <li><a class="sub-link" data-view="secretaria-turmas"><i class="bi bi-diagram-3 me-1"></i> Gestão de Turmas</a></li>
             <li><a class="sub-link" data-view="secretaria-professores"><i class="bi bi-person-badge me-1"></i> Professores</a></li>
+            <li><a class="sub-link" data-view="secretaria-declaracoes"><i class="bi bi-file-earmark-text me-1"></i> Declarações Oficiais</a></li>
           </ul>
         </li>
 
@@ -869,6 +870,102 @@
                 </thead>
                 <tbody id="tableSecretariaProfessores"></tbody>
               </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: SECRETARIA - DECLARAÇÕES OFICIAIS ================= -->
+        <section id="view-secretaria-declaracoes" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-file-earmark-text text-primary me-2"></i>Declarações e Documentos Oficiais</h4>
+              <p class="text-muted small mb-0">Emissão e impressão em padrão timbrado oficial (A4) do Centro Educacional Ateniense</p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <button class="btn btn-primary" onclick="window.print()">
+                <i class="bi bi-printer me-1"></i> Imprimir Documento (A4)
+              </button>
+            </div>
+          </div>
+
+          <!-- FILTROS E SELEÇÃO DE DECLARAÇÃO -->
+          <div class="card border-0 shadow-sm mb-4 no-print">
+            <div class="card-body p-3">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                  <label class="form-label small fw-bold text-secondary">TIPO DE DECLARAÇÃO / DOCUMENTO *</label>
+                  <select id="declaracaoTipoSelect" class="form-select" onchange="App.onTipoDeclaracaoChange()">
+                    <option value="matricula">📄 Declaração de Matrícula</option>
+                    <option value="quitacao">💳 Declaração de Quitação de Débitos</option>
+                    <option value="comparecimento">🤝 Declaração de Comparecimento</option>
+                    <option value="frequencia">📅 Declaração de Frequência Escolar</option>
+                    <option value="transferencia">📑 Guia de Transferência Escolar</option>
+                    <option value="rescisao">📝 Termo de Rescisão Contratual</option>
+                  </select>
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label small fw-bold text-secondary">FILTRAR POR TURMA</label>
+                  <select id="declaracaoTurmaSelect" class="form-select" onchange="App.filtrarAlunosDeclaracao()">
+                    <option value="">Todas as Turmas...</option>
+                  </select>
+                </div>
+
+                <div class="col-md-5">
+                  <label class="form-label small fw-bold text-secondary">SELECIONAR ALUNO(A) *</label>
+                  <select id="declaracaoAlunoSelect" class="form-select" onchange="App.carregarDeclaracao()">
+                    <option value="">Selecione o aluno...</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- CAMPOS ESPECÍFICOS CONDICIONAIS -->
+              <div id="declaracaoCamposExtras" class="row g-3 mt-1 pt-2 border-top d-none">
+                <!-- Comparecimento Extra -->
+                <div id="campoExtraComparecimento" class="col-12 d-none">
+                  <div class="row g-2">
+                    <div class="col-md-4">
+                      <label class="form-label small fw-bold">NOME DO RESPONSÁVEL QUE COMPARECEU</label>
+                      <input type="text" id="declRespNome" class="form-control form-control-sm" placeholder="Nome do pai/mãe/responsável" oninput="App.atualizarTextoDeclaracao()">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small fw-bold">DOCUMENTO (RG / CPF)</label>
+                      <input type="text" id="declRespDoc" class="form-control form-control-sm" placeholder="Ex: 000.000.000-00" oninput="App.atualizarTextoDeclaracao()">
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label small fw-bold">HORÁRIO PERMANÊNCIA</label>
+                      <input type="text" id="declRespHora" class="form-control form-control-sm" placeholder="Ex: 08:00 às 09:30" oninput="App.atualizarTextoDeclaracao()">
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small fw-bold">FINALIDADE / MOTIVO</label>
+                      <input type="text" id="declRespMotivo" class="form-control form-control-sm" placeholder="Ex: Reunião Pedagógica" oninput="App.atualizarTextoDeclaracao()">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Rescisão Extra -->
+                <div id="campoExtraRescisao" class="col-12 d-none">
+                  <div class="row g-2">
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold">MOTIVO DA RESCISÃO CONTRATUAL</label>
+                      <input type="text" id="declRescisaoMotivo" class="form-control form-control-sm" placeholder="Ex: Mudança de domicílio / Solicitação particular" oninput="App.atualizarTextoDeclaracao()">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold">OBSERVAÇÕES ADICIONAIS / VENCIDAS</label>
+                      <input type="text" id="declRescisaoObs" class="form-control form-control-sm" placeholder="Observações de acerto ou quitação" oninput="App.atualizarTextoDeclaracao()">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DOCUMENTO TIMBRADO OFICIAL (A4) -->
+          <div id="declaracaoDocumentContainer">
+            <div class="text-center text-muted p-5 bg-white rounded border shadow-sm">
+              <i class="bi bi-file-earmark-text display-4 text-secondary mb-2 d-block"></i>
+              <h5 class="fw-bold text-secondary">Nenhum Aluno Selecionado</h5>
+              <p class="mt-2 text-muted">Selecione o tipo de declaração e o aluno acima para visualizar e imprimir o documento timbrado oficial.</p>
             </div>
           </div>
         </section>

@@ -170,6 +170,9 @@ const App = {
       case 'secretaria-professores':
         await this.loadProfessores();
         break;
+      case 'secretaria-declaracoes':
+        await this.setupDeclaracoes();
+        break;
       case 'secretaria-resp-acad':
         await this.loadResponsaveis('academico');
         break;
@@ -1104,6 +1107,424 @@ const App = {
     } catch (e) {
       alert('Erro ao salvar professor: ' + e.message);
     }
+  },
+
+  // ==========================================
+  // 3.8 SECRETARIA - DECLARAÇÕES OFICIAIS
+  // ==========================================
+  cacheDeclaracaoDados: null,
+
+  async setupDeclaracoes() {
+    try {
+      // 1. Carrega turmas no select de filtro
+      const dataTurmas = await this.api('/api/turmas');
+      const selTurma = document.getElementById('declaracaoTurmaSelect');
+      if (selTurma) {
+        selTurma.innerHTML = '<option value="">Todas as Turmas...</option>' + 
+          (dataTurmas.turmas || []).map(t => {
+            const anoStr = t.ano_letivo ? ` (${t.ano_letivo})` : '';
+            return `<option value="${t.id}">${t.nome_turma}${anoStr}</option>`;
+          }).join('');
+      }
+
+      // 2. Carrega lista inicial de alunos
+      await this.carregarAlunosParaDeclaracao();
+
+      // 3. Configura campos extras de acordo com o tipo
+      this.onTipoDeclaracaoChange();
+
+    } catch (e) {
+      console.error('Erro ao configurar tela de declarações:', e);
+    }
+  },
+
+  async carregarAlunosParaDeclaracao(turmaId = '') {
+    const url = turmaId ? `/api/turmas/${encodeURIComponent(turmaId)}/alunos` : '/api/alunos?limit=300';
+    const data = await this.api(url);
+    const select = document.getElementById('declaracaoAlunoSelect');
+    if (select) {
+      const alunos = data.alunos || [];
+      select.innerHTML = '<option value="">Selecione o aluno...</option>' + 
+        alunos.map(a => `<option value="${a.id}">${a.nome} (Matrícula #${a.id})</option>`).join('');
+
+      // Se houver alunos e nenhum selecionado, seleciona o primeiro
+      if (alunos.length > 0 && !select.value) {
+        select.value = alunos[0].id;
+        await this.carregarDeclaracao();
+      }
+    }
+  },
+
+  async filtrarAlunosDeclaracao() {
+    const turmaId = document.getElementById('declaracaoTurmaSelect')?.value || '';
+    await this.carregarAlunosParaDeclaracao(turmaId);
+  },
+
+  onTipoDeclaracaoChange() {
+    const tipo = document.getElementById('declaracaoTipoSelect')?.value || 'matricula';
+    const painelExtras = document.getElementById('declaracaoCamposExtras');
+    const campoComp = document.getElementById('campoExtraComparecimento');
+    const campoResc = document.getElementById('campoExtraRescisao');
+
+    if (tipo === 'comparecimento') {
+      painelExtras?.classList.remove('d-none');
+      campoComp?.classList.remove('d-none');
+      campoResc?.classList.add('d-none');
+    } else if (tipo === 'rescisao') {
+      painelExtras?.classList.remove('d-none');
+      campoComp?.classList.add('d-none');
+      campoResc?.classList.remove('d-none');
+    } else {
+      painelExtras?.classList.add('d-none');
+      campoComp?.classList.add('d-none');
+      campoResc?.classList.add('d-none');
+    }
+
+    this.carregarDeclaracao();
+  },
+
+  atualizarTextoDeclaracao() {
+    if (this.cacheDeclaracaoDados) {
+      this.renderDeclaracao(this.cacheDeclaracaoDados);
+    }
+  },
+
+  async carregarDeclaracao() {
+    const alunoId = document.getElementById('declaracaoAlunoSelect')?.value;
+    const tipo = document.getElementById('declaracaoTipoSelect')?.value || 'matricula';
+    const container = document.getElementById('declaracaoDocumentContainer');
+
+    if (!alunoId) {
+      if (container) {
+        container.innerHTML = `
+          <div class="text-center text-muted p-5 bg-white rounded border shadow-sm">
+            <i class="bi bi-file-earmark-text display-4 text-secondary mb-2 d-block"></i>
+            <h5 class="fw-bold text-secondary">Nenhum Aluno Selecionado</h5>
+            <p class="mt-2 text-muted">Selecione o tipo de declaração e o aluno acima para visualizar e imprimir o documento timbrado oficial.</p>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    try {
+      const data = await this.api(`/api/documentos/declaracao?tipo=${encodeURIComponent(tipo)}&aluno_id=${encodeURIComponent(alunoId)}`);
+      if (!data || data.error) {
+        alert(data.error || 'Erro ao carregar dados do documento');
+        return;
+      }
+      this.cacheDeclaracaoDados = data;
+      this.renderDeclaracao(data);
+    } catch (e) {
+      console.error('Erro ao carregar declaração:', e);
+      if (container) {
+        container.innerHTML = `<div class="alert alert-danger m-3">Erro ao carregar declaração: ${e.message}</div>`;
+      }
+    }
+  },
+
+  renderDeclaracao(data) {
+    const container = document.getElementById('declaracaoDocumentContainer');
+    if (!container) return;
+
+    const tipo = document.getElementById('declaracaoTipoSelect')?.value || 'matricula';
+    const a = data.aluno || {};
+    const t = a.nome_turma || a.etapa || '-';
+    const turno = a.turma_turno || a.turno || '-';
+    const rf = data.resp_fin || {};
+    const ra = data.resp_acad || {};
+
+    // Cabeçalho Oficial Padrão Timbrado
+    const headerHtml = `
+      <div class="print-header">
+        <div class="row align-items-center">
+          <div class="col-3 text-start">
+            <img src="/static/img/LogoAteniense.png" alt="Colégio Ateniense" style="max-height: 80px;" />
+          </div>
+          <div class="col-9 text-end">
+            <h4 class="fw-bold mb-0 text-dark" style="font-family: 'Times New Roman', serif; letter-spacing: 0.5px;">CENTRO EDUCACIONAL ATENIENSE</h4>
+            <p class="mb-0 text-muted small" style="font-size: 9pt;">Educação Infantil e Ensino Fundamental I</p>
+            <p class="mb-0 text-muted small" style="font-size: 8pt;">Resolução Nº 021/99 – CEE/AM | CNPJ: 35.062.987/0001-53</p>
+            <p class="mb-0 text-muted small" style="font-size: 8pt;">Rua Rosalind Franklin, 25 - Parque 10 de Novembro - CEP: 69.054-730 - Manaus/AM</p>
+            <p class="mb-0 text-muted small" style="font-size: 8pt;">Tel: (92) 98450-3988 / (92) 98452-3953 | E-mail: ceateniensep10@hotmail.com</p>
+          </div>
+        </div>
+        <hr style="border-top: 2px solid #000; margin: 12px 0 0;" />
+      </div>
+    `;
+
+    let corpoHtml = '';
+
+    if (tipo === 'matricula') {
+      corpoHtml = `
+        <div class="print-title mt-4 mb-4">DECLARAÇÃO DE MATRÍCULA</div>
+        <div class="print-body" style="font-size: 13pt; line-height: 2; text-align: justify;">
+          <p>
+            Declaramos, para os devidos fins e a quem possa interessar, que o(a) aluno(a) <strong>${a.nome_aluno || '-'}</strong>, 
+            nascido(a) em <strong>${a.datanasc_formatada || '-'}</strong>, natural de <strong>${a.cidade || 'MANAUS'} / ${a.UF || 'AM'}</strong>, 
+            nacionalidade <strong>${a.nacionalidade || 'BRASILEIRA'}</strong>, filho(a) de <strong>${a.pai || 'Não informado'}</strong> 
+            e de <strong>${a.mae || 'Não informada'}</strong>, residente na ${a.rua || ''}, nº ${a.numero || 'S/N'}, 
+            bairro ${a.bairro || ''}, CEP: ${a.cep || ''}, encontra-se regularmente matriculado(a) e com frequência ativa neste 
+            Estabelecimento de Ensino no Ano Letivo de <strong>${data.ano_letivo}</strong>, cursando o <strong>${t}</strong>, 
+            no turno <strong>${turno}</strong>.
+          </p>
+          <p>
+            Por ser a expressão da verdade, firmamos a presente declaração para que produza seus regulares efeitos legais.
+          </p>
+          <div class="p-3 my-4 bg-light rounded border text-muted" style="font-size: 9.5pt; line-height: 1.5;">
+            <strong>OBSERVAÇÕES LEGAIS:</strong> Expedida em conformidade com a Lei de Diretrizes e Bases da Educação Nacional 
+            (Lei Federal nº 9.394/1996), Leis Federais nº 11.114/2005 e nº 11.274/2006, e Resolução nº 098/2005 do Conselho 
+            Estadual de Educação do Amazonas (CEE/AM).
+          </div>
+          <p class="small text-muted text-end">
+            <em>Declaração válida por 30 (trinta) dias a contar da data de sua expedição.</em>
+          </p>
+        </div>
+        <div class="text-end my-4" style="font-size: 12pt;">
+          <strong>${data.data_extenso}</strong>
+        </div>
+        <div class="print-footer mt-5 pt-3">
+          <div class="row">
+            <div class="col-6"><div class="print-signature">Secretaria Escolar</div></div>
+            <div class="col-6"><div class="print-signature">Direção Pedagógica</div></div>
+          </div>
+        </div>
+      `;
+    } else if (tipo === 'quitacao') {
+      const responsavelNome = rf.nome || a.mae || a.pai || 'Responsável Financeiro';
+      const responsavelCpf = rf.cpf ? `portador(a) do CPF/MF nº ${rf.cpf}` : 'inscrito(a) sob o cadastro escolar';
+      corpoHtml = `
+        <div class="print-title mt-4 mb-4">DECLARAÇÃO DE QUITAÇÃO DE DÉBITOS</div>
+        <div class="print-body" style="font-size: 13pt; line-height: 2; text-align: justify;">
+          <p>
+            O <strong>CENTRO EDUCACIONAL ATENIENSE</strong>, entidade mantenedora de ensino devidamente credenciada pela 
+            Resolução CEE/AM nº 021/99, inscrita no CNPJ/MF sob o nº 35.062.987/0001-53, declara para os devidos fins de direito que:
+          </p>
+          <p>
+            O(A) estudante <strong>${a.nome_aluno || '-'}</strong>, Matrícula nº <strong>#${a.ID_aluno}</strong>, regularmente matriculado(a) 
+            no <strong>${t}</strong>, turno <strong>${turno}</strong>, sob a responsabilidade financeira do(a) Sr.(a) 
+            <strong>${responsavelNome}</strong>, ${responsavelCpf}, encontra-se plenamente em dia com todas as suas obrigações financeiras 
+            e mensalidades escolares relativas ao Ano Letivo de <strong>${data.ano_letivo}</strong>.
+          </p>
+          <p>
+            Atestamos, para todos os efeitos de comprovação legal, matrícula ou transferência, que <strong>NÃO CONSTAM DÉBITOS</strong>, 
+            parcelas pendentes ou quaisquer obrigações pecuniárias em aberto vinculadas ao prontuário do(a) estudante junto à Tesouraria 
+            deste Estabelecimento de Ensino até a presente data, outorgando-se a respectiva quitação de débitos.
+          </p>
+          <p class="small text-muted text-end my-3">
+            <em>Declaração válida por 30 (trinta) dias para fins de comprovação e transferência escolar.</em>
+          </p>
+        </div>
+        <div class="text-end my-4" style="font-size: 12pt;">
+          <strong>${data.data_extenso}</strong>
+        </div>
+        <div class="print-footer mt-5 pt-3">
+          <div class="row">
+            <div class="col-6"><div class="print-signature">Setor Financeiro / Tesouraria</div></div>
+            <div class="col-6"><div class="print-signature">Direção Geral</div></div>
+          </div>
+        </div>
+      `;
+    } else if (tipo === 'comparecimento') {
+      const respInputNome = document.getElementById('declRespNome')?.value || rf.nome || ra.nome || a.mae || a.pai || 'Responsável';
+      const respInputDoc = document.getElementById('declRespDoc')?.value || rf.cpf || ra.cpf || 'Apresentado na Secretaria';
+      const respInputHora = document.getElementById('declRespHora')?.value || (turno === 'VESPERTINO' ? '14:00 às 15:30' : '08:00 às 09:30');
+      const respInputMotivo = document.getElementById('declRespMotivo')?.value || 'Atendimento pedagógico, alinhamento curricular e acompanhamento escolar';
+
+      corpoHtml = `
+        <div class="print-title mt-4 mb-4">DECLARAÇÃO DE COMPARECIMENTO</div>
+        <div class="print-body" style="font-size: 13pt; line-height: 2; text-align: justify;">
+          <p>
+            Declaramos, para os devidos fins de comprovação e justificação de ausência perante empregador, repartição pública ou autoridade 
+            competente, que o(a) Sr.(a) <strong>${respInputNome}</strong>, portador(a) do documento de identificação RG/CPF nº 
+            <strong>${respInputDoc}</strong>, na condição de responsável legal pelo(a) aluno(a) <strong>${a.nome_aluno || '-'}</strong>, 
+            matriculado(a) no <strong>${t}</strong>, turno <strong>${turno}</strong>, compareceu a este Estabelecimento de Ensino 
+            no dia de hoje, <strong>${data.hoje_formatado}</strong>, permanecendo nas dependências escolares durante o período 
+            das <strong>${respInputHora}</strong>.
+          </p>
+          <p>
+            <strong>Finalidade / Assunto tratado:</strong> ${respInputMotivo}.
+          </p>
+          <p>
+            Por ser a expressão fiel da verdade, expedimos a presente declaração que segue devidamente assinada e chancelada pela 
+            coordenação deste Centro Educacional.
+          </p>
+        </div>
+        <div class="text-end my-5" style="font-size: 12pt;">
+          <strong>${data.data_extenso}</strong>
+        </div>
+        <div class="print-footer mt-5 pt-4">
+          <div class="row justify-content-center">
+            <div class="col-8"><div class="print-signature">Secretaria Escolar / Coordenação Pedagógica</div></div>
+          </div>
+        </div>
+      `;
+    } else if (tipo === 'frequencia') {
+      const faltas = data.total_faltas || 0;
+      corpoHtml = `
+        <div class="print-title mt-4 mb-4">DECLARAÇÃO DE FREQUÊNCIA ESCOLAR</div>
+        <div class="print-body" style="font-size: 13pt; line-height: 2; text-align: justify;">
+          <p>
+            Declaramos, para os devidos fins de direito e comprovação institucional (inclusive para fins de benefícios sociais, comprovação 
+            trabalhista ou acompanhamento pedagógico), que o(a) aluno(a) <strong>${a.nome_aluno || '-'}</strong>, Matrícula nº 
+            <strong>#${a.ID_aluno}</strong>, nascido(a) em <strong>${a.datanasc_formatada || '-'}</strong>, filho(a) de 
+            <strong>${a.pai || 'Não informado'}</strong> e de <strong>${a.mae || 'Não informada'}</strong>, é aluno(a) assíduo(a) deste 
+            Estabelecimento de Ensino, regularmente matriculado(a) e frequentando com assiduidade satisfatória as aulas do 
+            <strong>${t}</strong>, no turno <strong>${turno}</strong>, durante o Ano Letivo de <strong>${data.ano_letivo}</strong>.
+          </p>
+          <p>
+            Atestamos que o(a) referido(a) estudante cumpre integralmente as exigências de frequência escolar previstas no Artigo 24, inciso VI 
+            da Lei Federal nº 9.394/1996 (LDB), mantendo participação nas atividades letivas programadas no calendário pedagógico oficial.
+          </p>
+          <div class="p-3 my-3 bg-light rounded border" style="font-size: 11pt; line-height: 1.6;">
+            <div><strong>Total de Faltas Registradas no Histórico:</strong> ${faltas} falta(s) letiva(s)</div>
+            <div><strong>Situação de Assiduidade:</strong> Regular / Apto(a)</div>
+          </div>
+          <p class="small text-muted text-end my-2">
+            <em>Declaração válida por 30 (trinta) dias a contar de sua emissão.</em>
+          </p>
+        </div>
+        <div class="text-end my-4" style="font-size: 12pt;">
+          <strong>${data.data_extenso}</strong>
+        </div>
+        <div class="print-footer mt-5 pt-3">
+          <div class="row">
+            <div class="col-6"><div class="print-signature">Secretaria Escolar</div></div>
+            <div class="col-6"><div class="print-signature">Coordenação Pedagógica</div></div>
+          </div>
+        </div>
+      `;
+    } else if (tipo === 'transferencia') {
+      const notas = data.materias_notas || [];
+      corpoHtml = `
+        <div class="print-title mt-3 mb-2 text-center">GUIA DE TRANSFERÊNCIA ESCOLAR</div>
+        <p class="text-center text-muted small mb-3">HISTÓRICO ESCOLAR E APROVEITAMENTO PEDAGÓGICO</p>
+        
+        <div class="p-2 mb-3 bg-light rounded border font-monospace" style="font-size: 10pt; line-height: 1.6;">
+          <div class="row">
+            <div class="col-8"><strong>ALUNO(A):</strong> ${a.nome_aluno || '-'}</div>
+            <div class="col-4"><strong>MATRÍCULA:</strong> #${a.ID_aluno}</div>
+            <div class="col-6"><strong>NASCIMENTO:</strong> ${a.datanasc_formatada || '-'} (${a.cidade || 'Manaus'}/${a.UF || 'AM'})</div>
+            <div class="col-6"><strong>NACIONALIDADE:</strong> ${a.nacionalidade || 'Brasileira'}</div>
+            <div class="col-6"><strong>FILIAÇÃO:</strong> ${a.mae || a.pai || '-'}</div>
+            <div class="col-6"><strong>ANO LETIVO:</strong> ${data.ano_letivo}</div>
+            <div class="col-6"><strong>SÉRIE / ETAPA:</strong> ${t}</div>
+            <div class="col-6"><strong>TURNO:</strong> ${turno}</div>
+          </div>
+        </div>
+
+        <div class="print-body mb-3" style="font-size: 11pt; line-height: 1.6; text-align: justify;">
+          <p class="m-0">
+            O CENTRO EDUCACIONAL ATENIENSE confere a presente <strong>GUIA DE TRANSFERÊNCIA</strong> ao(à) estudante acima nominado(a), 
+            tendo sua transferência solicitada formalmente por seu responsável legal, estando apto(a), de acordo com a legislação em vigor, 
+            a prosseguir seus estudos em qualquer outro Estabelecimento de Ensino devidamente legalizado do país.
+          </p>
+        </div>
+
+        <table class="table table-bordered table-sm text-center align-middle mb-3" style="font-size: 9.5pt;">
+          <thead class="table-light">
+            <tr>
+              <th class="text-start">COMPONENTE CURRICULAR</th>
+              <th>1º BIM</th>
+              <th>2º BIM</th>
+              <th>3º BIM</th>
+              <th>4º BIM</th>
+              <th>MÉDIA</th>
+              <th>SITUAÇÃO</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${notas.length > 0 ? notas.map(m => `
+              <tr>
+                <td class="text-start fw-bold">${m.materia}</td>
+                <td>${m.b1 || '-'}</td>
+                <td>${m.b2 || '-'}</td>
+                <td>${m.b3 || '-'}</td>
+                <td>${m.b4 || '-'}</td>
+                <td class="fw-bold">${m.media || '-'}</td>
+                <td><span class="badge ${m.situacao === 'Aprovado' ? 'bg-success' : (m.situacao === 'Recuperação' ? 'bg-warning text-dark' : 'bg-secondary')}">${m.situacao}</span></td>
+              </tr>
+            `).join('') : `
+              <tr><td colspan="7" class="text-muted py-2">Registros acadêmicos em fase de consolidação pedagógica.</td></tr>
+            `}
+          </tbody>
+        </table>
+
+        <div class="p-2 mb-3 bg-light rounded border text-muted" style="font-size: 8.5pt; line-height: 1.4;">
+          <strong>BASE LEGAL:</strong> A nota mínima para aprovação institucional é 6,0 (seis inteiros). Transferência expedida de acordo com 
+          as Leis Federais nº 9.394/96, nº 11.114/2005 e nº 11.274/2006, e Res. nº 098/2005 do CEE/AM. Documento isento de autenticação cartorária 
+          conforme Art. 70 da Resolução 99/97 - CEE/AM.
+        </div>
+
+        <div class="text-end my-3" style="font-size: 11pt;">
+          <strong>${data.data_extenso}</strong>
+        </div>
+
+        <div class="print-footer mt-4 pt-2">
+          <div class="row">
+            <div class="col-6"><div class="print-signature">Secretário(a) Escolar</div></div>
+            <div class="col-6"><div class="print-signature">Diretor(a) Pedagógico(a)</div></div>
+          </div>
+        </div>
+      `;
+    } else if (tipo === 'rescisao') {
+      const respNome = rf.nome || ra.nome || a.mae || a.pai || 'Responsável Legal';
+      const respCpf = rf.cpf || ra.cpf || 'Cadastrado no Sistema';
+      const motivoResc = document.getElementById('declRescisaoMotivo')?.value || 'Transferência de domicílio / Solicitação de interesse particular da família';
+      const obsResc = document.getElementById('declRescisaoObs')?.value || '';
+
+      corpoHtml = `
+        <div class="print-title mt-3 mb-2 text-center">TERMO DE RESCISÃO CONTRATUAL</div>
+        <p class="text-center text-muted small mb-3">CONTRATO DE PRESTAÇÃO DE SERVIÇOS EDUCACIONAIS</p>
+
+        <div class="print-body" style="font-size: 11.5pt; line-height: 1.8; text-align: justify;">
+          <p>
+            Pelo presente instrumento particular de distrato e encerramento contratual, de um lado:
+          </p>
+          <div class="p-2 bg-light rounded border mb-3" style="font-size: 10.5pt; line-height: 1.6;">
+            <strong>CONTRATADA:</strong> <strong>CENTRO EDUCACIONAL ATENIENSE</strong>, pessoa jurídica de direito privado, inscrita no CNPJ/MF sob o nº 35.062.987/0001-53, com sede na Rua Rosalind Franklin, 25 - Parque 10 de Novembro, Manaus/AM;<br>
+            <strong>CONTRATANTE / RESPONSÁVEL:</strong> <strong>${respNome}</strong>, inscrito(a) no CPF sob o nº <strong>${respCpf}</strong>, responsável legal pelo(a) estudante <strong>${a.nome_aluno || '-'}</strong>, Matrícula nº <strong>#${a.ID_aluno}</strong>, matriculado(a) no <strong>${t}</strong>, turno <strong>${turno}</strong>, Ano Letivo de <strong>${data.ano_letivo}</strong>.
+          </div>
+          <p>
+            Têm entre si, justo e acordado, o presente <strong>TERMO DE RESCISÃO CONTRATUAL</strong>, mediante as seguintes cláusulas:
+          </p>
+          <p>
+            <strong>CLÁUSULA PRIMEIRA:</strong> Fica formalmente rescindido e cancelado, a contar desta data, o Contrato de Prestação de Serviços Educacionais celebrado para o ano letivo em curso, cancelando-se a matrícula do(a) estudante e desobrigando o Contratante das parcelas com vencimento posterior à data deste termo.
+          </p>
+          <p>
+            <strong>CLÁUSULA SEGUNDA:</strong> O Contratante declara ciência de que as parcelas e encargos educacionais vencidos até a data deste cancelamento permanecem sob sua responsabilidade, dando a Contratada quitação das mensalidades devidamente pagas até o presente momento.
+          </p>
+          <p>
+            <strong>CLÁUSULA TERCEIRA:</strong> A expedição da documentação escolar oficial de transferência e histórico pedagógico será disponibilizada pela Secretaria Escolar em estrita observância aos prazos regimentais.
+          </p>
+          <p>
+            <strong>Motivo declarado da rescisão:</strong> ${motivoResc}.
+          </p>
+          ${obsResc ? `<p><strong>Observações complementares:</strong> ${obsResc}</p>` : ''}
+          <p>
+            E, por estarem plenamente de acordo com todas as disposições, as partes firmam o presente termo em 2 (duas) vias de igual teor e forma.
+          </p>
+        </div>
+
+        <div class="text-end my-4" style="font-size: 11pt;">
+          <strong>${data.data_extenso}</strong>
+        </div>
+
+        <div class="print-footer mt-4 pt-3">
+          <div class="row">
+            <div class="col-6"><div class="print-signature">Contratante / Responsável Legal</div></div>
+            <div class="col-6"><div class="print-signature">Centro Educacional Ateniense</div></div>
+          </div>
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      <div class="print-document">
+        ${headerHtml}
+        ${corpoHtml}
+      </div>
+    `;
   },
 
   // 4. ACADÊMICO - BOLETIM ESCOLAR

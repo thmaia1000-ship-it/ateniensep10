@@ -342,6 +342,17 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                     self.send_json({'error': 'caixa_id obrigatório'}, 400)
                 return
 
+            if path == '/api/documentos/declaracao':
+                tipo = query.get('tipo', ['matricula'])[0]
+                aluno_id = query.get('aluno_id', [None])[0]
+                if not aluno_id:
+                    self.send_json({'error': 'aluno_id é obrigatório'}, 400)
+                    return
+                extra = {k: v[0] for k, v in query.items() if k not in ['tipo', 'aluno_id']}
+                dados = documentos_service.get_declaracao(tipo, aluno_id, extra)
+                self.send_json(dados)
+                return
+
             # Usuários
             if path == '/api/usuarios':
                 self.send_json({'usuarios': auth_service.list_users()})
