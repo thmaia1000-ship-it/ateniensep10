@@ -63,6 +63,19 @@ class AtenienseHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
+    def send_file_attachment(self, filepath, filename):
+        if not os.path.exists(filepath):
+            self.send_error(404, "Arquivo não encontrado")
+            return
+        with open(filepath, 'rb') as f:
+            content = f.read()
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/octet-stream')
+        self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
+        self.send_header('Content-Length', str(len(content)))
+        self.end_headers()
+        self.wfile.write(content)
+
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -105,6 +118,14 @@ class AtenienseHandler(BaseHTTPRequestHandler):
             elif path.endswith('.svg'): content_type = 'image/svg+xml'
             elif path.endswith('.ico'): content_type = 'image/x-icon'
             self.send_file(full_path, content_type)
+            return
+
+        # Download do script de compilação Windows (.bat)
+        if path == '/api/aplicativos/download-bat':
+            bat_path = os.path.join(BASE_DIR, 'aplicativos', 'gerar_executavel.bat')
+            if not os.path.exists(bat_path):
+                bat_path = os.path.join(BASE_DIR, 'build_windows.bat')
+            self.send_file_attachment(bat_path, 'gerar_executavel.bat')
             return
 
         # 2. Rotas de API REST

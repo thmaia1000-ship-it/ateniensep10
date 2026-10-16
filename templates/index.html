@@ -177,6 +177,15 @@
             <span>Importar Banco SQL</span>
           </a>
         </li>
+
+        <!-- 8. APLICATIVOS -->
+        <li class="nav-section-title">APLICATIVOS</li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="aplicativos">
+            <i class="bi bi-window-desktop text-info"></i>
+            <span>Aplicativo Windows (.exe)</span>
+          </a>
+        </li>
       </ul>
     </aside>
 
@@ -1591,6 +1600,134 @@
                 </thead>
                 <tbody id="tableUsuarios"></tbody>
               </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: APLICATIVOS (WINDOWS .EXE) ================= -->
+        <section id="view-aplicativos" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-window-desktop text-primary me-2"></i>Aplicativo Desktop Windows (.exe)</h4>
+              <p class="text-muted small mb-0">Ferramentas de geração e execução do Master Escolar Ateniense como software autônomo no Windows</p>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="/api/aplicativos/download-bat" class="btn btn-primary fw-bold shadow-sm" download="gerar_executavel.bat">
+                <i class="bi bi-download me-1"></i> Baixar Script .BAT
+              </a>
+            </div>
+          </div>
+
+          <div class="row g-4">
+            <!-- Card 1: Como gerar o .exe -->
+            <div class="col-lg-7">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-0">
+                  <h6 class="fw-bold text-primary mb-0"><i class="bi bi-play-circle-fill me-2"></i>Como Gerar o Executável (.exe) em 1 Clique</h6>
+                </div>
+                <div class="card-body">
+                  <p class="text-secondary small">
+                    O projeto conta com scripts automáticos para empacotar o backend, o banco SQLite e toda a interface web em um único executável <strong>Ateniense.exe</strong> sem precisar de servidor web configurado manualmente.
+                  </p>
+
+                  <div class="p-3 bg-light rounded-3 mb-3 border">
+                    <div class="d-flex align-items-start mb-3">
+                      <div class="badge bg-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.9rem;">1</div>
+                      <div>
+                        <strong class="d-block text-dark">Baixar ou clonar o projeto no Windows</strong>
+                        <span class="text-muted small">Copie a pasta do projeto para o computador Windows onde deseja compilar.</span>
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-items-start mb-3">
+                      <div class="badge bg-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.9rem;">2</div>
+                      <div>
+                        <strong class="d-block text-dark">Executar o script gerador</strong>
+                        <span class="text-muted small">Dê dois cliques no arquivo <code>aplicativos\gerar_executavel.bat</code> (ou <code>build_windows.bat</code> na raiz).</span>
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-items-start">
+                      <div class="badge bg-success rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.9rem;">3</div>
+                      <div>
+                        <strong class="d-block text-dark">Pronto! Arquivo disponível em dist\</strong>
+                        <span class="text-muted small">O executável <code>dist\Ateniense.exe</code> estará pronto. Basta dar dois cliques para abrir o sistema!</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="bg-dark text-white rounded p-3 mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span class="text-warning small fw-bold"><i class="bi bi-terminal me-1"></i> Comando manual alternativo (CMD / PowerShell):</span>
+                      <button class="btn btn-sm btn-outline-light py-0 px-2" style="font-size: 0.75rem;" onclick="navigator.clipboard.writeText('python aplicativos/compilar_windows.py'); alert('Comando copiado!');">Copiar</button>
+                    </div>
+                    <code class="text-info" style="font-size: 0.85rem;">python aplicativos/compilar_windows.py</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Estrutura e Recursos -->
+            <div class="col-lg-5">
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-0">
+                  <h6 class="fw-bold text-success mb-0"><i class="bi bi-folder-check me-2"></i>Arquivos da Seção Aplicativos</h6>
+                </div>
+                <div class="card-body">
+                  <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                      <div>
+                        <i class="bi bi-file-earmark-play text-primary me-2"></i>
+                        <strong>aplicativos/gerar_executavel.bat</strong>
+                        <div class="text-muted" style="font-size: 0.75rem;">Script de compilação 1-clique para Windows</div>
+                      </div>
+                      <span class="badge bg-success text-white">Pronto</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                      <div>
+                        <i class="bi bi-filetype-py text-warning me-2"></i>
+                        <strong>aplicativos/compilar_windows.py</strong>
+                        <div class="text-muted" style="font-size: 0.75rem;">Automação Python para PyInstaller</div>
+                      </div>
+                      <span class="badge bg-success text-white">Pronto</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                      <div>
+                        <i class="bi bi-file-text text-secondary me-2"></i>
+                        <strong>aplicativos/README.md</strong>
+                        <div class="text-muted" style="font-size: 0.75rem;">Manual completo de instruções e backup</div>
+                      </div>
+                      <span class="badge bg-success text-white">Pronto</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                      <div>
+                        <i class="bi bi-file-earmark-code text-info me-2"></i>
+                        <strong>Ateniense.spec</strong>
+                        <div class="text-muted" style="font-size: 0.75rem;">Especificação do PyInstaller (assets + banco)</div>
+                      </div>
+                      <span class="badge bg-success text-white">Pronto</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                      <div>
+                        <i class="bi bi-box-arrow-in-up-right text-danger me-2"></i>
+                        <strong>app_launcher.py</strong>
+                        <div class="text-muted" style="font-size: 0.75rem;">Iniciador automático de porta e navegador</div>
+                      </div>
+                      <span class="badge bg-success text-white">Pronto</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Card 3: Persistência de Dados -->
+              <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                  <h6 class="fw-bold text-dark mb-2"><i class="bi bi-database-check text-primary me-2"></i>Banco de Dados Seguro</h6>
+                  <p class="text-muted small mb-0">
+                    O aplicativo desktop foi programado para manter o banco SQLite salvo na pasta <code>database/ateniense.db</code> ao lado do executável. Todos os novos cadastros, mensalidades e notas lançadas são salvos permanentemente mesmo após fechar o programa.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>

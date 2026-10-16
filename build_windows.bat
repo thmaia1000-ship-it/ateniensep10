@@ -1,7 +1,10 @@
 @echo off
 chcp 65001 > nul
+title Compilador Master Escolar Ateniense - Windows EXE
+cd /d "%~dp0"
+
 echo ========================================================
-echo  Compilador do Master Escolar Ateniense (.exe Windows)
+echo  🎓 Compilador Master Escolar Ateniense (.exe Windows)
 echo ========================================================
 echo.
 
@@ -14,7 +17,8 @@ if %errorlevel% neq 0 (
 )
 
 echo [1/3] Instalando/atualizando o PyInstaller...
-pip install --upgrade pyinstaller
+python -m pip install --upgrade pip
+python -m pip install --upgrade pyinstaller
 
 echo.
 echo [2/3] Gerando o executavel com PyInstaller...
