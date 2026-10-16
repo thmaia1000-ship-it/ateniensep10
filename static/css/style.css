@@ -396,9 +396,9 @@ body {
   }
   .print-page {
     width: 100% !important;
-    height: 279mm !important;
-    min-height: 279mm !important;
-    max-height: 279mm !important;
+    height: 284mm !important;
+    min-height: 284mm !important;
+    max-height: 284mm !important;
     margin: 0 !important;
     padding: 0 !important;
     box-shadow: none !important;
@@ -416,11 +416,17 @@ body {
   .print-page:last-child {
     page-break-after: auto !important;
     break-after: auto !important;
-    height: 279mm !important;
-    max-height: 279mm !important;
+    height: auto !important;
+    max-height: 284mm !important;
   }
   .print-page.print-page-flow {
     justify-content: flex-start !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: 284mm !important;
+  }
+  .contrato-clausulas p {
+    margin-bottom: 2px !important;
   }
   .carne-slip {
     border: 1px dashed #000;
@@ -429,7 +435,7 @@ body {
   }
   @page {
     size: A4 portrait;
-    margin: 8mm 10mm;
+    margin: 6mm 10mm;
   }
 
   /* Impressão direta de dentro de Modals - APENAS o modal aberto (.modal.show) */
@@ -501,6 +507,10 @@ body {
 
 .print-page.print-page-flow {
   justify-content: flex-start;
+}
+
+.contrato-clausulas p {
+  margin-bottom: 2px !important;
 }
 
 .carne-slip {
