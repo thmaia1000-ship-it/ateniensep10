@@ -1,0 +1,459 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{37925852-7148-4992-A28E-257845428CDD}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Escolar</RootNamespace>
+    <AssemblyName>Escolar</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.9.0.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
+      <HintPath>packages\Portable.BouncyCastle.1.9.0\lib\net40\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Protobuf, Version=3.19.4.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Protobuf.3.19.4\lib\net45\Google.Protobuf.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.3, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>packages\iTextSharp.5.5.13.3\lib\itextsharp.dll</HintPath>
+    </Reference>
+    <Reference Include="K4os.Compression.LZ4, Version=1.2.6.0, Culture=neutral, PublicKeyToken=2186fa9121ef231d, processorArchitecture=MSIL">
+      <HintPath>packages\K4os.Compression.LZ4.1.2.6\lib\net46\K4os.Compression.LZ4.dll</HintPath>
+    </Reference>
+    <Reference Include="K4os.Compression.LZ4.Streams, Version=1.2.6.0, Culture=neutral, PublicKeyToken=2186fa9121ef231d, processorArchitecture=MSIL">
+      <HintPath>packages\K4os.Compression.LZ4.Streams.1.2.6\lib\net46\K4os.Compression.LZ4.Streams.dll</HintPath>
+    </Reference>
+    <Reference Include="K4os.Hash.xxHash, Version=1.0.6.0, Culture=neutral, PublicKeyToken=32cd54395057cec3, processorArchitecture=MSIL">
+      <HintPath>packages\K4os.Hash.xxHash.1.0.6\lib\net46\K4os.Hash.xxHash.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.Common, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1537.0\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.DataVisualization, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1537.0\lib\net40\Microsoft.ReportViewer.DataVisualization.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.Design, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1537.0\lib\net40\Microsoft.ReportViewer.Design.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1537.0\lib\net40\Microsoft.ReportViewer.ProcessingObjectModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WinForms, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1537.0\lib\net40\Microsoft.ReportViewer.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
+    </Reference>
+    <Reference Include="MySql.Data, Version=8.0.30.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>packages\MySql.Data.8.0.30\lib\net452\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite, Version=1.0.116.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.116.0\lib\net46\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.EF6, Version=1.0.116.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>packages\System.Data.SQLite.EF6.1.0.116.0\lib\net46\System.Data.SQLite.EF6.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq, Version=1.0.116.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>packages\System.Data.SQLite.Linq.1.0.116.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Management" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Ubiety.Dns.Core, Version=2.2.1.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>packages\MySql.Data.8.0.30\lib\net452\Ubiety.Dns.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ZstdNet, Version=1.4.5.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>packages\MySql.Data.8.0.30\lib\net452\ZstdNet.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Caixa\F_Caixa.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Caixa\F_Caixa.Designer.cs">
+      <DependentUpon>F_Caixa.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Classes\Banco.cs" />
+    <Compile Include="Classes\Conversor.cs" />
+    <Compile Include="F_ContratoNormal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="F_ContratoNormal.Designer.cs">
+      <DependentUpon>F_ContratoNormal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="F_Principal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="F_Principal.Designer.cs">
+      <DependentUpon>F_Principal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Academico\F_BoletimEscolar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Academico\F_BoletimEscolar.Designer.cs">
+      <DependentUpon>F_BoletimEscolar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Academico\F_Cursos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Academico\F_Cursos.Designer.cs">
+      <DependentUpon>F_Cursos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Academico\F_Materias.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Academico\F_Materias.Designer.cs">
+      <DependentUpon>F_Materias.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Caixa\F_PagarMensalidade.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Caixa\F_PagarMensalidade.Designer.cs">
+      <DependentUpon>F_PagarMensalidade.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Caixa\F_FormaPagamento.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Caixa\F_FormaPagamento.Designer.cs">
+      <DependentUpon>F_FormaPagamento.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Caixa\F_GerarMensalidade.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Caixa\F_GerarMensalidade.Designer.cs">
+      <DependentUpon>F_GerarMensalidade.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Gestão\F_GestaoAlunos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestão\F_GestaoAlunos.Designer.cs">
+      <DependentUpon>F_GestaoAlunos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Gestão\F_GestaoProfessores.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestão\F_GestaoProfessores.Designer.cs">
+      <DependentUpon>F_GestaoProfessores.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Gestão\F_GestaoTurmas.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestão\F_GestaoTurmas.Designer.cs">
+      <DependentUpon>F_GestaoTurmas.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Gestão\F_GestaoUsuarios.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Gestão\F_GestaoUsuarios.Designer.cs">
+      <DependentUpon>F_GestaoUsuarios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Academico\F_ImprimirBoletim.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Academico\F_ImprimirBoletim.Designer.cs">
+      <DependentUpon>F_ImprimirBoletim.cs</DependentUpon>
+    </Compile>
+    <Compile Include="F_Login.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="F_Login.Designer.cs">
+      <DependentUpon>F_Login.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Cadastros\F_NovoAluno.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Cadastros\F_NovoAluno.Designer.cs">
+      <DependentUpon>F_NovoAluno.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Cadastros\F_NovoUsuario.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Cadastros\F_NovoUsuario.Designer.cs">
+      <DependentUpon>F_NovoUsuario.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Caixa\F_ReciboInterdigitus.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Caixa\F_ReciboInterdigitus.Designer.cs">
+      <DependentUpon>F_ReciboInterdigitus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Caixa\F_ReciboMensalidade.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Caixa\F_ReciboMensalidade.Designer.cs">
+      <DependentUpon>F_ReciboMensalidade.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Selecionar\F_SelcionarProfessorBoletim.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Selecionar\F_SelcionarProfessorBoletim.Designer.cs">
+      <DependentUpon>F_SelcionarProfessorBoletim.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarAlunoAcademico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarAlunoAcademico.Designer.cs">
+      <DependentUpon>F_SelecionarAlunoAcademico.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarAlunoBoletim.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarAlunoBoletim.Designer.cs">
+      <DependentUpon>F_SelecionarAlunoBoletim.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarAlunoGerarMensalidade.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarAlunoGerarMensalidade.Designer.cs">
+      <DependentUpon>F_SelecionarAlunoGerarMensalidade.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarAlunoMensalidade.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarAlunoMensalidade.Designer.cs">
+      <DependentUpon>F_SelecionarAlunoMensalidade.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarCurso.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarCurso.Designer.cs">
+      <DependentUpon>F_SelecionarCurso.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Classes\Globais.cs" />
+    <Compile Include="Classes\Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Cadastros\F_ResponsavelAcademico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Cadastros\F_ResponsavelAcademico.Designer.cs">
+      <DependentUpon>F_ResponsavelAcademico.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Cadastros\F_ResponsavelFinanceiro.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Cadastros\F_ResponsavelFinanceiro.Designer.cs">
+      <DependentUpon>F_ResponsavelFinanceiro.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarTurmaBoletim.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Selecionar\F_SelecionarTurmaBoletim.Designer.cs">
+      <DependentUpon>F_SelecionarTurmaBoletim.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Selecionar\SelecionarAlunoFinanceiro.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Selecionar\SelecionarAlunoFinanceiro.Designer.cs">
+      <DependentUpon>SelecionarAlunoFinanceiro.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SqlServerTypes\Loader.cs" />
+    <Compile Include="Classes\Usuario.cs" />
+    <EmbeddedResource Include="Caixa\F_Caixa.resx">
+      <DependentUpon>F_Caixa.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="F_ContratoNormal.resx">
+      <DependentUpon>F_ContratoNormal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="F_Principal.resx">
+      <DependentUpon>F_Principal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Academico\F_BoletimEscolar.resx">
+      <DependentUpon>F_BoletimEscolar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Academico\F_Cursos.resx">
+      <DependentUpon>F_Cursos.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Academico\F_Materias.resx">
+      <DependentUpon>F_Materias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Caixa\F_PagarMensalidade.resx">
+      <DependentUpon>F_PagarMensalidade.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Caixa\F_FormaPagamento.resx">
+      <DependentUpon>F_FormaPagamento.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Caixa\F_GerarMensalidade.resx">
+      <DependentUpon>F_GerarMensalidade.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestão\F_GestaoAlunos.resx">
+      <DependentUpon>F_GestaoAlunos.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestão\F_GestaoProfessores.resx">
+      <DependentUpon>F_GestaoProfessores.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestão\F_GestaoTurmas.resx">
+      <DependentUpon>F_GestaoTurmas.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Gestão\F_GestaoUsuarios.resx">
+      <DependentUpon>F_GestaoUsuarios.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Academico\F_ImprimirBoletim.resx">
+      <DependentUpon>F_ImprimirBoletim.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="F_Login.resx">
+      <DependentUpon>F_Login.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Cadastros\F_NovoAluno.resx">
+      <DependentUpon>F_NovoAluno.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Cadastros\F_NovoUsuario.resx">
+      <DependentUpon>F_NovoUsuario.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Caixa\F_ReciboInterdigitus.resx">
+      <DependentUpon>F_ReciboInterdigitus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Caixa\F_ReciboMensalidade.resx">
+      <DependentUpon>F_ReciboMensalidade.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Relatorios\ContratoAteniense.rdlc" />
+    <EmbeddedResource Include="Relatorios\Report1.rdlc" />
+    <EmbeddedResource Include="Selecionar\F_SelcionarProfessorBoletim.resx">
+      <DependentUpon>F_SelcionarProfessorBoletim.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Selecionar\F_SelecionarAlunoAcademico.resx">
+      <DependentUpon>F_SelecionarAlunoAcademico.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Selecionar\F_SelecionarAlunoBoletim.resx">
+      <DependentUpon>F_SelecionarAlunoBoletim.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Selecionar\F_SelecionarAlunoGerarMensalidade.resx">
+      <DependentUpon>F_SelecionarAlunoGerarMensalidade.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Selecionar\F_SelecionarAlunoMensalidade.resx">
+      <DependentUpon>F_SelecionarAlunoMensalidade.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Selecionar\F_SelecionarCurso.resx">
+      <DependentUpon>F_SelecionarCurso.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Relatorios\ReciboAteniense.rdlc" />
+    <EmbeddedResource Include="Relatorios\ReciboDigitus.rdlc" />
+    <EmbeddedResource Include="Cadastros\F_ResponsavelAcademico.resx">
+      <DependentUpon>F_ResponsavelAcademico.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Cadastros\F_ResponsavelFinanceiro.resx">
+      <DependentUpon>F_ResponsavelFinanceiro.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Selecionar\F_SelecionarTurmaBoletim.resx">
+      <DependentUpon>F_SelecionarTurmaBoletim.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Selecionar\SelecionarAlunoFinanceiro.resx">
+      <DependentUpon>SelecionarAlunoFinanceiro.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="img\png-transparent-light-computer-icons-menu-bar-button-macos-light-light-mac-led.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="img\png-transparent-light-emitting-diode-computer-icons-light-camera-lens-light-led.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SqlServerTypes\readme.htm" />
+    <Content Include="SqlServerTypes\x64\msvcr120.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerTypes\x64\SqlServerSpatial140.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerTypes\x86\msvcr120.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerTypes\x86\SqlServerSpatial140.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Este projeto faz referência a pacotes do NuGet que não estão presentes neste computador. Use a Restauração de Pacotes do NuGet para baixá-los.  Para obter mais informações, consulte http://go.microsoft.com/fwlink/?LinkID=322105. O arquivo ausente é {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
+    <Error Condition="!Exists('packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.116.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.116.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
+  </Target>
+  <Import Project="packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
+  <Import Project="packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.116.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.116.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
+</Project>

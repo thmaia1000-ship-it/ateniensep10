@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+env/
+venv/
+*.log
+
+# C# / Visual Studio
+bin/
+obj/
+packages/
+[Bb]in/
+[Oo]bj/
+[Pp]ackages/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.exe
+*.dll
+*.pdb
+
+# Temp files and duplicates
+database/uploaded_db.sql
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db

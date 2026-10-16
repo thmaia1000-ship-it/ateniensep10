@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Master Escolar Ateniense - Sistema Web</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Estilos customizados do Ateniense -->
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="shortcut icon" href="/static/img/LogoAteniense.png" type="image/png">
+</head>
+<body>
+
+  <!-- ================= TELA DE LOGIN ================= -->
+  <div id="loginScreen" class="d-flex align-items-center justify-content-center min-vh-100" style="background: linear-gradient(135deg, #092c4c 0%, #061c30 100%);">
+    <div class="card border-0 shadow-lg p-4" style="width: 100%; max-width: 420px; border-radius: 16px;">
+      <div class="text-center mb-4">
+        <img src="/static/img/LogoAteniense.png" alt="Colégio Ateniense" style="max-height: 80px;" class="mb-2">
+        <h4 class="fw-bold mb-0" style="color: #0b3c68;">CENTRO EDUCACIONAL ATENIENSE</h4>
+        <small class="text-muted fw-semibold">MASTER ESCOLAR - SISTEMA WEB</small>
+      </div>
+
+      <div id="loginError" class="alert alert-danger py-2 d-none" role="alert"></div>
+
+      <form id="loginForm">
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-bold">USUÁRIO</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+            <input type="text" id="loginUser" class="form-control" placeholder="Ex: admin" value="admin" required autofocus>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-bold">SENHA</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+            <input type="password" id="loginPass" class="form-control" placeholder="Senha de acesso" value="140602" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" style="background-color: #0b3c68; border-color: #0b3c68;">
+          <i class="bi bi-box-arrow-in-right me-1"></i> ACESSAR SISTEMA
+        </button>
+      </form>
+
+      <div class="mt-4 pt-3 border-top text-center text-muted small">
+        <i class="bi bi-shield-check text-success me-1"></i> Conexão Segura ao Banco Ateniense
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= APLICAÇÃO PRINCIPAL ================= -->
+  <div id="appScreen" class="d-none">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/static/img/LogoAteniense.png" alt="Ateniense">
+        <div>
+          <div class="brand-title">ATENIENSE</div>
+          <div class="brand-sub">Master Escolar</div>
+        </div>
+      </div>
+
+      <ul class="sidebar-nav">
+        <!-- Dashboard -->
+        <li class="nav-item">
+          <a class="nav-link active" data-view="dashboard">
+            <i class="bi bi-speedometer2"></i>
+            <span>Painel Principal</span>
+          </a>
+        </li>
+
+        <!-- 1. SECRETARIA -->
+        <li class="nav-section-title">SECRETARIA</li>
+        <li class="nav-item has-sub">
+          <a class="nav-link">
+            <i class="bi bi-person-lines-fill"></i>
+            <span>Secretaria</span>
+            <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
+          </a>
+          <ul class="nav-submenu">
+            <li><a class="sub-link" data-view="secretaria-nova-matricula"><i class="bi bi-plus-circle me-1"></i> Nova Matrícula</a></li>
+            <li><a class="sub-link" data-view="secretaria-consultar"><i class="bi bi-search me-1"></i> Consultar Alunos</a></li>
+            <li><a class="sub-link" data-view="secretaria-cursos"><i class="bi bi-mortarboard-fill me-1"></i> Criar ou Editar Curso</a></li>
+            <li><a class="sub-link" data-view="secretaria-resp-acad"><i class="bi bi-mortarboard me-1"></i> Resp. Acadêmico</a></li>
+            <li><a class="sub-link" data-view="secretaria-resp-fin"><i class="bi bi-wallet2 me-1"></i> Resp. Financeiro</a></li>
+            <li><a class="sub-link" data-view="secretaria-turmas"><i class="bi bi-diagram-3 me-1"></i> Gestão de Turmas</a></li>
+            <li><a class="sub-link" data-view="secretaria-professores"><i class="bi bi-person-badge me-1"></i> Professores</a></li>
+          </ul>
+        </li>
+
+        <!-- 2. ACADÊMICO -->
+        <li class="nav-section-title">ACADÊMICO</li>
+        <li class="nav-item has-sub">
+          <a class="nav-link">
+            <i class="bi bi-journal-bookmark"></i>
+            <span>Acadêmico</span>
+            <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
+          </a>
+          <ul class="nav-submenu">
+            <li><a class="sub-link" data-view="academico-boletim"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Gerar Boletim</a></li>
+            <li><a class="sub-link" data-view="academico-diario"><i class="bi bi-book me-1"></i> Diário Online</a></li>
+            <li><a class="sub-link" data-view="academico-bimestre"><i class="bi bi-calendar4-week me-1"></i> Definir Bimestres</a></li>
+          </ul>
+        </li>
+
+        <!-- 3. FINANCEIRO -->
+        <li class="nav-section-title">FINANCEIRO</li>
+        <li class="nav-item has-sub">
+          <a class="nav-link">
+            <i class="bi bi-cash-stack"></i>
+            <span>Financeiro</span>
+            <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
+          </a>
+          <ul class="nav-submenu">
+            <li><a class="sub-link" data-view="financeiro-caixa"><i class="bi bi-inbox me-1"></i> Livro Caixa</a></li>
+            <li><a class="sub-link" data-view="financeiro-mensalidades"><i class="bi bi-receipt me-1"></i> Receber Mensalidade</a></li>
+            <li><a class="sub-link" data-view="financeiro-tabela-mensalidades"><i class="bi bi-tags me-1"></i> Mensalidades (Cursos & Horários)</a></li>
+          </ul>
+        </li>
+
+        <!-- 4. CONTÁBIL & DRE -->
+        <li class="nav-section-title">CONTÁBIL</li>
+        <li class="nav-item has-sub">
+          <a class="nav-link">
+            <i class="bi bi-calculator"></i>
+            <span>Contábil & DRE</span>
+            <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
+          </a>
+          <ul class="nav-submenu">
+            <li><a class="sub-link" data-view="contabil-despesas"><i class="bi bi-arrow-down-circle me-1"></i> Despesas</a></li>
+            <li><a class="sub-link" data-view="contabil-dre"><i class="bi bi-graph-up me-1"></i> DRE Gerencial</a></li>
+          </ul>
+        </li>
+
+        <!-- 5. PRODUTOS & PDV -->
+        <li class="nav-section-title">PRODUTOS & PDV</li>
+        <li class="nav-item has-sub">
+          <a class="nav-link">
+            <i class="bi bi-cart3"></i>
+            <span>Produtos / Vendas</span>
+            <i class="bi bi-chevron-down ms-auto" style="font-size: 0.8rem;"></i>
+          </a>
+          <ul class="nav-submenu">
+            <li><a class="sub-link" data-view="produtos-gestao"><i class="bi bi-box-seam me-1"></i> Estoque & Preços</a></li>
+            <li><a class="sub-link" data-view="produtos-pdv"><i class="bi bi-upc-scan me-1"></i> PDV (Frente Caixa)</a></li>
+          </ul>
+        </li>
+
+        <!-- 6. CURSOS LIVRES -->
+        <li class="nav-section-title">CURSOS LIVRES</li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="cursos-gestao">
+            <i class="bi bi-mortarboard-fill"></i>
+            <span>Gestão de Cursos</span>
+          </a>
+        </li>
+
+        <!-- 7. CONFIGURAÇÕES -->
+        <li class="nav-section-title">SISTEMA</li>
+        <li class="nav-item">
+          <a class="nav-link" data-view="config-usuarios">
+            <i class="bi bi-people"></i>
+            <span>Gestão de Usuários</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style="color: #ffc107;" onclick="App.abrirModalReimportar()">
+            <i class="bi bi-database-fill-gear text-warning"></i>
+            <span>Importar Banco SQL</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn btn-sm btn-light border d-md-none" id="sidebarToggle"><i class="bi bi-list fs-5"></i></button>
+          <h5 class="topbar-title">Centro Educacional Ateniense</h5>
+        </div>
+        <div class="topbar-right">
+          <div class="user-badge">
+            <div class="user-avatar" id="userAvatarLetter">A</div>
+            <div class="d-none d-sm-block text-end">
+              <div class="fw-bold small" id="userNameBadge">Administrador</div>
+              <div class="text-muted" style="font-size: 0.72rem;" id="userNivelBadge">Nível 5</div>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-danger" id="btnLogout" title="Sair do sistema">
+            <i class="bi bi-box-arrow-right"></i> Sair
+          </button>
+        </div>
+      </header>
+
+      <!-- CONTENT BODY -->
+      <main class="content-body">
+
+        <!-- ================= VIEW: DASHBOARD ================= -->
+        <section id="view-dashboard" class="view-content">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h4 class="fw-bold text-dark mb-1">Painel Geral do Sistema</h4>
+              <p class="text-muted small mb-0">Visão consolidada acadêmica, financeira e administrativa</p>
+            </div>
+            <button class="btn btn-sm btn-outline-primary" onclick="App.loadDashboard()"><i class="bi bi-arrow-clockwise"></i> Atualizar</button>
+          </div>
+
+          <!-- CARDS DE ESTATÍSTICA -->
+          <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="stat-card">
+                <div class="stat-icon primary"><i class="bi bi-mortarboard"></i></div>
+                <div class="stat-label">Alunos Ativos</div>
+                <div class="stat-value" id="statTotalAlunos">-</div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="stat-card">
+                <div class="stat-icon success"><i class="bi bi-cash-coin"></i></div>
+                <div class="stat-label">Faturamento Mês Atual</div>
+                <div class="stat-value text-success" id="statFaturamentoMes">-</div>
+                <div class="small text-muted mt-1" id="statFaturamentoSub">Faturado no mês</div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="stat-card">
+                <div class="stat-icon danger"><i class="bi bi-calendar-x"></i></div>
+                <div class="stat-label">Mensalidades a Receber</div>
+                <div class="stat-value text-danger" id="statMensalidadesMes">-</div>
+                <div class="small text-muted mt-1" id="statMensalidadesSub">Mês vigente</div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="stat-card">
+                <div class="stat-icon warning"><i class="bi bi-diagram-3"></i></div>
+                <div class="stat-label">Turmas Ativas</div>
+                <div class="stat-value" id="statTotalTurmas">-</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ATALHOS RÁPIDOS ORIGINAIS DO SISTEMA C# -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-3">
+              <h6 class="fw-bold text-primary mb-3"><i class="bi bi-lightning-charge"></i> Atalhos de Ação Rápida</h6>
+              <div class="row g-2">
+                <div class="col-6 col-md-3">
+                  <button class="quick-btn w-100" onclick="App.navigate('secretaria-nova-matricula')">
+                    <i class="bi bi-person-plus text-primary"></i>
+                    <span>Nova Matrícula</span>
+                  </button>
+                </div>
+                <div class="col-6 col-md-3">
+                  <button class="quick-btn w-100" onclick="App.navigate('secretaria-consultar')">
+                    <i class="bi bi-search text-info"></i>
+                    <span>Consultar Alunos</span>
+                  </button>
+                </div>
+                <div class="col-6 col-md-3">
+                  <button class="quick-btn w-100" onclick="App.navigate('financeiro-caixa')">
+                    <i class="bi bi-cash-stack text-success"></i>
+                    <span>Frente de Caixa</span>
+                  </button>
+                </div>
+                <div class="col-6 col-md-3">
+                  <button class="quick-btn w-100" onclick="App.navigate('academico-boletim')">
+                    <i class="bi bi-printer text-warning"></i>
+                    <span>Gerar Boletim</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ÚLTIMOS LANÇAMENTOS DO MÊS VIGENTE -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="fw-bold m-0 text-dark"><i class="bi bi-clock-history me-1"></i> Movimentações Faturadas no Mês Vigente</h6>
+                <small class="text-muted" id="tableRecentCaixaSubtitle">Entradas e lançamentos registrados neste mês</small>
+              </div>
+              <button class="btn btn-sm btn-link text-decoration-none" onclick="App.navigate('financeiro-caixa')">Ver todas no Caixa &rarr;</button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Descrição</th>
+                    <th>Forma</th>
+                    <th>Data/Hora</th>
+                    <th>Operador</th>
+                  </tr>
+                </thead>
+                <tbody id="tableRecentCaixa"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: SECRETARIA - CONSULTAR ================= -->
+        <section id="view-secretaria-consultar" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1">Consulta de Alunos & Matrículas</h4>
+              <p class="text-muted small mb-0" id="totalAlunosConsultados">-</p>
+            </div>
+            <button class="btn btn-primary" onclick="App.navigate('secretaria-nova-matricula')">
+              <i class="bi bi-plus-lg me-1"></i> Nova Matrícula
+            </button>
+          </div>
+
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body p-3">
+              <div class="row g-2">
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" id="inputBuscaAlunos" class="form-control" placeholder="Buscar por nome, matrícula, rua ou bairro..." onkeyup="if(event.key === 'Enter') App.loadAlunos(this.value)">
+                    <button class="btn btn-outline-primary" onclick="App.loadAlunos(document.getElementById('inputBuscaAlunos').value)">Buscar</button>
+                  </div>
+                </div>
+                <div class="col-md-4 text-end">
+                  <button class="btn btn-outline-secondary" onclick="document.getElementById('inputBuscaAlunos').value=''; App.loadAlunos();">Limpar Filtro</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th>Matrícula</th>
+                    <th>Nome do Aluno</th>
+                    <th>Etapa / Turma</th>
+                    <th>Turno</th>
+                    <th>Telefone</th>
+                    <th>Status</th>
+                    <th class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tableAlunos"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: SECRETARIA - CRIAR OU EDITAR CURSO ================= -->
+        <section id="view-secretaria-cursos" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1">Cursos & Modalidades de Ensino</h4>
+              <p class="text-muted small mb-0">Cadastre, edite ou gerencie os cursos oferecidos pelo Centro Educacional Ateniense</p>
+            </div>
+            <button class="btn btn-primary" onclick="App.abrirModalNovoCurso()">
+              <i class="bi bi-plus-lg me-1"></i> Novo Curso
+            </button>
+          </div>
+
+          <div class="alert alert-info d-flex align-items-center mb-4">
+            <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
+            <div>
+              Os cursos cadastrados aqui alimentam automaticamente as opções de <strong>Matrícula de Alunos</strong>, as opções de <strong>Cursos e Turnos</strong> e a <strong>Tabela de Mensalidades</strong>.
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+              <h6 class="fw-bold m-0 text-dark"><i class="bi bi-mortarboard me-1"></i> Cursos e Modalidades Cadastrados</h6>
+              <span class="badge bg-light text-muted border" id="totalCursosCount">-</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 100px;">#ID</th>
+                    <th>Nome do Curso / Modalidade</th>
+                    <th class="text-end" style="width: 200px;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tableSecretariaCursos"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: SECRETARIA - NOVA MATRÍCULA ================= -->
+        <section id="view-secretaria-nova-matricula" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-person-plus text-primary me-2"></i>Ficha de Nova Matrícula</h4>
+              <p class="text-muted small mb-0">Cadastre os dados completos do aluno, responsáveis e enturmação institucional</p>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm" onclick="App.navigate('secretaria-consultar')">
+              <i class="bi bi-arrow-left me-1"></i> Voltar para Consulta de Alunos
+            </button>
+          </div>
+
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom p-3">
+              <ul class="nav nav-pills card-header-pills" id="pills-matricula" role="tablist">
+                <li class="nav-item">
+                  <button class="nav-link active fw-bold" id="tab-aluno-btn" data-bs-toggle="pill" data-bs-target="#tab-matricula-aluno" type="button">
+                    <i class="bi bi-person-fill me-1"></i> 1. Dados do Aluno
+                  </button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link fw-bold" id="tab-acad-btn" data-bs-toggle="pill" data-bs-target="#tab-matricula-acad" type="button">
+                    <i class="bi bi-mortarboard me-1"></i> 2. Resp. Acadêmico
+                  </button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link fw-bold" id="tab-fin-btn" data-bs-toggle="pill" data-bs-target="#tab-matricula-fin" type="button">
+                    <i class="bi bi-wallet2 me-1"></i> 3. Resp. Financeiro
+                  </button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link fw-bold" id="tab-turma-btn" data-bs-toggle="pill" data-bs-target="#tab-matricula-turma" type="button">
+                    <i class="bi bi-diagram-3 me-1"></i> 4. Curso & Turma
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <div class="card-body p-4">
+              <form id="formNovaMatricula" onsubmit="event.preventDefault(); App.salvarNovaMatricula();">
+                <div class="tab-content" id="pillsMatriculaContent">
+                  <!-- ABA 1: DADOS DO ALUNO -->
+                  <div class="tab-pane fade show active" id="tab-matricula-aluno">
+                    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle me-1"></i> Identificação do Aluno</h6>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-8">
+                        <label class="form-label small fw-bold">NOME COMPLETO DO ALUNO *</label>
+                        <input type="text" id="matrNomeAluno" class="form-control" required placeholder="Ex: Lucas Gabriel da Silva">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">DATA DE NASCIMENTO</label>
+                        <input type="date" id="matrDataNasc" class="form-control">
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-3">
+                        <label class="form-label small fw-bold">SEXO</label>
+                        <select id="matrSexo" class="form-select">
+                          <option value="Masculino">Masculino</option>
+                          <option value="Feminino">Feminino</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label small fw-bold">COR / RAÇA</label>
+                        <select id="matrCor" class="form-select">
+                          <option value="Parda">Parda</option>
+                          <option value="Branca">Branca</option>
+                          <option value="Preta">Preta</option>
+                          <option value="Amarela">Amarela</option>
+                          <option value="Indígena">Indígena</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label small fw-bold">CIDADE</label>
+                        <input type="text" id="matrCidade" class="form-control" value="MANAUS">
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label small fw-bold">ESTADO (UF)</label>
+                        <input type="text" id="matrUF" class="form-control" value="AM" maxlength="2">
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">ENDEREÇO (RUA / AVENIDA)</label>
+                        <input type="text" id="matrRua" class="form-control" placeholder="Rua, Alameda, Conjunto...">
+                      </div>
+                      <div class="col-md-2">
+                        <label class="form-label small fw-bold">NÚMERO</label>
+                        <input type="text" id="matrNumero" class="form-control" placeholder="123">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">BAIRRO</label>
+                        <input type="text" id="matrBairro" class="form-control" placeholder="Ex: Parque 10, Flores...">
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">CEP</label>
+                        <input type="text" id="matrCEP" class="form-control" placeholder="69000-000">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">TELEFONE DE CONTATO</label>
+                        <input type="text" id="matrTelefone" class="form-control" placeholder="(92) 90000-0000">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">VIVE COM</label>
+                        <select id="matrViveCom" class="form-select">
+                          <option value="PAIS">Pais</option>
+                          <option value="MÃE">Mãe</option>
+                          <option value="PAI">Pai</option>
+                          <option value="AVÓS">Avós</option>
+                          <option value="OUTROS">Outros Responsáveis</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">NOME DA MÃE</label>
+                        <input type="text" id="matrMae" class="form-control" placeholder="Nome completo da mãe">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">NOME DO PAI</label>
+                        <input type="text" id="matrPai" class="form-control" placeholder="Nome completo do pai">
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold text-danger">ALERGIA / DOENÇA / CUIDADOS ESPECIAIS</label>
+                        <input type="text" id="matrDoenca" class="form-control" value="NÃO" placeholder="Ex: Asma, Alergia, etc.">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold text-danger">TELEFONE DE EMERGÊNCIA</label>
+                        <input type="text" id="matrEmergencia" class="form-control" placeholder="Nome e telefone de emergência">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ABA 2: RESPONSÁVEL ACADÊMICO -->
+                  <div class="tab-pane fade" id="tab-matricula-acad">
+                    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-mortarboard me-1"></i> Responsável Acadêmico / Pedagógico</h6>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-8">
+                        <label class="form-label small fw-bold">NOME DO RESPONSÁVEL ACADÊMICO *</label>
+                        <input type="text" id="matrRespAcadNome" class="form-control" placeholder="Nome completo do responsável">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">PARENTESCO</label>
+                        <select id="matrRespAcadParentesco" class="form-select">
+                          <option value="MÃE">Mãe</option>
+                          <option value="PAI">Pai</option>
+                          <option value="AVÓ">Avó / Avô</option>
+                          <option value="TIO">Tio / Tia</option>
+                          <option value="TUTOR">Tutor Legal</option>
+                          <option value="OUTRO">Outro</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">CPF</label>
+                        <input type="text" id="matrRespAcadCPF" class="form-control" placeholder="000.000.000-00">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">RG</label>
+                        <input type="text" id="matrRespAcadRG" class="form-control" placeholder="RG / Órgão Expedidor">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">DATA DE NASCIMENTO</label>
+                        <input type="date" id="matrRespAcadNasc" class="form-control">
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">TELEFONE / WHATSAPP</label>
+                        <input type="text" id="matrRespAcadTelefone" class="form-control" placeholder="(92) 90000-0000">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">E-MAIL</label>
+                        <input type="email" id="matrRespAcadEmail" class="form-control" placeholder="email@dominio.com">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">PROFISSÃO</label>
+                        <input type="text" id="matrRespAcadProfissao" class="form-control" placeholder="Profissão">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ABA 3: RESPONSÁVEL FINANCEIRO -->
+                  <div class="tab-pane fade" id="tab-matricula-fin">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <h6 class="fw-bold text-success m-0"><i class="bi bi-wallet2 me-1"></i> Responsável Financeiro pelo Contrato</h6>
+                      <button type="button" class="btn btn-sm btn-outline-primary" onclick="App.copiarRespAcadParaFin()">
+                        <i class="bi bi-copy me-1"></i> Copiar do Responsável Acadêmico
+                      </button>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-8">
+                        <label class="form-label small fw-bold">NOME DO RESPONSÁVEL FINANCEIRO *</label>
+                        <input type="text" id="matrRespFinNome" class="form-control" placeholder="Nome completo do responsável financeiro">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">PARENTESCO</label>
+                        <select id="matrRespFinParentesco" class="form-select">
+                          <option value="PAI">Pai</option>
+                          <option value="MÃE">Mãe</option>
+                          <option value="AVÓ">Avó / Avô</option>
+                          <option value="TUTOR">Tutor Legal</option>
+                          <option value="OUTRO">Outro</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">CPF DO RESPONSÁVEL FINANCEIRO</label>
+                        <input type="text" id="matrRespFinCPF" class="form-control" placeholder="000.000.000-00">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">RG</label>
+                        <input type="text" id="matrRespFinRG" class="form-control" placeholder="RG / Órgão">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">PROFISSÃO</label>
+                        <input type="text" id="matrRespFinProfissao" class="form-control" placeholder="Profissão">
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">TELEFONE / WHATSAPP</label>
+                        <input type="text" id="matrRespFinTelefone" class="form-control" placeholder="(92) 90000-0000">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">E-MAIL PARA BOLETOS</label>
+                        <input type="email" id="matrRespFinEmail" class="form-control" placeholder="financeiro@email.com">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- ABA 4: CURSO & TURMA -->
+                  <div class="tab-pane fade" id="tab-matricula-turma">
+                    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-diagram-3 me-1"></i> Enturmação e Modalidade de Ensino</h6>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">CURSO / MODALIDADE</label>
+                        <select id="matrCurso" class="form-select"></select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">TURMA DE DESTINO</label>
+                        <select id="matrTurma" class="form-select"></select>
+                      </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">TURNO</label>
+                        <select id="matrTurno" class="form-select">
+                          <option value="MATUTINO">MATUTINO (Manhã)</option>
+                          <option value="VESPERTINO">VESPERTINO (Tarde)</option>
+                          <option value="INTEGRAL">INTEGRAL (Dia Todo)</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">ETAPA / SÉRIE</label>
+                        <select id="matrEtapa" class="form-select">
+                          <option value="MATERNAL I">MATERNAL I</option>
+                          <option value="MATERNAL II">MATERNAL II</option>
+                          <option value="JARDIM I">JARDIM I</option>
+                          <option value="JARDIM II">JARDIM II</option>
+                          <option value="1º ANO">1º ANO</option>
+                          <option value="2º ANO">2º ANO</option>
+                          <option value="3º ANO">3º ANO</option>
+                          <option value="4º ANO">4º ANO</option>
+                          <option value="5º ANO">5º ANO</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">ANO LETIVO</label>
+                        <input type="text" id="matrAnoLetivo" class="form-control" value="2026">
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">OBSERVAÇÕES PEDAGÓGICAS / GERAIS</label>
+                      <textarea id="matrObservacao" class="form-control" rows="2" placeholder="Informações adicionais da matrícula..."></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                  <button type="reset" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i> Limpar Formulário
+                  </button>
+                  <button type="submit" class="btn btn-primary fw-bold px-4 py-2">
+                    <i class="bi bi-check2-circle me-1"></i> Salvar e Efetivar Matrícula
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: SECRETARIA - RESPONSÁVEIS ACADÊMICOS ================= -->
+        <section id="view-secretaria-resp-acad" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-mortarboard text-primary me-2"></i>Responsáveis Acadêmicos</h4>
+              <p class="text-muted small mb-0">Listagem de responsáveis pedagógicos vinculados aos alunos</p>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body p-3">
+              <div class="row g-2 align-items-center">
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="inputBuscaRespAcad" class="form-control" placeholder="Buscar por nome do responsável, CPF ou aluno..." onkeydown="if(event.key==='Enter') App.buscarResponsaveis('academico')">
+                  </div>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                  <button class="btn btn-primary flex-grow-1" onclick="App.buscarResponsaveis('academico')">
+                    <i class="bi bi-search me-1"></i> Filtrar
+                  </button>
+                  <button class="btn btn-outline-secondary" onclick="document.getElementById('inputBuscaRespAcad').value=''; App.loadResponsaveis('academico');">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+              <h6 class="fw-bold m-0 text-dark"><i class="bi bi-person-lines-fill me-1"></i> Lista de Responsáveis Acadêmicos</h6>
+              <span class="badge bg-light text-muted border" id="totalRespAcadCount">-</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th>#ID</th>
+                    <th>Nome do Responsável</th>
+                    <th>Parentesco</th>
+                    <th>CPF / RG</th>
+                    <th>Contato</th>
+                    <th>Endereço / Bairro</th>
+                    <th>Aluno(a) Vinculado</th>
+                  </tr>
+                </thead>
+                <tbody id="tableRespAcad"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: SECRETARIA - RESPONSÁVEIS FINANCEIROS ================= -->
+        <section id="view-secretaria-resp-fin" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-wallet2 text-success me-2"></i>Responsáveis Financeiros</h4>
+              <p class="text-muted small mb-0">Titulares financeiros dos contratos escolares e cobranças</p>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body p-3">
+              <div class="row g-2 align-items-center">
+                <div class="col-md-8">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="inputBuscaRespFin" class="form-control" placeholder="Buscar por responsável financeiro, CPF ou aluno..." onkeydown="if(event.key==='Enter') App.buscarResponsaveis('financeiro')">
+                  </div>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                  <button class="btn btn-success flex-grow-1" onclick="App.buscarResponsaveis('financeiro')">
+                    <i class="bi bi-search me-1"></i> Filtrar
+                  </button>
+                  <button class="btn btn-outline-secondary" onclick="document.getElementById('inputBuscaRespFin').value=''; App.loadResponsaveis('financeiro');">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+              <h6 class="fw-bold m-0 text-dark"><i class="bi bi-cash-stack me-1"></i> Lista de Responsáveis Financeiros</h6>
+              <span class="badge bg-light text-muted border" id="totalRespFinCount">-</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th>#ID</th>
+                    <th>Nome do Responsável</th>
+                    <th>Parentesco</th>
+                    <th>CPF / RG</th>
+                    <th>Contato</th>
+                    <th>Endereço / Bairro</th>
+                    <th>Aluno(a) Vinculado</th>
+                    <th class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tableRespFin"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: SECRETARIA - GESTÃO DE TURMAS ================= -->
+        <section id="view-secretaria-turmas" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-diagram-3 text-primary me-2"></i>Gestão de Turmas & Salas</h4>
+              <p class="text-muted small mb-0">Quadro de turmas ativas, lotação de alunos e professores vinculados</p>
+            </div>
+            <button class="btn btn-primary" onclick="App.abrirModalNovaTurma()">
+              <i class="bi bi-plus-lg me-1"></i> Nova Turma
+            </button>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+              <h6 class="fw-bold m-0 text-dark"><i class="bi bi-diagram-3 me-1"></i> Turmas Cadastradas</h6>
+              <span class="badge bg-light text-muted border" id="totalTurmasCount">-</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th>#ID</th>
+                    <th>Nome da Turma</th>
+                    <th>Série / Etapa</th>
+                    <th>Turno</th>
+                    <th>Professor Responsável</th>
+                    <th>Matriculados / Capacidade</th>
+                    <th>Ano Letivo</th>
+                    <th class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tableSecretariaTurmas"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: SECRETARIA - PROFESSORES ================= -->
+        <section id="view-secretaria-professores" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-person-badge text-primary me-2"></i>Corpo Docente & Professores</h4>
+              <p class="text-muted small mb-0">Cadastro de professores, contatos e turmas sob responsabilidade</p>
+            </div>
+            <button class="btn btn-primary" onclick="App.abrirModalNovoProfessor()">
+              <i class="bi bi-plus-lg me-1"></i> Novo Professor
+            </button>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+              <h6 class="fw-bold m-0 text-dark"><i class="bi bi-people-fill me-1"></i> Professores Cadastrados</h6>
+              <span class="badge bg-light text-muted border" id="totalProfessoresCount">-</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th>#ID</th>
+                    <th>Nome do Professor</th>
+                    <th>Telefone / WhatsApp</th>
+                    <th>Login de Acesso</th>
+                    <th>Turmas Atribuídas</th>
+                  </tr>
+                </thead>
+                <tbody id="tableSecretariaProfessores"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: FINANCEIRO - CAIXA ================= -->
+        <section id="view-financeiro-caixa" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1">Livro Caixa / Fluxo Financeiro</h4>
+              <p class="text-muted small mb-0">Entradas, saídas e movimentações da instituição</p>
+            </div>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalNovoLancamentoCaixa">
+              <i class="bi bi-plus-circle me-1"></i> Novo Lançamento
+            </button>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="p-3 bg-white rounded border shadow-sm">
+                <small class="text-success fw-bold text-uppercase">Total Entradas</small>
+                <h4 class="text-success fw-bold m-0" id="caixaEntradasTotal">R$ 0,00</h4>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 bg-white rounded border shadow-sm">
+                <small class="text-danger fw-bold text-uppercase">Total Saídas</small>
+                <h4 class="text-danger fw-bold m-0" id="caixaSaidasTotal">R$ 0,00</h4>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 bg-white rounded border shadow-sm">
+                <small class="text-primary fw-bold text-uppercase">Saldo Líquido em Caixa</small>
+                <h4 class="text-primary fw-bold m-0" id="caixaSaldoTotal">R$ 0,00</h4>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th>#ID</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Cliente / Aluno</th>
+                    <th>Descrição</th>
+                    <th>Forma</th>
+                    <th>Data / Hora</th>
+                    <th>Operador</th>
+                    <th>Comprovante</th>
+                  </tr>
+                </thead>
+                <tbody id="tableCaixa"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: FINANCEIRO - MENSALIDADES ================= -->
+        <section id="view-financeiro-mensalidades" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1">Gestão e Recebimento de Mensalidades</h4>
+              <p class="text-muted small mb-0">Controle de carnês, parcelas em aberto e quitações</p>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-outline-secondary" onclick="App.loadMensalidades('todas')">Todas</button>
+              <button class="btn btn-outline-danger" onclick="App.loadMensalidades('aberto')">Em Aberto</button>
+              <button class="btn btn-outline-success" onclick="App.loadMensalidades('pago')">Quitadas</button>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th>#Contrato</th>
+                    <th>Aluno</th>
+                    <th>Responsável</th>
+                    <th>Valor Parcela</th>
+                    <th>Parcelas</th>
+                    <th>Saldo Devedor</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tableMensalidades"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: FINANCEIRO - TABELA DE MENSALIDADES (CURSOS E HORÁRIOS) ================= -->
+        <section id="view-financeiro-tabela-mensalidades" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1">Tabela de Mensalidades & Valores</h4>
+              <p class="text-muted small mb-0">Configuração e alteração dos valores de mensalidades para todos os cursos, séries e horários oferecidos</p>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary" onclick="App.loadTabelaMensalidades()"><i class="bi bi-arrow-clockwise"></i> Atualizar</button>
+              <button class="btn btn-primary" onclick="App.abrirModalNovoPlano()"><i class="bi bi-plus-lg me-1"></i> Novo Plano / Horário</button>
+            </div>
+          </div>
+
+          <!-- CARDS DE RESUMO -->
+          <div class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+              <div class="p-3 bg-white rounded border shadow-sm">
+                <small class="text-primary fw-bold text-uppercase">Cursos & Modalidades</small>
+                <h4 class="text-primary fw-bold m-0" id="totalPlanosConfigurados">-</h4>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="p-3 bg-white rounded border shadow-sm">
+                <small class="text-success fw-bold text-uppercase">Faixa de Mensalidade</small>
+                <h4 class="text-success fw-bold m-0" id="faixaValoresMensalidade">-</h4>
+              </div>
+            </div>
+            <div class="col-12 col-md-4">
+              <div class="p-3 bg-white rounded border shadow-sm">
+                <small class="text-warning text-dark fw-bold text-uppercase">Ano Letivo Vigente</small>
+                <h4 class="text-dark fw-bold m-0">2026 / 2027</h4>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABELA DE VALORES -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+              <h6 class="fw-bold m-0 text-dark"><i class="bi bi-tags me-1"></i> Valores Vigentes de Mensalidades por Curso e Turno</h6>
+              <span class="badge bg-light text-muted border">Clique em "Alterar Valor" para atualizar</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th>Curso / Nível</th>
+                    <th>Etapa / Série</th>
+                    <th>Turno / Período</th>
+                    <th>Horário Oferecido</th>
+                    <th>Mensalidade (R$)</th>
+                    <th>Parcelas Padrão</th>
+                    <th>Vigência</th>
+                    <th class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tableTabelaMensalidades"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: ACADÊMICO - BOLETIM ================= -->
+        <section id="view-academico-boletim" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-file-earmark-spreadsheet text-primary me-2"></i>Emissão de Boletim Escolar</h4>
+              <p class="text-muted small mb-0">Notas bimestrais, médias, faltas e situação pedagógica consolidada</p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <select id="boletimTurmaSelect" class="form-select form-select-sm" style="min-width: 220px; max-width: 280px;" onchange="App.filtrarAlunosBoletim()">
+                <option value="">-- Selecione a Turma --</option>
+              </select>
+              <select id="boletimAlunoSelect" class="form-select form-select-sm" style="min-width: 240px; max-width: 320px;" onchange="App.carregarBoletimAluno()" disabled>
+                <option value="">Selecione uma turma primeiro...</option>
+              </select>
+              <button class="btn btn-sm btn-outline-success" onclick="App.abrirModalLancarNota()">
+                <i class="bi bi-plus-circle me-1"></i> Lançar Nota
+              </button>
+              <button class="btn btn-sm btn-primary" onclick="window.print()">
+                <i class="bi bi-printer me-1"></i> Imprimir Boletim
+              </button>
+            </div>
+          </div>
+
+          <div id="boletimDocumentContainer">
+            <div class="text-center text-muted p-5 bg-white rounded border shadow-sm">
+              <i class="bi bi-people display-4 text-secondary mb-2 d-block"></i>
+              <h5 class="fw-bold text-secondary">Nenhuma Turma Selecionada</h5>
+              <p class="mt-2 text-muted">Selecione uma turma acima para carregar somente os alunos desta classe e emitir o boletim escolar.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: ACADÊMICO - DIÁRIO ONLINE ================= -->
+        <section id="view-academico-diario" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-book text-primary me-2"></i>Diário Online de Classe</h4>
+              <p class="text-muted small mb-0">Planos de aula, conteúdos ministrados, atividades e objetivos BNCC</p>
+            </div>
+            <button class="btn btn-primary" onclick="App.abrirModalNovoDiario()">
+              <i class="bi bi-plus-lg me-1"></i> Novo Registro no Diário
+            </button>
+          </div>
+
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body p-3">
+              <div class="row g-2 align-items-center">
+                <div class="col-md-5">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="inputBuscaDiario" class="form-control" placeholder="Buscar por professor, matéria ou conteúdo..." onkeydown="if(event.key==='Enter') App.filtrarDiario()">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <select id="filtroDiarioTurma" class="form-select" onchange="App.filtrarDiario()">
+                    <option value="">Todas as Turmas / Salas</option>
+                  </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                  <button class="btn btn-primary flex-grow-1" onclick="App.filtrarDiario()">
+                    <i class="bi bi-search me-1"></i> Filtrar
+                  </button>
+                  <button class="btn btn-outline-secondary" onclick="document.getElementById('inputBuscaDiario').value=''; document.getElementById('filtroDiarioTurma').value=''; App.loadDiario();">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+              <h6 class="fw-bold m-0 text-dark"><i class="bi bi-journal-text me-1"></i> Registros de Aula & Atividades</h6>
+              <span class="badge bg-light text-muted border" id="totalDiarioCount">-</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Professor(a)</th>
+                    <th>Turma / Série</th>
+                    <th>Componente Curricular</th>
+                    <th>Conteúdos & Habilidades</th>
+                    <th class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tableDiario"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: ACADÊMICO - DEFINIR BIMESTRES ================= -->
+        <section id="view-academico-bimestre" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-calendar4-week text-primary me-2"></i>Calendário Escolar - Definição de Bimestres</h4>
+              <p class="text-muted small mb-0">Gestão dos períodos letivos, datas limites de notas e acompanhamento do ano letivo de 2026</p>
+            </div>
+          </div>
+
+          <!-- CARDS DOS 4 BIMESTRES -->
+          <div class="row g-3 mb-4" id="cardsBimestresContainer"></div>
+
+          <!-- TABELA RESUMO -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 border-bottom">
+              <h6 class="fw-bold m-0 text-dark"><i class="bi bi-table me-1"></i> Quadro Resumo do Ano Letivo</h6>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover table-custom mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th>Bimestre</th>
+                    <th>Data de Início</th>
+                    <th>Data de Término</th>
+                    <th>Status no Calendário</th>
+                    <th class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBimestres"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: CONTÁBIL - DRE ================= -->
+        <section id="view-contabil-dre" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1">DRE Gerencial - Demonstração do Resultado</h4>
+              <p class="text-muted small mb-0">Análise de receitas, despesas e lucratividade mês a mês</p>
+            </div>
+            <button class="btn btn-outline-primary btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimir Relatório</button>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <div class="p-3 bg-white rounded border shadow-sm">
+                <small class="text-success fw-bold text-uppercase">Receita Operacional Total</small>
+                <h4 class="text-success fw-bold m-0" id="dreReceitasAno">R$ 0,00</h4>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 bg-white rounded border shadow-sm">
+                <small class="text-danger fw-bold text-uppercase">Despesas Operacionais Totais</small>
+                <h4 class="text-danger fw-bold m-0" id="dreDespesasAno">R$ 0,00</h4>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 bg-white rounded border shadow-sm">
+                <small class="text-primary fw-bold text-uppercase">Resultado Líquido do Exercício</small>
+                <h4 class="text-primary fw-bold m-0" id="dreResultadoAno">R$ 0,00</h4>
+              </div>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+              <table class="table table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th>Mês</th>
+                    <th>Receitas (Entradas)</th>
+                    <th>Despesas (Saídas)</th>
+                    <th>Resultado do Mês</th>
+                  </tr>
+                </thead>
+                <tbody id="tableDRE"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: PRODUTOS - PDV ================= -->
+        <section id="view-produtos-pdv" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1">Ponto de Venda (PDV) / Frente de Caixa</h4>
+              <p class="text-muted small mb-0">Venda de uniformes, materiais e produtos escolares</p>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-7">
+              <div class="card border-0 shadow-sm p-3 mb-3">
+                <h6 class="fw-bold text-primary mb-3"><i class="bi bi-cart-plus me-1"></i> Adicionar Produto</h6>
+                <div class="row g-2 mb-3">
+                  <div class="col-8">
+                    <label class="form-label small text-muted">PRODUTO</label>
+                    <select id="pdvProdutoSelect" class="form-select"></select>
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label small text-muted">QTD</label>
+                    <div class="input-group">
+                      <input type="number" id="pdvQtd" class="form-control" value="1" min="1">
+                      <button class="btn btn-primary" onclick="App.adicionarItemPDV()"><i class="bi bi-plus-lg"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-2 fw-bold text-muted small">ITENS DA VENDA</div>
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th>Produto</th>
+                        <th>Unitário</th>
+                        <th>Qtd</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="tablePDVItens"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-5">
+              <div class="card border-0 shadow-sm p-4">
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">Resumo da Venda</h5>
+                <div class="mb-3">
+                  <label class="form-label small text-muted">NOME DO CLIENTE / ALUNO</label>
+                  <input type="text" id="pdvClienteNome" class="form-control" placeholder="Consumidor Final">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small text-muted">FORMA DE PAGAMENTO</label>
+                  <select id="pdvFormaPagamento" class="form-select">
+                    <option value="DINHEIRO">Dinheiro</option>
+                    <option value="PIX">PIX</option>
+                    <option value="CARTÃO DE DÉBITO">Cartão de Débito</option>
+                    <option value="CARTÃO DE CRÉDITO">Cartão de Crédito</option>
+                  </select>
+                </div>
+                <div class="p-3 bg-light rounded text-center my-3">
+                  <div class="text-muted small text-uppercase fw-bold">TOTAL A PAGAR</div>
+                  <h2 class="text-success fw-bold m-0" id="pdvTotalGeral">R$ 0,00</h2>
+                </div>
+                <button class="btn btn-success w-100 py-3 fw-bold" onclick="App.finalizarVendaPDV()">
+                  <i class="bi bi-check2-circle me-1"></i> FINALIZAR VENDA
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= VIEW: USUÁRIOS ================= -->
+        <section id="view-config-usuarios" class="view-content d-none">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h4 class="fw-bold text-dark mb-1">Usuários do Sistema & Permissões</h4>
+              <p class="text-muted small mb-0">Controle de acessos de nível 1 a 5</p>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-warning fw-bold" onclick="App.abrirModalReimportar()">
+                <i class="bi bi-database-fill-gear me-1"></i> Reimportar Banco SQL
+              </button>
+            </div>
+          </div>
+          <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+              <table class="table table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th>#ID</th>
+                    <th>Nome Completo</th>
+                    <th>Usuário (Login)</th>
+                    <th>Nível de Acesso</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tableUsuarios"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: DETALHES DO ALUNO ================= -->
+  <div class="modal fade" id="modalAlunoDetalhes" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-person-badge"></i> Ficha Cadastral do Aluno</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalAlunoDetalhesBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: PAGAR MENSALIDADE ================= -->
+  <div class="modal fade" id="modalPagarMensalidade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-cash-coin"></i> Receber Mensalidade</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="pagMensalidadeId">
+          <div class="mb-3">
+            <label class="form-label small text-muted">ALUNO</label>
+            <input type="text" id="pagAlunoNome" class="form-control" readonly>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small text-muted">VALOR DA PARCELA</label>
+              <input type="text" id="pagValorParcela" class="form-control" readonly>
+            </div>
+            <div class="col-6">
+              <label class="form-label small text-muted">PARCELAS PAGAS</label>
+              <input type="text" id="pagParcelasPagas" class="form-control" readonly>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small text-muted">QUANTIDADE A PAGAR</label>
+              <input type="number" id="pagQtdParcelas" class="form-control" value="1" min="1" onchange="App.calcularSubtotalPagamento()" onkeyup="App.calcularSubtotalPagamento()">
+            </div>
+            <div class="col-6">
+              <label class="form-label small text-muted">FORMA DE PAGAMENTO</label>
+              <select id="pagFormaPagamento" class="form-select">
+                <option value="DINHEIRO">Dinheiro</option>
+                <option value="PIX">PIX</option>
+                <option value="CARTÃO DE DÉBITO">Cartão de Débito</option>
+                <option value="CARTÃO DE CRÉDITO">Cartão de Crédito</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-muted">OBSERVAÇÕES</label>
+            <input type="text" id="pagObs" class="form-control" placeholder="Ex: Desconto pontualidade...">
+          </div>
+          <div class="p-3 bg-light rounded text-center my-3">
+            <div class="text-muted small text-uppercase">TOTAL A RECEBER</div>
+            <h3 class="text-success fw-bold m-0" id="pagSubtotal">R$ 0,00</h3>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success fw-bold" onclick="App.confirmarPagamentoMensalidade()">Confirmar Pagamento & Emitir Recibo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: EDITAR VALOR DA MENSALIDADE POR CURSO E HORÁRIO ================= -->
+  <div class="modal fade" id="modalEditarValorMensalidade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i> Alterar Valor da Mensalidade</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="editPlanoId">
+          
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">CURSO / NÍVEL</label>
+            <input type="text" id="editPlanoCurso" class="form-control bg-light fw-bold text-dark" readonly style="cursor: default;" title="Nome do curso fixo">
+            <div class="form-text small text-muted"><i class="bi bi-info-circle me-1"></i>O nome do curso é fixo. Para gerenciar nomes de cursos, utilize <strong>Secretaria &rarr; Criar ou Editar Curso</strong>.</div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">TURMA / TURNO / PERÍODO</label>
+              <select id="editPlanoTurno" class="form-select">
+                <option value="MATUTINO">MATUTINO (Manhã)</option>
+                <option value="VESPERTINO">VESPERTINO (Tarde)</option>
+                <option value="MATUTINO M. PERIODO">MATUTINO M. PERÍODO</option>
+                <option value="VESPERTINO M. PERIODO">VESPERTINO M. PERÍODO</option>
+                <option value="INTEGRAL">INTEGRAL (Dia Todo)</option>
+                <option value="GERAL">GERAL / NOTURNO</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">ETAPA / SÉRIE</label>
+              <select id="editPlanoEtapa" class="form-select">
+                <option value="Todas as Etapas">Todas as Etapas / Geral</option>
+                <option value="MATERNAL I">MATERNAL I</option>
+                <option value="MATERNAL II">MATERNAL II</option>
+                <option value="JARDIM I">JARDIM I</option>
+                <option value="JARDIM II">JARDIM II</option>
+                <option value="1º ANO">1º ANO</option>
+                <option value="2º ANO">2º ANO</option>
+                <option value="3º ANO">3º ANO</option>
+                <option value="4º ANO">4º ANO</option>
+                <option value="5º ANO">5º ANO</option>
+                <option value="1º ao 5º Ano">1º ao 5º Ano (Fundamental)</option>
+                <option value="Geral">Geral / Cursos Extras</option>
+                <option value="Formandos">Formandos</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">HORÁRIO OFERECIDO / FUNCIONAMENTO</label>
+            <select id="editPlanoHorario" class="form-select">
+              <option value="07:00 às 11:30">07:00 às 11:30 (Matutino Regular)</option>
+              <option value="07:00 às 11:45">07:00 às 11:45 (Matutino Fundamental)</option>
+              <option value="13:00 às 17:30">13:00 às 17:30 (Vespertino Regular)</option>
+              <option value="13:00 às 17:45">13:00 às 17:45 (Vespertino Fundamental)</option>
+              <option value="07:00 às 14:00">07:00 às 14:00 (Meio Período Manhã)</option>
+              <option value="11:30 às 17:30">11:30 às 17:30 (Meio Período Tarde)</option>
+              <option value="07:00 às 18:00">07:00 às 18:00 (Período Integral)</option>
+              <option value="Seg/Qua ou Ter/Qui">Seg/Qua ou Ter/Qui (Cursos Livres)</option>
+              <option value="Taxa Anual Parcelada">Taxa Anual Parcelada</option>
+              <option value="Horário Flexível">Horário Flexível / Outro</option>
+            </select>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold text-primary">VALOR DA MENSALIDADE (R$)</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light fw-bold text-primary">R$</span>
+                <input type="number" step="0.01" id="editPlanoValor" class="form-control form-control-lg fw-bold text-primary" required>
+              </div>
+            </div>
+            <div class="col-3">
+              <label class="form-label small fw-bold text-secondary">PARCELAS</label>
+              <input type="number" id="editPlanoParcelas" class="form-control form-control-lg" value="12">
+            </div>
+            <div class="col-3">
+              <label class="form-label small fw-bold text-secondary">ANO</label>
+              <input type="text" id="editPlanoAno" class="form-control form-control-lg" value="2026">
+            </div>
+          </div>
+
+          <!-- CHECKBOX DE REAJUSTE DE CONTRATOS ATIVOS -->
+          <div class="p-3 bg-light rounded border mt-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="checkReajustarAtivos">
+              <label class="form-check-label fw-bold text-dark small" for="checkReajustarAtivos">
+                Reajustar automaticamente parcelas em aberto dos contratos ativos deste curso e horário
+              </label>
+            </div>
+            <small class="text-muted d-block mt-1">
+              Se desmarcado, o novo valor será aplicado apenas às novas matrículas e rematrículas.
+            </small>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-bold px-4" onclick="App.salvarAlteracaoValorMensalidade()">
+            <i class="bi bi-check2-circle me-1"></i> Salvar Novo Valor
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: NOVO PLANO / HORÁRIO DE MENSALIDADE ================= -->
+  <div class="modal fade" id="modalNovoPlanoMensalidade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i> Cadastrar Nova Modalidade / Horário</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">CURSO / MODALIDADE</label>
+            <select id="novoPlanoCurso" class="form-select"></select>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">TURMA / TURNO / PERÍODO</label>
+              <select id="novoPlanoTurno" class="form-select">
+                <option value="MATUTINO">MATUTINO (Manhã)</option>
+                <option value="VESPERTINO">VESPERTINO (Tarde)</option>
+                <option value="MATUTINO M. PERIODO">MATUTINO M. PERÍODO</option>
+                <option value="VESPERTINO M. PERIODO">VESPERTINO M. PERÍODO</option>
+                <option value="INTEGRAL">INTEGRAL (Dia Todo)</option>
+                <option value="GERAL">GERAL / NOTURNO</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">ETAPA / SÉRIE</label>
+              <select id="novoPlanoEtapa" class="form-select">
+                <option value="Todas as Etapas">Todas as Etapas / Geral</option>
+                <option value="MATERNAL I">MATERNAL I</option>
+                <option value="MATERNAL II">MATERNAL II</option>
+                <option value="JARDIM I">JARDIM I</option>
+                <option value="JARDIM II">JARDIM II</option>
+                <option value="1º ANO">1º ANO</option>
+                <option value="2º ANO">2º ANO</option>
+                <option value="3º ANO">3º ANO</option>
+                <option value="4º ANO">4º ANO</option>
+                <option value="5º ANO">5º ANO</option>
+                <option value="1º ao 5º Ano">1º ao 5º Ano (Fundamental)</option>
+                <option value="Geral">Geral / Cursos Extras</option>
+                <option value="Formandos">Formandos</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">HORÁRIO OFERECIDO</label>
+            <select id="novoPlanoHorario" class="form-select">
+              <option value="07:00 às 11:30">07:00 às 11:30 (Matutino Regular)</option>
+              <option value="07:00 às 11:45">07:00 às 11:45 (Matutino Fundamental)</option>
+              <option value="13:00 às 17:30">13:00 às 17:30 (Vespertino Regular)</option>
+              <option value="13:00 às 17:45">13:00 às 17:45 (Vespertino Fundamental)</option>
+              <option value="07:00 às 14:00">07:00 às 14:00 (Meio Período Manhã)</option>
+              <option value="11:30 às 17:30">11:30 às 17:30 (Meio Período Tarde)</option>
+              <option value="07:00 às 18:00">07:00 às 18:00 (Período Integral)</option>
+              <option value="Seg/Qua ou Ter/Qui">Seg/Qua ou Ter/Qui (Cursos Livres)</option>
+              <option value="Taxa Anual Parcelada">Taxa Anual Parcelada</option>
+              <option value="Horário Flexível">Horário Flexível / Outro</option>
+            </select>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold text-success">VALOR DA MENSALIDADE (R$)</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light fw-bold text-success">R$</span>
+                <input type="number" step="0.01" id="novoPlanoValor" class="form-control form-control-lg fw-bold text-success" placeholder="0.00" required>
+              </div>
+            </div>
+            <div class="col-3">
+              <label class="form-label small fw-bold text-secondary">PARCELAS</label>
+              <input type="number" id="novoPlanoParcelas" class="form-control form-control-lg" value="12">
+            </div>
+            <div class="col-3">
+              <label class="form-label small fw-bold text-secondary">ANO</label>
+              <input type="text" id="novoPlanoAno" class="form-control form-control-lg" value="2026">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success fw-bold px-4" onclick="App.cadastrarNovoPlanoMensalidade()">
+            <i class="bi bi-save me-1"></i> Cadastrar Modalidade
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: NOVO CURSO ================= -->
+  <div class="modal fade" id="modalNovoCurso" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-mortarboard-fill me-2"></i> Cadastrar Novo Curso / Modalidade</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">NOME DO CURSO / NÍVEL</label>
+            <input type="text" id="inputNovoCursoNome" class="form-control form-control-lg" placeholder="Ex: Robótica, Informática, Natação..." required>
+            <div class="form-text mt-1">Este curso ficará imediatamente disponível para matrículas e na tabela de mensalidades.</div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-bold px-4" onclick="App.salvarNovoCurso()">
+            <i class="bi bi-save me-1"></i> Salvar Curso
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: EDITAR CURSO ================= -->
+  <div class="modal fade" id="modalEditarCurso" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i> Editar Nome do Curso</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="editCursoId">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">NOME DO CURSO / NÍVEL</label>
+            <input type="text" id="editCursoNome" class="form-control form-control-lg" required>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-bold px-4" onclick="App.salvarEdicaoCurso()">
+            <i class="bi bi-check2-circle me-1"></i> Salvar Alteração
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: NOVA TURMA ================= -->
+  <div class="modal fade" id="modalNovaTurma" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-diagram-3-fill me-2"></i> Cadastrar Nova Turma</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">NOME DA TURMA</label>
+            <input type="text" id="inputTurmaNome" class="form-control form-control-lg" placeholder="Ex: 1º ANO B - MATUTINO" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">SÉRIE / ETAPA</label>
+              <input type="text" id="inputTurmaSerie" class="form-control" placeholder="Ex: 1º ANO">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">TURNO</label>
+              <select id="inputTurmaTurno" class="form-select">
+                <option value="MATUTINO">MATUTINO (Manhã)</option>
+                <option value="VESPERTINO">VESPERTINO (Tarde)</option>
+                <option value="INTEGRAL">INTEGRAL (Dia Todo)</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">PROFESSOR TITULAR</label>
+            <select id="selectTurmaProfessor" class="form-select"></select>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">CAPACIDADE MÁXIMA (ALUNOS)</label>
+              <input type="number" id="inputTurmaQtd" class="form-control" value="30">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">ANO LETIVO</label>
+              <input type="text" id="inputTurmaAno" class="form-control" value="2026">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-bold px-4" onclick="App.salvarNovaTurma()">
+            <i class="bi bi-save me-1"></i> Salvar Turma
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: NOVO PROFESSOR ================= -->
+  <div class="modal fade" id="modalNovoProfessor" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-person-badge-fill me-2"></i> Cadastrar Novo Professor</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">NOME COMPLETO DO PROFESSOR</label>
+            <input type="text" id="inputProfNome" class="form-control form-control-lg" placeholder="Ex: Maria das Graças" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">TELEFONE / WHATSAPP</label>
+            <input type="text" id="inputProfTelefone" class="form-control" placeholder="(92) 90000-0000">
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">USUÁRIO / LOGIN</label>
+              <input type="text" id="inputProfUsername" class="form-control" placeholder="mariagraca">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">SENHA DE ACESSO</label>
+              <input type="password" id="inputProfSenha" class="form-control" placeholder="******">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-bold px-4" onclick="App.salvarNovoProfessor()">
+            <i class="bi bi-save me-1"></i> Salvar Professor
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: NOVO REGISTRO NO DIÁRIO ================= -->
+  <div class="modal fade" id="modalNovoDiario" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-journal-plus me-2"></i> Novo Registro no Diário de Classe</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-secondary">PROFESSOR(A) *</label>
+              <select id="inputDiarioProfessor" class="form-select"></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-secondary">TURMA / SALA *</label>
+              <select id="inputDiarioTurma" class="form-select" onchange="App.onDiarioTurmaChange()"></select>
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-secondary">DATA DA AULA *</label>
+              <input type="date" id="inputDiarioData" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-secondary">SÉRIE / ETAPA</label>
+              <input type="text" id="inputDiarioSerie" class="form-control" placeholder="Ex: 1º ANO">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-secondary">COMPONENTE CURRICULAR (MATÉRIA) *</label>
+              <input type="text" id="inputDiarioMateria" class="form-control" placeholder="Ex: Língua Portuguesa, Matemática..." required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">CONTEÚDOS MINISTRADOS *</label>
+            <textarea id="inputDiarioConteudos" class="form-control" rows="2" placeholder="Descreva os temas, capítulos e conteúdos trabalhados em aula..." required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">OBJETIVOS / HABILIDADES BNCC</label>
+            <textarea id="inputDiarioObjetivos" class="form-control" rows="2" placeholder="Habilidades e objetivos de aprendizagem (ex: EF01LP02)..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">DESENVOLVIMENTO / METODOLOGIA</label>
+            <textarea id="inputDiarioDesenvolvimento" class="form-control" rows="2" placeholder="Como a aula foi conduzida, dinâmicas e explicações..."></textarea>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-secondary">ATIVIDADE EM SALA</label>
+              <input type="text" id="inputDiarioAtivSala" class="form-control" placeholder="Exercícios, leitura, caderno pág...">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-secondary">ATIVIDADE PARA CASA</label>
+              <input type="text" id="inputDiarioAtivCasa" class="form-control" placeholder="Tarefa para casa...">
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-secondary">RECURSOS DIDÁTICOS UTILIZADOS</label>
+              <input type="text" id="inputDiarioRecursos" class="form-control" placeholder="Livro, caderno, projetor, cartolina...">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-secondary">CRITÉRIO DE AVALIAÇÃO</label>
+              <input type="text" id="inputDiarioAvaliacao" class="form-control" placeholder="Participação, fixação de conteúdo...">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-bold px-4" onclick="App.salvarNovoDiario()">
+            <i class="bi bi-save me-1"></i> Salvar Registro no Diário
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: DETALHES DO DIÁRIO DE CLASSE ================= -->
+  <div class="modal fade" id="modalVerDiarioDetalhes" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-journal-text me-2"></i> Detalhes do Plano de Aula</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4" id="diarioDetalhesBody"></div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: EDITAR BIMESTRE ================= -->
+  <div class="modal fade" id="modalEditarBimestre" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-calendar-event me-2"></i> Editar Período do Bimestre</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="editBimestreId">
+          <h6 class="fw-bold text-primary mb-3" id="editBimestreTitulo">-</h6>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">DATA DE INÍCIO</label>
+            <input type="date" id="editBimestreInicio" class="form-control form-control-lg" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">DATA DE TÉRMINO</label>
+            <input type="date" id="editBimestreFim" class="form-control form-control-lg" required>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-bold px-4" onclick="App.salvarEdicaoBimestre()">
+            <i class="bi bi-check2-circle me-1"></i> Salvar Período
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: LANÇAR NOTA ================= -->
+  <div class="modal fade" id="modalLancarNota" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i> Lançar / Atualizar Nota</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">ALUNO(A) *</label>
+            <select id="notaAlunoSelect" class="form-select"></select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">DISCIPLINA / MATÉRIA *</label>
+            <select id="notaMateriaSelect" class="form-select"></select>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold text-secondary">BIMESTRE</label>
+              <select id="notaBimestreSelect" class="form-select">
+                <option value="1">1º Bimestre</option>
+                <option value="2">2º Bimestre</option>
+                <option value="3">3º Bimestre</option>
+                <option value="4">4º Bimestre</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold text-success">NOTA (0.0 a 10.0) *</label>
+              <input type="number" step="0.1" min="0" max="10" id="notaValorInput" class="form-control form-control-lg fw-bold text-success" placeholder="10.0" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success fw-bold px-4" onclick="App.salvarNota()">
+            <i class="bi bi-save me-1"></i> Gravar Nota
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: VISUALIZADOR DE DOCUMENTOS IMPRESSOS ================= -->
+  <div class="modal fade" id="modalDocumentoViewer" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header no-print">
+          <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-text"></i> Visualização para Impressão</h5>
+          <div class="ms-auto d-flex gap-2">
+            <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Imprimir Documento</button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+        </div>
+        <div class="modal-body p-0" id="documentoModalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: REIMPORTAR BANCO DE DADOS ================= -->
+  <div class="modal fade" id="modalReimportarBanco" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title fw-bold"><i class="bi bi-database-fill-gear me-2"></i> Importar / Restaurar Banco de Dados SQL</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="alert alert-warning d-flex align-items-center mb-4">
+            <i class="bi bi-exclamation-triangle-fill fs-3 me-3 text-warning"></i>
+            <div>
+              <strong>Atenção:</strong> A importação irá sincronizar e carregar as tabelas e registros do arquivo <code>.sql</code> selecionado no banco do sistema.
+            </div>
+          </div>
+
+          <ul class="nav nav-pills mb-3 border-bottom pb-2" id="pills-tab-import" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active fw-bold" id="tab-file-btn" data-bs-toggle="pill" data-bs-target="#tab-file" type="button">
+                <i class="bi bi-folder2-open me-1"></i> 1. Buscar no Computador (Finder / Diretório)
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link fw-bold" id="tab-path-btn" data-bs-toggle="pill" data-bs-target="#tab-path" type="button">
+                <i class="bi bi-terminal me-1"></i> 2. Digitar Caminho do Arquivo
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="importTabContent">
+            <!-- TAB 1: Upload / Selecionar Arquivo do Computador -->
+            <div class="tab-pane fade show active" id="tab-file">
+              <div class="border border-2 border-dashed rounded p-4 text-center bg-light mb-3" style="cursor: pointer;" onclick="document.getElementById('inputSqlFilePicker').click()">
+                <i class="bi bi-filetype-sql text-primary display-4"></i>
+                <h6 class="mt-2 fw-bold text-dark">Clique aqui para buscar o arquivo .SQL nos seus diretórios</h6>
+                <p class="text-muted small mb-0">Localize o arquivo no Finder (Desktop, Downloads, pastas de backup, etc.)</p>
+                <input type="file" id="inputSqlFilePicker" accept=".sql" class="d-none" onchange="App.onSqlFileSelected(event)">
+              </div>
+              <div id="selectedFileInfo" class="alert alert-info py-2 d-none">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                Arquivo selecionado: <strong id="selectedFileName">-</strong> (<span id="selectedFileSize">-</span>)
+              </div>
+            </div>
+
+            <!-- TAB 2: Caminho no Disco -->
+            <div class="tab-pane fade" id="tab-path">
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-secondary">CAMINHO COMPLETO DO ARQUIVO NO SEU COMPUTADOR</label>
+                <input type="text" id="inputCustomSqlPath" class="form-control" placeholder="/Users/thiagomaia/Desktop/dbateniense.sql">
+                <div class="form-text mt-1">Exemplo: <code>/Users/thiagomaia/Desktop/dbateniense.sql</code></div>
+              </div>
+              <div class="d-flex gap-2 flex-wrap mb-3">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('inputCustomSqlPath').value='/Users/thiagomaia/Desktop/dbateniense.sql'">
+                  <i class="bi bi-display me-1"></i> Desktop: dbateniense.sql
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('inputCustomSqlPath').value='database/dbateniense.sql'">
+                  <i class="bi bi-hdd me-1"></i> Interno: database/dbateniense.sql
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- INDICADOR DE PROGRESSO -->
+          <div id="importLoadingIndicator" class="text-center py-4 d-none">
+            <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+            <h6 class="fw-bold text-primary">Processando e importando tabelas e registros...</h6>
+            <p class="text-muted small mb-0">Aguarde a leitura e gravação no banco de dados.</p>
+          </div>
+
+          <!-- RESULTADO DA IMPORTAÇÃO -->
+          <div id="importResultBox" class="mt-3 d-none">
+            <div class="alert alert-success d-flex align-items-center mb-3">
+              <i class="bi bi-check-circle-fill fs-3 me-3 text-success"></i>
+              <div>
+                <h6 class="fw-bold mb-1" id="importResultTitle">Importação concluída com sucesso!</h6>
+                <div class="small" id="importResultSummary"></div>
+              </div>
+            </div>
+            <div class="border rounded p-3 bg-light" style="max-height: 200px; overflow-y: auto;">
+              <h6 class="small fw-bold text-secondary text-uppercase mb-2">Tabelas e Registros Importados</h6>
+              <div id="importTablesList" class="row g-2 small font-monospace"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-warning fw-bold px-4" id="btnIniciarImportacao" onclick="App.executarImportacaoBanco()">
+            <i class="bi bi-play-fill me-1"></i> Iniciar Importação
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- App JS -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

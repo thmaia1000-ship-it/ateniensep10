@@ -1,0 +1,70 @@
+//Select Turmas com subselect========================================================================================================================
+
+SELECT  
+                tbt.ID_turma as 'ID',
+                tbt.turma as 'Turma',
+                tbt.max_alunos as 'Máximo Alunos',
+                (SELECT
+                      count(ID_aluno)
+                 FROM
+                    tb_alunos as tba
+                WHERE
+                    tba.idturma = tbt.ID_turma and status_turma = 'A'
+                )as 'Quantidade Alunos'
+            FROM 
+            tb_turmas as tbt
+    
+            ORDER BY turma
+//Passar Turma com subselect (EVENTO DOUBLE CLICK)========================================================================================================================
+
+DataGridView dgv = (DataGridView)sender;
+            int maxAlunos = 0;
+            int qteAluno = 0;
+            maxAlunos = Int32.Parse(dgv.SelectedRows[0].Cells[2].Value.ToString());
+            qteAluno = Int32.Parse(dgv.SelectedRows[0].Cells[3].Value.ToString());
+            if(qteAluno >= maxAlunos)
+            {
+                MessageBox.Show("Não há vagas nesta turma");
+                return;
+            }
+            else
+            {
+                formNovoAluno.tb_Turma.Text = dgv.Rows[dgv.SelectedRows[0].Index].Cells[1].Value.ToString();
+                formNovoAluno.tb_Turma.Tag = dgv.Rows[dgv.SelectedRows[0].Index].Cells[0].Value.ToString();
+                Close();
+            }
+
+//Intervalo datas Caixa========================================================================================================================
+SELECT *
+FROM tb_caixa
+WHERE 
+    data between '2022-09-08' and '2022-09-08';
+
+
+//Select Pegar Ultimo ID Registrado========================================================================================================================
+SELECT MAX(ID_caixa)+1 FROM tb_caixa
+
+// Pesquisar Aluno e atrelar a turma
+
+var vcon = Banco.ConexaoBanco();
+
+                MySqlCommand cm = new MySqlCommand();
+                cm.CommandText = String.Format(@"SELECT
+                tba.ID_aluno as 'ID',
+                tba.nome_aluno as 'Nome',
+                tba.datanasc as 'Nascimento',
+                tba.sexo as 'Sexo',
+                tbt.turma as 'Turma',
+                tbt.turno as 'Turno',
+                tbt.sala as 'Sala',
+                tbt.ID_turma as 'ID turma'
+             FROM tb_alunos as tba, tb_turmas as tbt
+            WHERE tba.idturma = tbt.ID_turma AND tba.nome_aluno LIKE ('%" + tb_pesquisa.Text + "%')");
+
+                cm.Connection = vcon;
+                MySqlDataAdapter da = new MySqlDataAdapter();
+                DataTable dt = new DataTable();
+                da.SelectCommand = cm;
+                da.Fill(dt);
+                dgv_SelecionarAluno.DataSource = dt;
+                vcon.Close();
