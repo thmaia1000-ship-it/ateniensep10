@@ -419,6 +419,9 @@ body {
     height: 279mm !important;
     max-height: 279mm !important;
   }
+  .print-page.print-page-flow {
+    justify-content: flex-start !important;
+  }
   .carne-slip {
     border: 1px dashed #000;
     page-break-inside: avoid;
@@ -494,6 +497,10 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.print-page.print-page-flow {
+  justify-content: flex-start;
 }
 
 .carne-slip {
