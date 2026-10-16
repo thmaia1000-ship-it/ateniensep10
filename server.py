@@ -357,8 +357,15 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 ano = query.get('ano', [None])[0]
                 busca = query.get('busca', [None])[0]
                 turno = query.get('turno', [None])[0]
-                lista = documentos_service.get_contratos_lista(ano, busca, turno)
+                aluno_id = query.get('aluno_id', [None])[0]
+                lista = documentos_service.get_contratos_lista(ano, busca, turno, aluno_id)
                 self.send_json({'contratos': lista, 'total': len(lista)})
+                return
+
+            if path == '/api/documentos/alunos-busca':
+                termo = query.get('q', [''])[0]
+                alunos = documentos_service.buscar_alunos_com_contratos(termo)
+                self.send_json({'alunos': alunos, 'total': len(alunos)})
                 return
 
             if path == '/api/documentos/contrato':

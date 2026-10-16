@@ -1533,6 +1533,8 @@ const App = {
   // ================= SECRETARIA: CONTRATOS E TERMOS OFICIAIS =================
   cacheContratoDados: null,
   contratosDBLista: [],
+  alunoContratosAtuais: [],
+  alunoSelecionadoContratos: null,
 
   async setupContratos() {
     try {
@@ -1547,10 +1549,10 @@ const App = {
           }).join('');
       }
 
-      // 2. Carrega lista de alunos
+      // 2. Carrega lista inicial de alunos no select
       await this.carregarAlunosParaContratos();
 
-      // 3. Carrega lista de contratos do DB para o badge e tabela
+      // 3. Carrega lista de contratos do DB para o badge e tabela geral
       await this.carregarTabelaContratos();
 
     } catch (e) {
@@ -1585,13 +1587,8 @@ const App = {
       const select = document.getElementById('contratoAlunoSelect');
       if (select) {
         const alunos = data.alunos || [];
-        select.innerHTML = '<option value="">Selecione o aluno...</option>' + 
+        select.innerHTML = '<option value="">Ou selecione da lista...</option>' + 
           alunos.map(a => `<option value="${a.id}">${a.nome} (Matrícula #${a.id})</option>`).join('');
-
-        if (alunos.length > 0 && !select.value) {
-          select.value = alunos[0].id;
-          await this.onAlunoContratoSelected();
-        }
       }
     } catch (e) {
       console.error('Erro ao carregar alunos para contratos:', e);
@@ -1603,33 +1600,267 @@ const App = {
     await this.carregarAlunosParaContratos(turmaId);
   },
 
-  async onAlunoContratoSelected() {
-    const alunoId = document.getElementById('contratoAlunoSelect')?.value;
-    if (!alunoId) return;
+  async consultarContratosPorAluno() {
+    const termo = document.getElementById('inputBuscaAlunoContratos')?.value?.trim() || '';
+    const containerResultados = document.getElementById('containerResultadosBuscaAlunos');
+    const listaResultados = document.getElementById('listaAlunosResultadosBusca');
+    const docContainer = document.getElementById('contratoDocumentContainer');
+
+    if (!termo) {
+      alert('Digite o nome ou a matrícula do aluno para consultar.');
+      document.getElementById('inputBuscaAlunoContratos')?.focus();
+      return;
+    }
 
     try {
-      // Busca contratos específicos do aluno
-      const data = await this.api(`/api/documentos/contratos?busca=${encodeURIComponent(alunoId)}`);
-      const selContrato = document.getElementById('contratoMensalidadeSelect');
-      if (selContrato) {
-        const contratos = (data.contratos || []).filter(c => String(c.idaluno) === String(alunoId));
-        if (contratos.length > 0) {
-          selContrato.innerHTML = contratos.map(c => 
-            `<option value="${c.ID_mensalidade}">Contrato #${c.ID_mensalidade} - ${c.ano_letivo} (${c.contrato_turno || c.curso || 'Normal'}) - ${c.n_parcelas}x ${c.valor_parcela_fmt}</option>`
-          ).join('');
-        } else {
-          selContrato.innerHTML = '<option value="">Sem contrato vinculado no DB (Emitir Padrão)</option>';
-        }
+      if (docContainer) {
+        docContainer.innerHTML = `
+          <div class="text-center text-muted p-5 bg-white rounded border shadow-sm">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <p class="mb-0">Consultando aluno e buscando contratos vinculados no banco de dados...</p>
+          </div>
+        `;
       }
-      await this.carregarContrato();
+
+      const res = await this.api(`/api/documentos/alunos-busca?q=${encodeURIComponent(termo)}`);
+      const alunos = res.alunos || [];
+
+      if (alunos.length === 0) {
+        containerResultados?.classList.add('d-none');
+        document.getElementById('painelAlunoContratosVinculados')?.classList.add('d-none');
+        if (docContainer) {
+          docContainer.innerHTML = `
+            <div class="alert alert-warning p-4 text-center">
+              <i class="bi bi-person-x fs-3 mb-2 d-block"></i>
+              <strong>Nenhum aluno encontrado para "${termo}".</strong>
+              <p class="small text-muted mt-1 mb-0">Verifique a grafia do nome ou tente buscar pelo número de matrícula.</p>
+            </div>
+          `;
+        }
+        return;
+      }
+
+      if (alunos.length === 1) {
+        containerResultados?.classList.add('d-none');
+        await this.selecionarAlunoParaContratos(alunos[0].id);
+      } else {
+        // Exibe lista de múltiplos alunos encontrados
+        if (listaResultados && containerResultados) {
+          listaResultados.innerHTML = alunos.map(a => `
+            <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2" onclick="App.selecionarAlunoParaContratos(${a.id})">
+              <div>
+                <strong>${a.nome}</strong> <span class="badge bg-secondary ms-1">#${a.id}</span>
+                <div class="small text-muted">
+                  ${a.nome_turma || a.etapa || 'Turma não informada'} • Turno: ${a.turno || '-'} • Resp: ${a.resp_fin_nome || 'Não informado'}
+                </div>
+              </div>
+              <span class="badge ${a.total_contratos > 0 ? 'bg-success' : 'bg-light text-dark border'} rounded-pill">
+                ${a.total_contratos} contrato(s)
+              </span>
+            </button>
+          `).join('');
+          containerResultados.classList.remove('d-none');
+        }
+
+        // Abre automaticamente o primeiro aluno da lista
+        await this.selecionarAlunoParaContratos(alunos[0].id);
+      }
+
     } catch (e) {
-      console.error('Erro ao buscar contratos do aluno:', e);
-      await this.carregarContrato();
+      console.error('Erro na consulta por aluno:', e);
+      if (docContainer) {
+        docContainer.innerHTML = `
+          <div class="alert alert-danger p-4 text-center">
+            <strong>Falha na consulta:</strong> ${e.message}
+          </div>
+        `;
+      }
+    }
+  },
+
+  async onAlunoSelectDropdownChange() {
+    const alunoId = document.getElementById('contratoAlunoSelect')?.value;
+    if (alunoId) {
+      await this.selecionarAlunoParaContratos(alunoId);
+    }
+  },
+
+  async selecionarAlunoParaContratos(alunoId) {
+    const containerResultados = document.getElementById('containerResultadosBuscaAlunos');
+    const painelVinculados = document.getElementById('painelAlunoContratosVinculados');
+    const gridContratos = document.getElementById('gridContratosVinculados');
+    const selAluno = document.getElementById('contratoAlunoSelect');
+    const selContrato = document.getElementById('contratoMensalidadeSelect');
+
+    try {
+      // 1. Busca dados do aluno
+      const infoAluno = await this.api(`/api/documentos/dados?aluno_id=${encodeURIComponent(alunoId)}`);
+      if (!infoAluno || !infoAluno.aluno) {
+        alert('Aluno não encontrado.');
+        return;
+      }
+
+      this.alunoSelecionadoContratos = infoAluno;
+      const a = infoAluno.aluno;
+      const rf = infoAluno.resp_fin || {};
+      const ra = infoAluno.resp_acad || {};
+
+      // Sincroniza campos de busca
+      const inputBusca = document.getElementById('inputBuscaAlunoContratos');
+      if (inputBusca) inputBusca.value = a.nome_aluno;
+      if (selAluno) selAluno.value = a.ID_aluno;
+
+      // 2. Busca todos os contratos vinculados a esse aluno
+      const dataContratos = await this.api(`/api/documentos/contratos?aluno_id=${encodeURIComponent(alunoId)}`);
+      const contratos = dataContratos.contratos || [];
+      this.alunoContratosAtuais = contratos;
+
+      // 3. Atualiza Banner do Aluno
+      painelVinculados?.classList.remove('d-none');
+      document.getElementById('bannerAlunoId').textContent = a.ID_aluno;
+      document.getElementById('bannerAlunoNome').textContent = a.nome_aluno;
+      document.getElementById('bannerAlunoDetalhes').innerHTML = `
+        <strong>Turma:</strong> ${a.nome_turma || a.etapa || '-'} | 
+        <strong>Turno:</strong> ${a.turno || '-'} | 
+        <strong>Resp. Financeiro:</strong> ${rf.nome || 'Não informado'} ${rf.cpf ? '(' + rf.cpf + ')' : ''} | 
+        <strong>Resp. Acadêmico:</strong> ${ra.nome || 'Não informado'}
+      `;
+      document.getElementById('badgeTotalContratosAluno').textContent = `${contratos.length} contrato(s) vinculado(s)`;
+
+      // 4. Renderiza Grid de Contratos Vinculados
+      if (gridContratos) {
+        if (contratos.length === 0) {
+          gridContratos.innerHTML = `
+            <div class="col-12">
+              <div class="alert alert-warning mb-0 p-3 d-flex align-items-center justify-content-between">
+                <div>
+                  <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                  <strong>Nenhum contrato cadastrado no banco de dados para este(a) aluno(a).</strong>
+                  <div class="small mt-1 text-dark">Você pode visualizar o Termo de Responsabilidade ou a Ficha Cadastral abaixo com base no cadastro do discente.</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="App.carregarContrato(${a.ID_aluno}, null, 'termo')">
+                  <i class="bi bi-shield-check me-1"></i> Abrir Termo de Responsabilidade
+                </button>
+              </div>
+            </div>
+          `;
+          if (selContrato) {
+            selContrato.innerHTML = '<option value="">Sem contrato vinculado no DB (Emitir Padrão)</option>';
+          }
+          await this.carregarContrato(a.ID_aluno, null, 'termo');
+          return;
+        }
+
+        gridContratos.innerHTML = contratos.map((c, idx) => {
+          const pagas = c.parcelas_pagas || 0;
+          const totalParc = c.n_parcelas || 12;
+          const badgeColor = pagas >= totalParc ? 'bg-success' : (pagas > 0 ? 'bg-info text-dark' : 'bg-warning text-dark');
+          
+          let tipoSugerido = 'normal';
+          const tUp = (c.contrato_turno || '').toUpperCase();
+          if (String(c.ano_letivo) === '2027') {
+            tipoSugerido = '2027';
+          } else if (tUp.includes('INTEGRAL')) {
+            tipoSugerido = 'integral';
+          } else if (tUp.includes('M. PERIODO') || tUp.includes('MEIO')) {
+            tipoSugerido = 'meio_periodo';
+          }
+
+          return `
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100 border shadow-sm ${idx === 0 ? 'border-primary' : ''}" id="cardContrato_${c.ID_mensalidade}">
+                <div class="card-header bg-white py-2 d-flex justify-content-between align-items-center">
+                  <span class="fw-bold text-dark"><i class="bi bi-file-earmark-ruled text-primary me-1"></i> Contrato #${c.ID_mensalidade}</span>
+                  <span class="badge bg-primary fs-7">Ano ${c.ano_letivo}</span>
+                </div>
+                <div class="card-body p-3" style="font-size: 9pt;">
+                  <div class="mb-1"><strong>Curso / Etapa:</strong> ${c.curso || c.aluno_etapa || '-'}</div>
+                  <div class="mb-1"><strong>Turno:</strong> <span class="badge bg-light text-dark border">${c.contrato_turno || 'NORMAL'}</span></div>
+                  <div class="mb-1"><strong>Plano:</strong> ${c.n_parcelas}x de <strong class="text-primary">${c.valor_parcela_fmt}</strong></div>
+                  <div class="mb-1"><strong>Total:</strong> ${c.valor_total_fmt}</div>
+                  <div class="mb-2"><strong>Situação:</strong> <span class="badge ${badgeColor}">${pagas}/${totalParc} pagas</span></div>
+                  
+                  <div class="d-flex flex-wrap gap-1 mt-2 pt-2 border-top">
+                    <button class="btn btn-sm btn-primary flex-grow-1" onclick="App.ativarContratoVinculado(${c.ID_mensalidade}, '${tipoSugerido}')">
+                      <i class="bi bi-file-earmark-text"></i> Contrato
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" title="Termo" onclick="App.ativarContratoVinculado(${c.ID_mensalidade}, 'termo')">
+                      <i class="bi bi-shield-check"></i> Termo
+                    </button>
+                    <button class="btn btn-sm btn-outline-success" title="Carnê" onclick="App.ativarContratoVinculado(${c.ID_mensalidade}, 'carne')">
+                      <i class="bi bi-receipt"></i> Carnê
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" title="Ficha" onclick="App.ativarContratoVinculado(${c.ID_mensalidade}, 'ficha')">
+                      <i class="bi bi-person-vcard"></i> Ficha
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 5. Preenche select de Contrato Ativo
+      if (selContrato) {
+        selContrato.innerHTML = contratos.map(c => 
+          `<option value="${c.ID_mensalidade}">Contrato #${c.ID_mensalidade} - Ano Letivo ${c.ano_letivo} (${c.contrato_turno || 'Normal'}) - ${c.valor_parcela_fmt}/mês</option>`
+        ).join('');
+      }
+
+      // 6. Carrega o primeiro contrato (mais recente)
+      const primeiro = contratos[0];
+      let tipoSugerido = 'normal';
+      const tUp = (primeiro.contrato_turno || '').toUpperCase();
+      if (String(primeiro.ano_letivo) === '2027') {
+        tipoSugerido = '2027';
+      } else if (tUp.includes('INTEGRAL')) {
+        tipoSugerido = 'integral';
+      } else if (tUp.includes('M. PERIODO') || tUp.includes('MEIO')) {
+        tipoSugerido = 'meio_periodo';
+      }
+
+      await this.ativarContratoVinculado(primeiro.ID_mensalidade, tipoSugerido);
+
+    } catch (e) {
+      console.error('Erro ao selecionar aluno para contratos:', e);
+    }
+  },
+
+  async ativarContratoVinculado(mensalidadeId, tipo) {
+    const selContrato = document.getElementById('contratoMensalidadeSelect');
+    if (selContrato) selContrato.value = mensalidadeId;
+
+    const selTipo = document.getElementById('contratoTipoSelect');
+    if (selTipo) selTipo.value = tipo;
+
+    // Destaca o card ativo
+    document.querySelectorAll('[id^="cardContrato_"]').forEach(el => el.classList.remove('border-primary', 'bg-light'));
+    const cardAtivo = document.getElementById(`cardContrato_${mensalidadeId}`);
+    if (cardAtivo) {
+      cardAtivo.classList.add('border-primary', 'bg-light');
+    }
+
+    const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno;
+    await this.carregarContrato(alunoId, mensalidadeId, tipo);
+  },
+
+  onContratoMensalidadeChanged() {
+    const mensalidadeId = document.getElementById('contratoMensalidadeSelect')?.value;
+    const tipo = document.getElementById('contratoTipoSelect')?.value || 'normal';
+    const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno;
+    if (mensalidadeId) {
+      this.ativarContratoVinculado(mensalidadeId, tipo);
+    } else {
+      this.carregarContrato(alunoId, null, tipo);
     }
   },
 
   onTipoContratoChange() {
-    this.carregarContrato();
+    const mensalidadeId = document.getElementById('contratoMensalidadeSelect')?.value;
+    const tipo = document.getElementById('contratoTipoSelect')?.value || 'normal';
+    const alunoId = this.alunoSelecionadoContratos?.aluno?.ID_aluno;
+    this.carregarContrato(alunoId, mensalidadeId, tipo);
   },
 
   async carregarContrato(alunoIdForced = null, mensalidadeIdForced = null, tipoForced = null) {

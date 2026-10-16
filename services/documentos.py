@@ -179,7 +179,7 @@ def format_moeda(val):
     except Exception:
         return "R$ 0,00"
 
-def get_contratos_lista(ano=None, busca=None, turno=None):
+def get_contratos_lista(ano=None, busca=None, turno=None, aluno_id=None):
     sql = """
     SELECT 
         m.ID_mensalidade,
@@ -212,6 +212,9 @@ def get_contratos_lista(ano=None, busca=None, turno=None):
     WHERE 1=1
     """
     params = []
+    if aluno_id:
+        sql += " AND m.idaluno = ?"
+        params.append(aluno_id)
     if ano:
         sql += " AND m.ano_letivo = ?"
         params.append(ano)
@@ -219,9 +222,14 @@ def get_contratos_lista(ano=None, busca=None, turno=None):
         sql += " AND m.turno LIKE ?"
         params.append(f"%{turno}%")
     if busca:
-        sql += " AND (a.nome_aluno LIKE ? OR rf.nome LIKE ? OR rf.cpf LIKE ?)"
-        term = f"%{busca}%"
-        params.extend([term, term, term])
+        if str(busca).isdigit():
+            sql += " AND (a.ID_aluno = ? OR m.ID_mensalidade = ? OR a.nome_aluno LIKE ? OR rf.nome LIKE ? OR rf.cpf LIKE ?)"
+            term = f"%{busca}%"
+            params.extend([int(busca), int(busca), term, term, term])
+        else:
+            sql += " AND (a.nome_aluno LIKE ? OR rf.nome LIKE ? OR rf.cpf LIKE ?)"
+            term = f"%{busca}%"
+            params.extend([term, term, term])
         
     sql += " ORDER BY m.ano_letivo DESC, m.ID_mensalidade DESC"
     rows = query_all(sql, params)
@@ -235,6 +243,45 @@ def get_contratos_lista(ano=None, busca=None, turno=None):
         d['data_inicio_fmt'] = format_data_br(d.get('data_inicio'))
         contratos.append(d)
     return contratos
+
+def buscar_alunos_com_contratos(termo):
+    if not termo:
+        termo = ''
+    termo = str(termo).strip()
+    sql = """
+    SELECT a.ID_aluno as id, a.nome_aluno as nome, a.datanasc, a.etapa, a.turno, a.ano_letivo,
+           t.nome_turma,
+           rf.nome as resp_fin_nome, rf.cpf as resp_fin_cpf,
+           ra.nome as resp_acad_nome,
+           (SELECT COUNT(*) FROM tb_mensalidades m WHERE m.idaluno = a.ID_aluno) as total_contratos
+    FROM tb_alunos a
+    LEFT JOIN tb_alunos_turmas at ON a.ID_aluno = at.idaluno
+    LEFT JOIN tb_turmas t ON at.idturma = t.ID_turma
+    LEFT JOIN tb_responsavel_financeiro rf ON a.ID_aluno = rf.idaluno
+    LEFT JOIN tb_responsavel_academico ra ON a.ID_aluno = ra.idaluno
+    WHERE 1=1
+    """
+    params = []
+    if termo:
+        if termo.isdigit():
+            sql += " AND (a.ID_aluno = ? OR a.nome_aluno LIKE ?)"
+            params.extend([int(termo), f"%{termo}%"])
+        else:
+            sql += " AND a.nome_aluno LIKE ?"
+            params.append(f"%{termo}%")
+            
+    sql += """
+    GROUP BY a.ID_aluno
+    ORDER BY total_contratos DESC, a.nome_aluno ASC
+    LIMIT 40
+    """
+    rows = query_all(sql, params)
+    alunos = []
+    for r in rows:
+        d = dict(r)
+        d['datanasc_formatada'] = format_data_br(d.get('datanasc'))
+        alunos.append(d)
+    return alunos
 
 def get_contrato_dados(tipo, aluno_id=None, mensalidade_id=None, extra=None):
     if extra is None:
