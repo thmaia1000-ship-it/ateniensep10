@@ -21,6 +21,8 @@ const App = {
       }
     } else {
       this.showLogin();
+    }
+
     this.bindEvents();
 
     // Restaura estado salvo da barra lateral no desktop
@@ -43,8 +45,11 @@ const App = {
     try {
       const response = await fetch(endpoint, options);
       if (response.status === 401) {
-        this.logout();
-        throw new Error('Sessão expirada. Faça login novamente.');
+        if (endpoint !== '/api/auth/login') {
+          this.logout();
+          throw new Error('Sessão expirada. Faça login novamente.');
+        }
+        return await response.json();
       }
       return await response.json();
     } catch (err) {
@@ -53,33 +58,61 @@ const App = {
     }
   },
 
+  async handleLogin(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const userInput = document.getElementById('loginUser');
+    const passInput = document.getElementById('loginPass');
+    const u = userInput ? userInput.value.trim() : '';
+    const p = passInput ? passInput.value.trim() : '';
+    const errDiv = document.getElementById('loginError');
+    const submitBtn = document.getElementById('btnLoginSubmit');
+
+    if (errDiv) errDiv.classList.add('d-none');
+    if (!u || !p) {
+      if (errDiv) {
+        errDiv.innerText = 'Preencha o usuário e a senha.';
+        errDiv.classList.remove('d-none');
+      }
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Acessando...';
+    }
+
+    try {
+      const res = await this.api('/api/auth/login', 'POST', { username: u, password: p });
+      if (res && res.token) {
+        this.token = res.token;
+        this.user = res;
+        localStorage.setItem('ateniense_token', this.token);
+        localStorage.setItem('ateniense_user', JSON.stringify(this.user));
+        this.showApp();
+      } else {
+        if (errDiv) {
+          errDiv.innerText = (res && res.error) ? res.error : 'Credenciais inválidas. Verifique usuário e senha.';
+          errDiv.classList.remove('d-none');
+        }
+      }
+    } catch (err) {
+      if (errDiv) {
+        errDiv.innerText = err.message || 'Erro ao conectar ao servidor';
+        errDiv.classList.remove('d-none');
+      }
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-1"></i> ACESSAR SISTEMA';
+      }
+    }
+  },
+
   bindEvents() {
     // Formulário de Login
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-      loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const u = document.getElementById('loginUser').value;
-        const p = document.getElementById('loginPass').value;
-        const errDiv = document.getElementById('loginError');
-        errDiv.classList.add('d-none');
-        try {
-          const res = await this.api('/api/auth/login', 'POST', { username: u, password: p });
-          if (res.token) {
-            this.token = res.token;
-            this.user = res;
-            localStorage.setItem('ateniense_token', this.token);
-            localStorage.setItem('ateniense_user', JSON.stringify(this.user));
-            this.showApp();
-          } else {
-            errDiv.innerText = res.error || 'Credenciais inválidas';
-            errDiv.classList.remove('d-none');
-          }
-        } catch (e) {
-          errDiv.innerText = e.message || 'Erro ao conectar ao servidor';
-          errDiv.classList.remove('d-none');
-        }
-      });
+      loginForm.addEventListener('submit', (e) => this.handleLogin(e));
     }
 
     // Toggle menu dropdowns

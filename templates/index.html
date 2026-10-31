@@ -25,7 +25,7 @@
 
       <div id="loginError" class="alert alert-danger py-2 d-none" role="alert"></div>
 
-      <form id="loginForm">
+      <form id="loginForm" onsubmit="App.handleLogin(event); return false;">
         <div class="mb-3">
           <label class="form-label text-secondary small fw-bold">USUÁRIO</label>
           <div class="input-group">
@@ -42,7 +42,7 @@
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" style="background-color: #0b3c68; border-color: #0b3c68;">
+        <button type="submit" id="btnLoginSubmit" class="btn btn-primary w-100 py-2 fw-bold" style="background-color: #0b3c68; border-color: #0b3c68;">
           <i class="bi bi-box-arrow-in-right me-1"></i> ACESSAR SISTEMA
         </button>
       </form>

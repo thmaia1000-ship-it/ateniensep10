@@ -10,8 +10,10 @@ from database.db import query_all, query_one, execute
 SESSIONS = {}
 
 def authenticate(username, password):
+    username = (username or '').strip()
+    password = (password or '').strip()
     user = query_one(
-        "SELECT ID_usuario, nome_usuario, username, nivel_usuario, status FROM tb_usuarios WHERE username = ? AND senha = ?",
+        "SELECT ID_usuario, nome_usuario, username, nivel_usuario, status FROM tb_usuarios WHERE LOWER(TRIM(username)) = LOWER(?) AND TRIM(senha) = ?",
         (username, password)
     )
     if user:
