@@ -58,12 +58,17 @@
     
     <!-- SIDEBAR -->
     <aside class="sidebar">
-      <div class="brand">
-        <img src="/static/img/LogoAteniense.png" alt="Ateniense">
-        <div>
-          <div class="brand-title">ATENIENSE</div>
-          <div class="brand-sub">Master Escolar</div>
+      <div class="brand d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <img src="/static/img/LogoAteniense.png" alt="Ateniense">
+          <div>
+            <div class="brand-title">ATENIENSE</div>
+            <div class="brand-sub">Master Escolar</div>
+          </div>
         </div>
+        <button class="btn btn-sm btn-link text-white-50 p-1 text-decoration-none" id="sidebarCollapseBtn" title="Esconder menu lateral">
+          <i class="bi bi-chevron-left fs-5"></i>
+        </button>
       </div>
 
       <ul class="sidebar-nav">
@@ -180,13 +185,18 @@
       </ul>
     </aside>
 
+    <!-- BACKDROP MOBILE -->
+    <div class="sidebar-backdrop-overlay" id="sidebarBackdrop"></div>
+
     <!-- MAIN WRAPPER -->
     <div class="main-wrapper">
       
       <!-- TOPBAR -->
       <header class="topbar">
         <div class="topbar-left">
-          <button class="btn btn-sm btn-light border d-md-none" id="sidebarToggle"><i class="bi bi-list fs-5"></i></button>
+          <button class="btn btn-sm btn-light border px-2 py-1 shadow-sm me-2" id="sidebarToggle" title="Ocultar / Mostrar Menu Lateral">
+            <i class="bi bi-layout-sidebar-inset fs-5 text-primary" id="sidebarToggleIcon"></i>
+          </button>
           <h5 class="topbar-title">Centro Educacional Ateniense</h5>
         </div>
         <div class="topbar-right">
@@ -208,12 +218,20 @@
 
         <!-- ================= VIEW: DASHBOARD ================= -->
         <section id="view-dashboard" class="view-content">
-          <div class="d-flex justify-content-between align-items-center mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <div>
               <h4 class="fw-bold text-dark mb-1">Painel Geral do Sistema</h4>
-              <p class="text-muted small mb-0">Visão consolidada acadêmica, financeira e administrativa</p>
+              <p class="text-muted small mb-0">Visão consolidada acadêmica, financeira e acesso rápido a todos os módulos</p>
             </div>
-            <button class="btn btn-sm btn-outline-primary" onclick="App.loadDashboard()"><i class="bi bi-arrow-clockwise"></i> Atualizar</button>
+            <div class="d-flex gap-2 align-items-center">
+              <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 shadow-sm" id="btnToggleSidebarDash" onclick="App.toggleSidebar()" title="Alternar visibilidade do menu lateral">
+                <i class="bi bi-layout-sidebar-inset fs-6"></i>
+                <span id="btnToggleSidebarDashText">Ocultar Menu Lateral</span>
+              </button>
+              <button class="btn btn-sm btn-primary d-flex align-items-center gap-1 shadow-sm" onclick="App.loadDashboard()">
+                <i class="bi bi-arrow-clockwise"></i> Atualizar Dados
+              </button>
+            </div>
           </div>
 
           <!-- CARDS DE ESTATÍSTICA -->
@@ -250,35 +268,226 @@
             </div>
           </div>
 
-          <!-- ATALHOS RÁPIDOS ORIGINAIS DO SISTEMA C# -->
+          <!-- ================= MÓDULOS & MENUS DO SISTEMA (BOTÕES GRANDES QUADRADOS COM CANTOS ARREDONDADOS) ================= -->
           <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body p-3">
-              <h6 class="fw-bold text-primary mb-3"><i class="bi bi-lightning-charge"></i> Atalhos de Ação Rápida</h6>
-              <div class="row g-2">
-                <div class="col-6 col-md-3">
-                  <button class="quick-btn w-100" onclick="App.navigate('secretaria-nova-matricula')">
-                    <i class="bi bi-person-plus text-primary"></i>
-                    <span>Nova Matrícula</span>
-                  </button>
+            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center flex-wrap gap-3">
+              <div>
+                <h5 class="fw-bold text-primary mb-1">
+                  <i class="bi bi-grid-fill me-2"></i>Módulos e Menus do Sistema
+                </h5>
+                <p class="text-muted small mb-0">Acesse diretamente qualquer área do Ateniense pelos botões abaixo</p>
+              </div>
+
+              <!-- Filtro de Categorias e Busca Rápida -->
+              <div class="d-flex gap-2 align-items-center flex-wrap">
+                <div class="input-group input-group-sm" style="max-width: 210px;">
+                  <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                  <input type="text" id="dashMenuSearch" class="form-control bg-light border-start-0" placeholder="Filtrar menu..." onkeyup="App.filterDashboardTiles(this.value)">
                 </div>
-                <div class="col-6 col-md-3">
-                  <button class="quick-btn w-100" onclick="App.navigate('secretaria-consultar')">
-                    <i class="bi bi-search text-info"></i>
-                    <span>Consultar Alunos</span>
-                  </button>
+                <div class="btn-group btn-group-sm" role="group" id="dashCategoryFilters">
+                  <button type="button" class="btn btn-outline-primary active" onclick="App.filterDashboardCategory('todos', this)">Todos</button>
+                  <button type="button" class="btn btn-outline-primary" onclick="App.filterDashboardCategory('secretaria', this)">Secretaria</button>
+                  <button type="button" class="btn btn-outline-primary" onclick="App.filterDashboardCategory('academico', this)">Acadêmico</button>
+                  <button type="button" class="btn btn-outline-primary" onclick="App.filterDashboardCategory('financeiro', this)">Financeiro</button>
+                  <button type="button" class="btn btn-outline-primary" onclick="App.filterDashboardCategory('contabil', this)">Contábil</button>
+                  <button type="button" class="btn btn-outline-primary" onclick="App.filterDashboardCategory('produtos', this)">Produtos/PDV</button>
+                  <button type="button" class="btn btn-outline-primary" onclick="App.filterDashboardCategory('sistema', this)">Sistema</button>
                 </div>
-                <div class="col-6 col-md-3">
-                  <button class="quick-btn w-100" onclick="App.navigate('financeiro-caixa')">
-                    <i class="bi bi-cash-stack text-success"></i>
-                    <span>Frente de Caixa</span>
-                  </button>
+              </div>
+            </div>
+
+            <div class="card-body p-3 p-md-4 pt-0">
+              <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3" id="dashMenuTilesContainer">
+                
+                <!-- 1. SECRETARIA -->
+                <div class="col dash-tile-col" data-category="secretaria" data-title="nova matricula aluno cadastrar">
+                  <div class="dash-menu-tile" onclick="App.navigate('secretaria-nova-matricula')">
+                    <div class="dash-tile-icon-box dash-icon-blue"><i class="bi bi-person-plus-fill"></i></div>
+                    <div class="dash-tile-title">Nova Matrícula</div>
+                    <span class="dash-tile-badge">Secretaria</span>
+                  </div>
                 </div>
-                <div class="col-6 col-md-3">
-                  <button class="quick-btn w-100" onclick="App.navigate('academico-boletim')">
-                    <i class="bi bi-printer text-warning"></i>
-                    <span>Gerar Boletim</span>
-                  </button>
+
+                <div class="col dash-tile-col" data-category="secretaria" data-title="consultar alunos matriculas busca pesquisar">
+                  <div class="dash-menu-tile" onclick="App.navigate('secretaria-consultar')">
+                    <div class="dash-tile-icon-box dash-icon-teal"><i class="bi bi-search"></i></div>
+                    <div class="dash-tile-title">Consultar Alunos</div>
+                    <span class="dash-tile-badge">Secretaria</span>
+                  </div>
                 </div>
+
+                <div class="col dash-tile-col" data-category="secretaria" data-title="criar editar curso cursos escolares series">
+                  <div class="dash-menu-tile" onclick="App.navigate('secretaria-cursos')">
+                    <div class="dash-tile-icon-box dash-icon-purple"><i class="bi bi-mortarboard-fill"></i></div>
+                    <div class="dash-tile-title">Criar / Editar Curso</div>
+                    <span class="dash-tile-badge">Secretaria</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="secretaria" data-title="responsavel academico responsaveis pais">
+                  <div class="dash-menu-tile" onclick="App.navigate('secretaria-resp-acad')">
+                    <div class="dash-tile-icon-box dash-icon-navy"><i class="bi bi-person-vcard-fill"></i></div>
+                    <div class="dash-tile-title">Resp. Acadêmico</div>
+                    <span class="dash-tile-badge">Secretaria</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="secretaria" data-title="responsavel financeiro pagador cobranca">
+                  <div class="dash-menu-tile" onclick="App.navigate('secretaria-resp-fin')">
+                    <div class="dash-tile-icon-box dash-icon-green"><i class="bi bi-wallet2"></i></div>
+                    <div class="dash-tile-title">Resp. Financeiro</div>
+                    <span class="dash-tile-badge">Secretaria</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="secretaria" data-title="gestao de turmas classes salas horarios">
+                  <div class="dash-menu-tile" onclick="App.navigate('secretaria-turmas')">
+                    <div class="dash-tile-icon-box dash-icon-orange"><i class="bi bi-diagram-3-fill"></i></div>
+                    <div class="dash-tile-title">Gestão de Turmas</div>
+                    <span class="dash-tile-badge">Secretaria</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="secretaria" data-title="professores docentes quadro de aulas">
+                  <div class="dash-menu-tile" onclick="App.navigate('secretaria-professores')">
+                    <div class="dash-tile-icon-box dash-icon-indigo"><i class="bi bi-person-badge-fill"></i></div>
+                    <div class="dash-tile-title">Professores</div>
+                    <span class="dash-tile-badge">Secretaria</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="secretaria" data-title="declaracoes oficiais documentos certidao escolar transferencia">
+                  <div class="dash-menu-tile" onclick="App.navigate('secretaria-declaracoes')">
+                    <div class="dash-tile-icon-box dash-icon-amber"><i class="bi bi-file-earmark-text-fill"></i></div>
+                    <div class="dash-tile-title">Declarações Oficiais</div>
+                    <span class="dash-tile-badge">Secretaria</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="secretaria" data-title="contratos carne termo de matricula impressao prestacao servicos">
+                  <div class="dash-menu-tile" onclick="App.navigate('secretaria-contratos')">
+                    <div class="dash-tile-icon-box dash-icon-pink"><i class="bi bi-file-earmark-ruled-fill"></i></div>
+                    <div class="dash-tile-title">Contratos</div>
+                    <span class="dash-tile-badge">Secretaria</span>
+                  </div>
+                </div>
+
+                <!-- 2. ACADÊMICO -->
+                <div class="col dash-tile-col" data-category="academico" data-title="gerar boletim notas escolar medias bimestrais">
+                  <div class="dash-menu-tile" onclick="App.navigate('academico-boletim')">
+                    <div class="dash-tile-icon-box dash-icon-indigo"><i class="bi bi-file-earmark-spreadsheet-fill"></i></div>
+                    <div class="dash-tile-title">Gerar Boletim</div>
+                    <span class="dash-tile-badge">Acadêmico</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="academico" data-title="diario online presenca notas frequencia lancamentos">
+                  <div class="dash-menu-tile" onclick="App.navigate('academico-diario')">
+                    <div class="dash-tile-icon-box dash-icon-blue"><i class="bi bi-journal-bookmark-fill"></i></div>
+                    <div class="dash-tile-title">Diário Online</div>
+                    <span class="dash-tile-badge">Acadêmico</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="academico" data-title="definir bimestres periodos letivos calendario">
+                  <div class="dash-menu-tile" onclick="App.navigate('academico-bimestre')">
+                    <div class="dash-tile-icon-box dash-icon-purple"><i class="bi bi-calendar4-week"></i></div>
+                    <div class="dash-tile-title">Definir Bimestres</div>
+                    <span class="dash-tile-badge">Acadêmico</span>
+                  </div>
+                </div>
+
+                <!-- 3. FINANCEIRO -->
+                <div class="col dash-tile-col" data-category="financeiro" data-title="livro caixa entradas faturamento fluxo de caixa lancamentos">
+                  <div class="dash-menu-tile" onclick="App.navigate('financeiro-caixa')">
+                    <div class="dash-tile-icon-box dash-icon-green"><i class="bi bi-inbox-fill"></i></div>
+                    <div class="dash-tile-title">Livro Caixa</div>
+                    <span class="dash-tile-badge">Financeiro</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="financeiro" data-title="receber mensalidade mensalidades carne pagamento parcelas baixa">
+                  <div class="dash-menu-tile" onclick="App.navigate('financeiro-mensalidades')">
+                    <div class="dash-tile-icon-box dash-icon-teal"><i class="bi bi-receipt-cutoff"></i></div>
+                    <div class="dash-tile-title">Receber Mensalidade</div>
+                    <span class="dash-tile-badge">Financeiro</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="financeiro" data-title="tabela de mensalidades precos cursos horarios valores">
+                  <div class="dash-menu-tile" onclick="App.navigate('financeiro-tabela-mensalidades')">
+                    <div class="dash-tile-icon-box dash-icon-gold"><i class="bi bi-tags-fill"></i></div>
+                    <div class="dash-tile-title">Tabela Mensalidades</div>
+                    <span class="dash-tile-badge">Financeiro</span>
+                  </div>
+                </div>
+
+                <!-- 4. CONTÁBIL -->
+                <div class="col dash-tile-col" data-category="contabil" data-title="despesas saidas contas a pagar custos fornecedores">
+                  <div class="dash-menu-tile" onclick="App.navigate('contabil-despesas')">
+                    <div class="dash-tile-icon-box dash-icon-red"><i class="bi bi-arrow-down-circle-fill"></i></div>
+                    <div class="dash-tile-title">Despesas</div>
+                    <span class="dash-tile-badge">Contábil</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="contabil" data-title="dre gerencial demonstrativo resultado financeiro relatorio lucro">
+                  <div class="dash-menu-tile" onclick="App.navigate('contabil-dre')">
+                    <div class="dash-tile-icon-box dash-icon-navy"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="dash-tile-title">DRE Gerencial</div>
+                    <span class="dash-tile-badge">Contábil</span>
+                  </div>
+                </div>
+
+                <!-- 5. PRODUTOS & PDV -->
+                <div class="col dash-tile-col" data-category="produtos" data-title="produtos estoque precos uniformes material escolar itens">
+                  <div class="dash-menu-tile" onclick="App.navigate('produtos-gestao')">
+                    <div class="dash-tile-icon-box dash-icon-orange"><i class="bi bi-box-seam-fill"></i></div>
+                    <div class="dash-tile-title">Estoque & Preços</div>
+                    <span class="dash-tile-badge">Produtos/PDV</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="produtos" data-title="pdv frente de caixa venda rapida balcao cupom">
+                  <div class="dash-menu-tile" onclick="App.navigate('produtos-pdv')">
+                    <div class="dash-tile-icon-box dash-icon-green"><i class="bi bi-upc-scan"></i></div>
+                    <div class="dash-tile-title">PDV (Frente Caixa)</div>
+                    <span class="dash-tile-badge">Produtos/PDV</span>
+                  </div>
+                </div>
+
+                <!-- 6. SISTEMA & APLICATIVOS -->
+                <div class="col dash-tile-col" data-category="sistema" data-title="usuarios permissoes gestao de acessos senhas niveis">
+                  <div class="dash-menu-tile" onclick="App.navigate('config-usuarios')">
+                    <div class="dash-tile-icon-box dash-icon-navy"><i class="bi bi-people-fill"></i></div>
+                    <div class="dash-tile-title">Gestão de Usuários</div>
+                    <span class="dash-tile-badge">Sistema</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="sistema" data-title="importar banco sql restaurar backup dump tabelas dados">
+                  <div class="dash-menu-tile" onclick="App.abrirModalReimportar()">
+                    <div class="dash-tile-icon-box dash-icon-gold"><i class="bi bi-database-fill-gear"></i></div>
+                    <div class="dash-tile-title">Importar Banco SQL</div>
+                    <span class="dash-tile-badge">Sistema</span>
+                  </div>
+                </div>
+
+                <div class="col dash-tile-col" data-category="sistema" data-title="aplicativo windows .exe desktop software gerar executavel bat">
+                  <div class="dash-menu-tile" onclick="App.navigate('aplicativos')">
+                    <div class="dash-tile-icon-box dash-icon-blue"><i class="bi bi-window-desktop"></i></div>
+                    <div class="dash-tile-title">Aplicativo Windows (.exe)</div>
+                    <span class="dash-tile-badge">Aplicativos</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Mensagem de busca vazia -->
+              <div id="dashMenuEmptyState" class="text-center py-4 d-none">
+                <i class="bi bi-search text-muted fs-1 mb-2 d-block"></i>
+                <h6 class="text-secondary fw-bold">Nenhum menu encontrado para sua busca</h6>
+                <p class="text-muted small mb-0">Tente buscar por outro termo ou selecione "Todos".</p>
               </div>
             </div>
           </div>

@@ -31,7 +31,7 @@ body {
   z-index: 1040;
   box-shadow: 2px 0 10px rgba(0,0,0,0.15);
   overflow-y: auto;
-  transition: all 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .sidebar .brand {
@@ -149,7 +149,51 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Sidebar Toggle / Collapsed State */
+body.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+  box-shadow: none;
+}
+
+body.sidebar-collapsed .main-wrapper {
+  margin-left: 0;
+}
+
+/* Mobile Sidebar Behavior */
+.sidebar-backdrop-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1035;
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@media (max-width: 991.98px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .main-wrapper {
+    margin-left: 0;
+  }
+  body.sidebar-mobile-open {
+    overflow: hidden;
+  }
+  body.sidebar-mobile-open .sidebar {
+    transform: translateX(0);
+  }
+  body.sidebar-mobile-open .sidebar-backdrop-overlay {
+    display: block;
+    opacity: 1;
+  }
 }
 
 .topbar {
@@ -282,6 +326,97 @@ body {
 .quick-btn i {
   font-size: 1.6rem;
 }
+
+/* ================= DASHBOARD SQUARE TILES (BOTÕES GRANDES QUADRADOS COM CANTOS ARREDONDADOS) ================= */
+.dash-menu-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  aspect-ratio: 1 / 1;
+  min-height: 135px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 14px 10px;
+  cursor: pointer;
+  position: relative;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  user-select: none;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+.dash-menu-tile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px -4px rgba(11, 60, 104, 0.16), 0 4px 8px -2px rgba(0, 0, 0, 0.06);
+  border-color: #0b3c68;
+  background: #ffffff;
+}
+
+.dash-menu-tile:active {
+  transform: translateY(-1px) scale(0.97);
+}
+
+.dash-tile-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  margin-bottom: 10px;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.dash-menu-tile:hover .dash-tile-icon-box {
+  transform: scale(1.12);
+}
+
+.dash-tile-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.25;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.dash-tile-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  color: #64748b;
+  background-color: #f1f5f9;
+  white-space: nowrap;
+}
+
+/* Paleta de cores para os ícones */
+.dash-icon-blue { background: #e0f2fe; color: #0284c7; }
+.dash-icon-indigo { background: #e0e7ff; color: #4f46e5; }
+.dash-icon-purple { background: #f3e8ff; color: #9333ea; }
+.dash-icon-pink { background: #fce7f3; color: #db2777; }
+.dash-icon-green { background: #dcfce7; color: #16a34a; }
+.dash-icon-teal { background: #ccfbf1; color: #0d9488; }
+.dash-icon-amber { background: #fef3c7; color: #d97706; }
+.dash-icon-orange { background: #ffedd5; color: #ea580c; }
+.dash-icon-red { background: #fee2e2; color: #dc2626; }
+.dash-icon-navy { background: #e2e8f0; color: #0f172a; }
+.dash-icon-gold { background: #fef9c3; color: #ca8a04; }
 
 /* Tables */
 .table-custom {

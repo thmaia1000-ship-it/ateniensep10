@@ -21,9 +21,14 @@ const App = {
       }
     } else {
       this.showLogin();
-    }
-
     this.bindEvents();
+
+    // Restaura estado salvo da barra lateral no desktop
+    const isSidebarCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+    if (isSidebarCollapsed && window.innerWidth >= 992) {
+      document.body.classList.add('sidebar-collapsed');
+      this.updateSidebarToggleUi(true);
+    }
   },
 
   async api(endpoint, method = 'GET', data = null) {
@@ -103,6 +108,111 @@ const App = {
     if (btnLogout) {
       btnLogout.addEventListener('click', () => this.logout());
     }
+
+    // Toggle menu lateral (Desktop e Mobile)
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) {
+      sidebarToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.toggleSidebar();
+      });
+    }
+
+    const sidebarCollapseBtn = document.getElementById('sidebarCollapseBtn');
+    if (sidebarCollapseBtn) {
+      sidebarCollapseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.toggleSidebar();
+      });
+    }
+
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    if (sidebarBackdrop) {
+      sidebarBackdrop.addEventListener('click', () => {
+        document.body.classList.remove('sidebar-mobile-open');
+      });
+    }
+  },
+
+  toggleSidebar() {
+    const isMobile = window.innerWidth < 992;
+    if (isMobile) {
+      document.body.classList.toggle('sidebar-mobile-open');
+    } else {
+      const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+      localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+      this.updateSidebarToggleUi(isCollapsed);
+    }
+  },
+
+  updateSidebarToggleUi(isCollapsed) {
+    const btnDashText = document.getElementById('btnToggleSidebarDashText');
+    if (btnDashText) {
+      btnDashText.innerText = isCollapsed ? 'Mostrar Menu Lateral' : 'Ocultar Menu Lateral';
+    }
+    const icon = document.getElementById('sidebarToggleIcon');
+    if (icon) {
+      if (isCollapsed) {
+        icon.classList.remove('bi-layout-sidebar-inset');
+        icon.classList.add('bi-layout-sidebar');
+      } else {
+        icon.classList.remove('bi-layout-sidebar');
+        icon.classList.add('bi-layout-sidebar-inset');
+      }
+    }
+  },
+
+  filterDashboardCategory(category, btnElement) {
+    if (btnElement) {
+      const parent = btnElement.parentElement;
+      if (parent) {
+        parent.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      }
+      btnElement.classList.add('active');
+    }
+
+    const searchInput = document.getElementById('dashMenuSearch');
+    if (searchInput) searchInput.value = '';
+
+    const cols = document.querySelectorAll('#dashMenuTilesContainer .dash-tile-col');
+    let visibleCount = 0;
+
+    cols.forEach(col => {
+      const colCat = col.getAttribute('data-category');
+      if (category === 'todos' || colCat === category) {
+        col.classList.remove('d-none');
+        visibleCount++;
+      } else {
+        col.classList.add('d-none');
+      }
+    });
+
+    const empty = document.getElementById('dashMenuEmptyState');
+    if (empty) {
+      empty.classList.toggle('d-none', visibleCount > 0);
+    }
+  },
+
+  filterDashboardTiles(query) {
+    const q = (query || '').toLowerCase().trim();
+    const cols = document.querySelectorAll('#dashMenuTilesContainer .dash-tile-col');
+    let visibleCount = 0;
+
+    cols.forEach(col => {
+      const title = (col.getAttribute('data-title') || '').toLowerCase();
+      const text = col.innerText.toLowerCase();
+      if (!q || title.includes(q) || text.includes(q)) {
+        col.classList.remove('d-none');
+        visibleCount++;
+      } else {
+        col.classList.add('d-none');
+      }
+    });
+
+    const empty = document.getElementById('dashMenuEmptyState');
+    if (empty) {
+      empty.classList.toggle('d-none', visibleCount > 0);
+    }
   },
 
   showLogin() {
@@ -138,6 +248,11 @@ const App = {
   async navigate(view) {
     this.currentView = view;
     
+    // Fecha menu no mobile ao navegar
+    if (document.body.classList.contains('sidebar-mobile-open')) {
+      document.body.classList.remove('sidebar-mobile-open');
+    }
+
     // Atualiza links ativos
     document.querySelectorAll('[data-view]').forEach(el => {
       el.classList.toggle('active', el.getAttribute('data-view') === view);
