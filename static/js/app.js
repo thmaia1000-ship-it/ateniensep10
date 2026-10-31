@@ -32,6 +32,9 @@ const App = {
       document.body.classList.add('sidebar-collapsed');
       this.updateSidebarToggleUi(true);
     }
+
+    const footerYear = document.getElementById('currentYearFooter');
+    if (footerYear) footerYear.textContent = new Date().getFullYear();
   },
 
   async api(endpoint, method = 'GET', data = null) {

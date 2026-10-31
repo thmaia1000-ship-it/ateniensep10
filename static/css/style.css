@@ -1101,3 +1101,54 @@ body.dark-theme .quick-btn:hover {
   color: #000000 !important;
 }
 
+/* ================= RODAPÉ GLOBAL DO PROJETO ================= */
+.app-footer {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: auto;
+  transition: all 0.3s ease;
+}
+
+[data-bs-theme="dark"] .app-footer,
+body.dark-theme .app-footer {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #94a3b8 !important;
+}
+
+.brand-trademark-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  transition: all 0.2s ease;
+}
+
+[data-bs-theme="dark"] .brand-trademark-badge,
+body.dark-theme .brand-trademark-badge {
+  background-color: rgba(14, 165, 233, 0.15) !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+.login-footer-pill {
+  transition: all 0.3s ease;
+}
+
+[data-bs-theme="dark"] .login-footer-pill,
+body.dark-theme .login-footer-pill {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #94a3b8 !important;
+}
+
