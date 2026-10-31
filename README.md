@@ -103,3 +103,44 @@ Todas formatadas em padrão timbrado oficial do **Centro Educacional Ateniense**
 - Declaração de Frequência Escolar
 - Guia de Transferência
 - Termo de Rescisão Contratual
+
+---
+
+## 🌐 Publicação Universal em Produção (ateniensep10.agenciabr3.com.br)
+
+O projeto está 100% preparado para rodar em produção no domínio **https://ateniensep10.agenciabr3.com.br**.
+
+### 1. No Servidor (via Git)
+```bash
+git clone https://github.com/thmaia1000-ship-it/ateniensep10.git /var/www/ateniense
+cd /var/www/ateniense
+```
+
+### 2. Configurar o Nginx (Proxy Reverso)
+Copie o arquivo `nginx.conf` incluído no projeto:
+```bash
+sudo cp nginx.conf /etc/nginx/sites-available/ateniense
+sudo ln -s /etc/nginx/sites-available/ateniense /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 3. Ativar o Certificado SSL Gratuito (HTTPS)
+```bash
+sudo certbot --nginx -d ateniensep10.agenciabr3.com.br
+```
+
+### 4. Manter o Sistema Ativo 24/7 (Systemd)
+```bash
+sudo cp ateniense.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable ateniense
+sudo systemctl start ateniense
+```
+
+### 5. Atualizações Futuras
+Basta rodar no servidor:
+```bash
+./deploy.sh
+```
+

@@ -709,7 +709,9 @@ def run(port=8080):
     httpd = ThreadingHTTPServer(server_address, AtenienseHandler)
     print(f"==================================================")
     print(f"🎓 MASTER ESCOLAR ATENIENSE - PLATAFORMA WEB ONLINE")
-    print(f"🔗 Servidor rodando em http://localhost:{port}")
+    print(f"🔗 Servidor rodando na porta {port}")
+    print(f"🌐 Domínio Oficial: https://ateniensep10.agenciabr3.com.br")
+    print(f"💻 Acesso Local: http://localhost:{port}")
     print(f"==================================================")
     try:
         httpd.serve_forever()
@@ -718,5 +720,5 @@ def run(port=8080):
         httpd.server_close()
 
 if __name__ == '__main__':
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
+    port = int(os.environ.get('PORT', sys.argv[1] if len(sys.argv) > 1 else 8080))
     run(port)

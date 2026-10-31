@@ -1,0 +1,29 @@
+# ==============================================================================
+# Serviço Systemd para Master Escolar Ateniense
+# Salve este arquivo em: /etc/systemd/system/ateniense.service
+# Para ativar:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable ateniense
+#   sudo systemctl start ateniense
+#   sudo systemctl status ateniense
+# ==============================================================================
+
+[Unit]
+Description=Master Escolar Ateniense - Servidor Web
+After=network.target
+
+[Service]
+Type=simple
+User=root
+# Altere o WorkingDirectory para a pasta onde o projeto estiver no seu servidor
+WorkingDirectory=/var/www/ateniense
+ExecStart=/usr/bin/python3 server.py 8080
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+Environment=PYTHONUNBUFFERED=1
+Environment=PORT=8080
+
+[Install]
+WantedBy=multi-user.target

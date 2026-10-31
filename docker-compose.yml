@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  ateniense:
+    build: .
+    container_name: ateniense_master_escolar
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mantém os dados do banco persistidos no host
+      - ./database:/app/database
+    environment:
+      - PORT=8080
+      - PYTHONUNBUFFERED=1
