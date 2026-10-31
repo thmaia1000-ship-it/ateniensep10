@@ -24,6 +24,7 @@ const App = {
     }
 
     this.bindEvents();
+    this.initTheme();
 
     // Restaura estado salvo da barra lateral no desktop
     const isSidebarCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
@@ -165,6 +166,47 @@ const App = {
         document.body.classList.remove('sidebar-mobile-open');
       });
     }
+
+    // Alternar Tema (Modo Escuro / Claro)
+    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.toggleTheme();
+      });
+    });
+  },
+
+  initTheme() {
+    const savedTheme = localStorage.getItem('ateniense_theme') || 'light';
+    this.setTheme(savedTheme);
+  },
+
+  setTheme(theme) {
+    const isDark = theme === 'dark';
+    document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+    document.body.classList.toggle('dark-theme', isDark);
+    localStorage.setItem('ateniense_theme', theme);
+    this.updateThemeIcons(isDark);
+  },
+
+  toggleTheme() {
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    this.setTheme(isDark ? 'light' : 'dark');
+  },
+
+  updateThemeIcons(isDark) {
+    const icons = document.querySelectorAll('.theme-toggle-icon');
+    icons.forEach(icon => {
+      if (isDark) {
+        icon.className = 'bi bi-sun-fill text-warning fs-6 theme-toggle-icon';
+      } else {
+        icon.className = 'bi bi-moon-stars text-secondary fs-6 theme-toggle-icon';
+      }
+    });
+    const btns = document.querySelectorAll('.theme-toggle-btn');
+    btns.forEach(btn => {
+      btn.setAttribute('title', isDark ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro');
+    });
   },
 
   toggleSidebar() {

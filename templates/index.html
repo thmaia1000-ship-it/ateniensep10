@@ -11,11 +11,26 @@
   <!-- Estilos customizados do Ateniense -->
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/LogoAteniense.png" type="image/png">
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('ateniense_theme');
+        if (savedTheme === 'dark') {
+          document.documentElement.setAttribute('data-bs-theme', 'dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
 
   <!-- ================= TELA DE LOGIN ================= -->
-  <div id="loginScreen" class="d-flex align-items-center justify-content-center min-vh-100" style="background: linear-gradient(135deg, #dbeafe 0%, #edf5fd 45%, #ffffff 100%);">
+  <div id="loginScreen" class="d-flex align-items-center justify-content-center min-vh-100 position-relative" style="background: linear-gradient(135deg, #dbeafe 0%, #edf5fd 45%, #ffffff 100%);">
+    <div class="position-absolute top-0 end-0 p-3">
+      <button class="btn btn-sm btn-light border shadow-sm theme-toggle-btn" id="themeToggleLoginBtn" title="Alternar Modo Escuro / Claro">
+        <i class="bi bi-moon-stars text-secondary fs-6 theme-toggle-icon"></i>
+      </button>
+    </div>
     <div class="card border-0 shadow-lg p-4" style="width: 100%; max-width: 420px; border-radius: 16px;">
       <div class="text-center mb-4">
         <img src="/static/img/LogoAteniense.png" alt="Colégio Ateniense" style="max-height: 80px;" class="mb-2">
@@ -200,6 +215,9 @@
           <h5 class="topbar-title">Centro Educacional Ateniense</h5>
         </div>
         <div class="topbar-right">
+          <button class="btn btn-sm btn-light border shadow-sm theme-toggle-btn" id="themeToggleBtn" title="Alternar Modo Escuro / Claro">
+            <i class="bi bi-moon-stars text-secondary fs-6 theme-toggle-icon"></i>
+          </button>
           <div class="user-badge">
             <div class="user-avatar" id="userAvatarLetter">A</div>
             <div class="d-none d-sm-block text-end">
