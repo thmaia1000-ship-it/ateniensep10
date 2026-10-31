@@ -3312,7 +3312,7 @@ const App = {
       const tbody = document.getElementById('tableDiario');
       if (tbody) {
         if (registros.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Nenhum registro de diário encontrado.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Nenhum registro de diário encontrado.</td></tr>';
         } else {
           tbody.innerHTML = registros.map(d => `
             <tr>
@@ -3321,13 +3321,18 @@ const App = {
               <td><span class="badge bg-primary">${d.nome_turma || d.serie || '-'}</span></td>
               <td><span class="fw-semibold text-secondary">${d.comp_curricular || '-'}</span></td>
               <td>
-                <div class="small text-truncate" style="max-width: 320px;" title="${d.conteudos || ''}">
+                <div class="small text-truncate" style="max-width: 250px;" title="${d.conteudos || ''}">
                   <strong>${d.conteudos || '-'}</strong>
                 </div>
-                ${d.objetivos ? `<div class="small text-muted text-truncate" style="max-width: 320px;">${d.objetivos}</div>` : ''}
+                ${d.objetivos ? `<div class="small text-muted text-truncate" style="max-width: 250px;">${d.objetivos}</div>` : ''}
+              </td>
+              <td>
+                <button class="btn btn-sm btn-outline-success fw-bold py-1 px-2" onclick="App.abrirChamadaDiario(${d.id})" title="Fazer chamada da aula">
+                  <i class="bi bi-clipboard-check me-1"></i> Chamada
+                </button>
               </td>
               <td class="text-end">
-                <button class="btn btn-sm btn-outline-primary fw-bold" onclick="App.verDetalhesDiario(${d.id})">
+                <button class="btn btn-sm btn-outline-primary fw-bold py-1 px-2" onclick="App.verDetalhesDiario(${d.id})">
                   <i class="bi bi-eye me-1"></i> Detalhes
                 </button>
               </td>
@@ -3496,10 +3501,270 @@ const App = {
           <div class="p-2 bg-light rounded border small">${d.avaliacao || '-'}</div>
         </div>
       </div>
+
+      <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+        <div>
+          <span class="small text-muted fw-bold">FREQUÊNCIA DOS ALUNOS:</span>
+          <span class="badge bg-success-subtle text-success border border-success ms-2">Diário de Classe</span>
+        </div>
+        <button class="btn btn-sm btn-success fw-bold px-3" onclick="bootstrap.Modal.getInstance(document.getElementById('modalVerDiarioDetalhes')).hide(); App.abrirChamadaDiario(${d.id})">
+          <i class="bi bi-clipboard-check me-1"></i> Abrir Frequência desta Aula
+        </button>
+      </div>
     `;
 
     const modal = new bootstrap.Modal(document.getElementById('modalVerDiarioDetalhes'));
     modal.show();
+  },
+
+  // 4.2.1 FREQUÊNCIA / CHAMADA DE ALUNOS NO DIÁRIO ONLINE
+  chamadaAlunosList: [],
+
+  async abrirChamadaDiario(diarioId) {
+    try {
+      const data = await this.api(`/api/diario/${diarioId}/frequencia`);
+      if (!data || data.error) {
+        alert('Erro ao carregar lista de frequência: ' + (data ? data.error : ''));
+        return;
+      }
+
+      document.getElementById('chamadaDiarioId').value = diarioId;
+      document.getElementById('chamadaTurmaId').value = data.turma ? data.turma.id : '';
+
+      const selTurma = document.getElementById('chamadaSelectTurma');
+      if (selTurma && data.turma) {
+        selTurma.innerHTML = `<option value="${data.turma.id}">${data.turma.nome_turma}</option>`;
+        selTurma.disabled = true;
+      }
+
+      const inputData = document.getElementById('chamadaInputData');
+      if (inputData) {
+        inputData.value = data.data;
+        inputData.disabled = true;
+      }
+
+      const infoPlano = document.getElementById('chamadaInfoPlanoAula');
+      if (infoPlano && data.diario) {
+        infoPlano.classList.remove('d-none');
+        infoPlano.innerHTML = `<i class="bi bi-info-circle me-1 text-primary"></i> Aula de <strong>${data.diario.comp_curricular}</strong> ministrada por <strong>${data.diario.nome_professor}</strong>`;
+      }
+
+      this.chamadaAlunosList = data.alunos || [];
+      this.renderChamadaList(data.ja_lancado);
+
+      const modal = new bootstrap.Modal(document.getElementById('modalChamadaDiario'));
+      modal.show();
+    } catch (e) {
+      console.error(e);
+      alert('Erro ao carregar frequência da aula: ' + e.message);
+    }
+  },
+
+  async abrirModalChamadaAvulsa() {
+    try {
+      const dataTurmas = await this.api('/api/turmas');
+      const selTurma = document.getElementById('chamadaSelectTurma');
+      if (selTurma) {
+        selTurma.disabled = false;
+        selTurma.innerHTML = '<option value="">Selecione uma Turma / Classe...</option>' + 
+          (dataTurmas.turmas || []).map(t => `<option value="${t.id}">${t.nome_turma}</option>`).join('');
+      }
+
+      const inputData = document.getElementById('chamadaInputData');
+      if (inputData) {
+        inputData.disabled = false;
+        inputData.value = new Date().toISOString().split('T')[0];
+      }
+
+      document.getElementById('chamadaDiarioId').value = '';
+      document.getElementById('chamadaTurmaId').value = '';
+
+      const infoPlano = document.getElementById('chamadaInfoPlanoAula');
+      if (infoPlano) infoPlano.classList.add('d-none');
+
+      this.chamadaAlunosList = [];
+      this.renderChamadaList(false);
+
+      const modal = new bootstrap.Modal(document.getElementById('modalChamadaDiario'));
+      modal.show();
+    } catch (e) {
+      console.error(e);
+    }
+  },
+
+  async carregarAlunosChamadaAvulsa() {
+    const turmaId = document.getElementById('chamadaSelectTurma')?.value;
+    const data = document.getElementById('chamadaInputData')?.value;
+    if (!turmaId || !data) {
+      this.chamadaAlunosList = [];
+      this.renderChamadaList(false);
+      return;
+    }
+
+    try {
+      document.getElementById('chamadaTurmaId').value = turmaId;
+      const res = await this.api(`/api/frequencia?turma_id=${encodeURIComponent(turmaId)}&data=${encodeURIComponent(data)}`);
+      this.chamadaAlunosList = res.alunos || [];
+      this.renderChamadaList(res.ja_lancado);
+    } catch (e) {
+      console.error(e);
+    }
+  },
+
+  renderChamadaList(jaLancado = false) {
+    const badgeStatus = document.getElementById('chamadaBadgeStatus');
+    if (badgeStatus) {
+      if (jaLancado) {
+        badgeStatus.className = 'badge bg-success';
+        badgeStatus.innerText = 'Chamada Gravada';
+      } else {
+        badgeStatus.className = 'badge bg-warning text-dark';
+        badgeStatus.innerText = 'Não Gravada / Pendente';
+      }
+    }
+
+    const tbody = document.getElementById('chamadaTbodyAlunos');
+    if (!tbody) return;
+
+    if (this.chamadaAlunosList.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center py-4 text-muted">
+            <i class="bi bi-people fs-3 d-block mb-1 text-secondary opacity-50"></i>
+            Nenhum aluno matriculado nesta turma ou selecione uma turma acima.
+          </td>
+        </tr>
+      `;
+      this.atualizarContadoresChamada();
+      return;
+    }
+
+    tbody.innerHTML = this.chamadaAlunosList.map((a, idx) => {
+      const isPresente = a.status === 'PRESENTE';
+      return `
+        <tr id="chamada-row-${a.idaluno}" class="${isPresente ? '' : 'table-danger bg-opacity-25'}">
+          <td class="text-muted fw-bold">${idx + 1}</td>
+          <td>
+            <div class="fw-bold text-dark">${a.nome_aluno}</div>
+            <small class="text-muted">Matrícula: #${a.idaluno}</small>
+          </td>
+          <td class="text-center">
+            <span class="badge ${isPresente ? 'bg-success' : 'bg-danger'} px-2 py-1 fs-6" id="badge-status-${a.idaluno}">
+              ${isPresente ? '<i class="bi bi-check-circle me-1"></i>PRESENTE' : '<i class="bi bi-x-circle me-1"></i>FALTOU'}
+            </span>
+          </td>
+          <td class="text-center">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn ${isPresente ? 'btn-success fw-bold' : 'btn-outline-success'}" onclick="App.toggleStatusAluno(${a.idaluno}, 'PRESENTE')">
+                <i class="bi bi-check-lg"></i> Presença
+              </button>
+              <button type="button" class="btn ${!isPresente ? 'btn-danger fw-bold' : 'btn-outline-danger'}" onclick="App.toggleStatusAluno(${a.idaluno}, 'FALTOU')">
+                <i class="bi bi-x-lg"></i> Falta
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    this.atualizarContadoresChamada();
+  },
+
+  toggleStatusAluno(alunoId, novoStatus) {
+    const item = this.chamadaAlunosList.find(a => a.idaluno == alunoId);
+    if (!item) return;
+    item.status = novoStatus;
+
+    const row = document.getElementById(`chamada-row-${alunoId}`);
+    const badge = document.getElementById(`badge-status-${alunoId}`);
+    const isPresente = novoStatus === 'PRESENTE';
+
+    if (row) {
+      if (isPresente) {
+        row.classList.remove('table-danger', 'bg-opacity-25');
+      } else {
+        row.classList.add('table-danger', 'bg-opacity-25');
+      }
+      const btnGroup = row.querySelector('.btn-group');
+      if (btnGroup) {
+        btnGroup.innerHTML = `
+          <button type="button" class="btn ${isPresente ? 'btn-success fw-bold' : 'btn-outline-success'}" onclick="App.toggleStatusAluno(${alunoId}, 'PRESENTE')">
+            <i class="bi bi-check-lg"></i> Presença
+          </button>
+          <button type="button" class="btn ${!isPresente ? 'btn-danger fw-bold' : 'btn-outline-danger'}" onclick="App.toggleStatusAluno(${alunoId}, 'FALTOU')">
+            <i class="bi bi-x-lg"></i> Falta
+          </button>
+        `;
+      }
+    }
+
+    if (badge) {
+      badge.className = `badge ${isPresente ? 'bg-success' : 'bg-danger'} px-2 py-1 fs-6`;
+      badge.innerHTML = isPresente ? '<i class="bi bi-check-circle me-1"></i>PRESENTE' : '<i class="bi bi-x-circle me-1"></i>FALTOU';
+    }
+
+    this.atualizarContadoresChamada();
+  },
+
+  marcarTodosChamada(status) {
+    this.chamadaAlunosList.forEach(a => {
+      a.status = status;
+    });
+    this.renderChamadaList(false);
+  },
+
+  atualizarContadoresChamada() {
+    const total = this.chamadaAlunosList.length;
+    const presentes = this.chamadaAlunosList.filter(a => a.status === 'PRESENTE').length;
+    const faltas = total - presentes;
+
+    const bTotal = document.getElementById('chamadaBadgeTotal');
+    const bPres = document.getElementById('chamadaBadgePresentes');
+    const bFalt = document.getElementById('chamadaBadgeFaltas');
+
+    if (bTotal) bTotal.innerText = `Total: ${total}`;
+    if (bPres) bPres.innerText = `Presentes: ${presentes}`;
+    if (bFalt) bFalt.innerText = `Faltas: ${faltas}`;
+  },
+
+  async salvarChamada() {
+    const turmaId = document.getElementById('chamadaTurmaId')?.value || document.getElementById('chamadaSelectTurma')?.value;
+    const dataChamada = document.getElementById('chamadaInputData')?.value;
+    const diarioId = document.getElementById('chamadaDiarioId')?.value;
+
+    if (!turmaId) {
+      alert('Por favor, selecione uma turma.');
+      return;
+    }
+    if (!dataChamada) {
+      alert('Por favor, informe a data da aula.');
+      return;
+    }
+    if (this.chamadaAlunosList.length === 0) {
+      alert('Nenhum aluno carregado para registrar frequência.');
+      return;
+    }
+
+    const payload = {
+      turma_id: parseInt(turmaId),
+      data: dataChamada,
+      diario_id: diarioId ? parseInt(diarioId) : null,
+      registros: this.chamadaAlunosList.map(a => ({
+        idaluno: a.idaluno,
+        status: a.status
+      }))
+    };
+
+    try {
+      const res = await this.api('/api/frequencia', 'POST', payload);
+      alert(`Frequência gravada com sucesso!\nPresentes: ${res.presentes} | Faltas: ${res.faltas}`);
+      const modalEl = document.getElementById('modalChamadaDiario');
+      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) modalInstance.hide();
+      this.loadDiario();
+    } catch (e) {
+      alert('Erro ao gravar frequência: ' + e.message);
+    }
   },
 
   // 4.3 ACADÊMICO - DEFINIÇÃO DE BIMESTRES

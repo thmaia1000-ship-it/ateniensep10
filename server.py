@@ -141,7 +141,6 @@ class AtenienseHandler(BaseHTTPRequestHandler):
 
             # Dashboard Stats - Mês Vigente
             if path == '/api/dashboard':
-                from datetime import datetime
                 now = datetime.now()
                 mes_vigente_str = now.strftime('%Y-%m')
                 meses_nomes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
@@ -313,6 +312,25 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 turma_id = query.get('turma_id', [None])[0]
                 busca = query.get('busca', [None])[0]
                 self.send_json({'diario': academico_service.list_diario(turma_id, busca)})
+                return
+
+            if path.startswith('/api/diario/') and path.endswith('/frequencia'):
+                diario_id = int(path.split('/')[3])
+                freq = academico_service.get_frequencia_diario(diario_id)
+                if freq:
+                    self.send_json(freq)
+                else:
+                    self.send_json({'error': 'Registro de diário não encontrado'}, 404)
+                return
+
+            if path == '/api/frequencia':
+                turma_id = query.get('turma_id', [None])[0]
+                data_chamada = query.get('data', [datetime.now().strftime('%Y-%m-%d')])[0]
+                if not turma_id:
+                    self.send_json({'error': 'Parâmetro turma_id é obrigatório'}, 400)
+                    return
+                res = academico_service.get_frequencia(int(turma_id), data_chamada)
+                self.send_json(res)
                 return
 
             if path == '/api/materias':
@@ -506,6 +524,28 @@ class AtenienseHandler(BaseHTTPRequestHandler):
             if path == '/api/diario':
                 res = academico_service.create_diario(body, username)
                 self.send_json({'id': res, 'message': 'Registro de diário salvo com sucesso!'})
+                return
+
+            # Frequência / Chamada de Alunos
+            if path.startswith('/api/diario/') and path.endswith('/frequencia'):
+                diario_id = int(path.split('/')[3])
+                diario = academico_service.query_one("SELECT * FROM tb_diario WHERE ID_diario = ?", (diario_id,))
+                turma_id = int(body.get('turma_id') or (diario['turma'] if diario else 0))
+                data_chamada = body.get('data') or (diario['data_diario'] if diario else datetime.now().strftime('%Y-%m-%d'))
+                registros = body.get('registros', [])
+                res = academico_service.save_frequencia(turma_id, data_chamada, registros, username)
+                self.send_json(res)
+                return
+
+            if path == '/api/frequencia':
+                turma_id = int(body.get('turma_id', 0))
+                data_chamada = body.get('data', datetime.now().strftime('%Y-%m-%d'))
+                registros = body.get('registros', [])
+                if not turma_id:
+                    self.send_json({'error': 'turma_id é obrigatório'}, 400)
+                    return
+                res = academico_service.save_frequencia(turma_id, data_chamada, registros, username)
+                self.send_json(res)
                 return
 
             # Despesa Criar

@@ -223,24 +223,116 @@ def lancar_nota(aluno_id, materia_id, bimestre, nota, ano_letivo, usuario='ADMIN
         """, (nota_id, aluno_nome, materia_nome, str(nota), bimestre, aluno_id, materia_id, ano_letivo, data_gerada, usuario))
         return nota_id
 
-def list_faltas(turma_id=None, limit=100):
-    params = []
-    where = ""
-    if turma_id:
-        where = "WHERE f.turma = ?"
-        params.append(turma_id)
-    sql = f"""
-    SELECT 
-        f.ID_falta_historico as id,
-        f.data_falta,
-        f.status,
-        f.materia,
-        f.idaluno,
-        a.nome_aluno
-    FROM tb_faltas_historico f
-    LEFT JOIN tb_alunos a ON f.idaluno = a.ID_aluno
-    {where}
-    ORDER BY f.data_falta DESC, f.ID_falta_historico DESC
-    LIMIT {limit}
-    """
-    return query_all(sql, tuple(params))
+def get_bimestre_by_date(data_str):
+    if not data_str:
+        return 1
+    row = query_one("""
+    SELECT ID_bimestre FROM tb_bimestres
+    WHERE ? >= data_inicio AND ? <= data_fim
+    ORDER BY ID_bimestre ASC
+    """, (data_str, data_str))
+    if row:
+        return row['ID_bimestre']
+    try:
+        month = int(data_str.split('-')[1])
+        if month <= 4:
+            return 1
+        elif month <= 7:
+            return 2
+        elif month <= 9:
+            return 3
+        else:
+            return 4
+    except Exception:
+        return 1
+
+def get_frequencia(turma_id, data_chamada):
+    from services.secretaria import get_alunos_turma
+    turma = query_one("""
+    SELECT ID_turma as id, nome_turma, serie, turno, ano_letivo, idetapa, tipo
+    FROM tb_turmas WHERE ID_turma = ?
+    """, (turma_id,))
+    
+    alunos = get_alunos_turma(turma_id, status='ATIVO')
+    if not alunos:
+        alunos = get_alunos_turma(turma_id)
+        
+    existentes = query_all("""
+    SELECT idaluno, status FROM tb_faltas_historico
+    WHERE idturma = ? AND data_gerada = ?
+    """, (turma_id, data_chamada))
+    
+    status_map = {r['idaluno']: r['status'] for r in existentes}
+    
+    lista = []
+    for a in alunos:
+        st = status_map.get(a['id'], 'PRESENTE')
+        lista.append({
+            'idaluno': a['id'],
+            'nome_aluno': a['nome'],
+            'status': st,
+            'ja_registrado': a['id'] in status_map
+        })
+        
+    total_presentes = sum(1 for a in lista if a['status'] == 'PRESENTE')
+    total_faltas = sum(1 for a in lista if a['status'] == 'FALTOU')
+    
+    return {
+        'turma': turma,
+        'data': data_chamada,
+        'total_alunos': len(lista),
+        'presentes': total_presentes,
+        'faltas': total_faltas,
+        'ja_lancado': len(existentes) > 0,
+        'alunos': lista
+    }
+
+def get_frequencia_diario(diario_id):
+    diario = query_one("""
+    SELECT d.*, COALESCE(t.nome_turma, d.serie) as nome_turma
+    FROM tb_diario d
+    LEFT JOIN tb_turmas t ON d.turma = t.ID_turma
+    WHERE d.ID_diario = ?
+    """, (diario_id,))
+    if not diario:
+        return None
+        
+    turma_id = diario['turma']
+    data_diario = diario['data_diario']
+    freq = get_frequencia(turma_id, data_diario)
+    freq['diario'] = diario
+    return freq
+
+def save_frequencia(turma_id, data_chamada, registros, usuario='ADMIN'):
+    turma = query_one("SELECT * FROM tb_turmas WHERE ID_turma = ?", (turma_id,))
+    idetapa = turma['idetapa'] if turma and turma['idetapa'] else 1
+    ano_letivo = turma['ano_letivo'] if turma and turma['ano_letivo'] else int(data_chamada[:4])
+    bimestre = get_bimestre_by_date(data_chamada)
+    
+    execute("DELETE FROM tb_faltas_historico WHERE idturma = ? AND data_gerada = ?", (turma_id, data_chamada))
+    
+    next_id_row = query_one("SELECT COALESCE(MAX(ID_historico), 0) as max_id FROM tb_faltas_historico")
+    curr_id = next_id_row['max_id'] if next_id_row else 0
+    
+    for r in registros:
+        curr_id += 1
+        idaluno = int(r.get('idaluno'))
+        status = 'FALTOU' if str(r.get('status', '')).upper() == 'FALTOU' else 'PRESENTE'
+        execute("""
+        INSERT INTO tb_faltas_historico (
+            ID_historico, status, idaluno, idturma, bimestre, idetapa, ano_letivo, data_gerada, usuario
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (curr_id, status, idaluno, turma_id, bimestre, idetapa, ano_letivo, data_chamada, usuario))
+        
+    total = len(registros)
+    faltas = sum(1 for r in registros if str(r.get('status', '')).upper() == 'FALTOU')
+    presentes = total - faltas
+    
+    return {
+        'message': 'Frequência gravada com sucesso!',
+        'total': total,
+        'presentes': presentes,
+        'faltas': faltas,
+        'data': data_chamada,
+        'turma_id': turma_id
+    }

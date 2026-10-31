@@ -1541,9 +1541,14 @@
               <h4 class="fw-bold text-dark mb-1"><i class="bi bi-book text-primary me-2"></i>Diário Online de Classe</h4>
               <p class="text-muted small mb-0">Planos de aula, conteúdos ministrados, atividades e objetivos BNCC</p>
             </div>
-            <button class="btn btn-primary" onclick="App.abrirModalNovoDiario()">
-              <i class="bi bi-plus-lg me-1"></i> Novo Registro no Diário
-            </button>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-success shadow-sm fw-semibold" onclick="App.abrirModalChamadaAvulsa()">
+                <i class="bi bi-clipboard-check me-1"></i> Frequência da Aula
+              </button>
+              <button class="btn btn-primary shadow-sm fw-semibold" onclick="App.abrirModalNovoDiario()">
+                <i class="bi bi-plus-lg me-1"></i> Novo Registro no Diário
+              </button>
+            </div>
           </div>
 
           <div class="card border-0 shadow-sm mb-3">
@@ -1586,6 +1591,7 @@
                     <th>Turma / Série</th>
                     <th>Componente Curricular</th>
                     <th>Conteúdos & Habilidades</th>
+                    <th>Chamada / Frequência</th>
                     <th class="text-end">Ações</th>
                   </tr>
                 </thead>
@@ -2412,6 +2418,87 @@
         <div class="modal-body p-4" id="diarioDetalhesBody"></div>
         <div class="modal-footer bg-light">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: FREQUÊNCIA / CHAMADA DE ALUNOS ================= -->
+  <div class="modal fade" id="modalChamadaDiario" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-clipboard-check me-2"></i> Diário de Frequência - Presenças & Faltas
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="chamadaDiarioId" value="">
+          <input type="hidden" id="chamadaTurmaId" value="">
+
+          <!-- Cabeçalho de seleção/informações da chamada -->
+          <div class="card border-0 shadow-sm bg-light mb-3 p-3">
+            <div class="row g-2 align-items-center">
+              <div class="col-md-5">
+                <label class="form-label small fw-bold text-secondary mb-1">TURMA / CLASSE</label>
+                <select id="chamadaSelectTurma" class="form-select fw-bold text-primary" onchange="App.carregarAlunosChamadaAvulsa()"></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small fw-bold text-secondary mb-1">DATA DA AULA</label>
+                <input type="date" id="chamadaInputData" class="form-control fw-bold" onchange="App.carregarAlunosChamadaAvulsa()">
+              </div>
+              <div class="col-md-3 text-md-end pt-2 pt-md-0">
+                <div class="small text-muted fw-bold">STATUS DA CHAMADA</div>
+                <span class="badge bg-secondary" id="chamadaBadgeStatus">Carregando...</span>
+              </div>
+            </div>
+            <div id="chamadaInfoPlanoAula" class="small text-muted mt-2 d-none"></div>
+          </div>
+
+          <!-- Barra de Ações Rápidas & Estatísticas -->
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 p-2 bg-white rounded border">
+            <div class="d-flex align-items-center gap-2 mb-2 mb-md-0">
+              <span class="badge bg-primary fs-6 px-3 py-2" id="chamadaBadgeTotal">Total: 0</span>
+              <span class="badge bg-success fs-6 px-3 py-2" id="chamadaBadgePresentes">Presentes: 0</span>
+              <span class="badge bg-danger fs-6 px-3 py-2" id="chamadaBadgeFaltas">Faltas: 0</span>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-success fw-bold" onclick="App.marcarTodosChamada('PRESENTE')">
+                <i class="bi bi-check-all me-1"></i> Todos Presentes
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger fw-bold" onclick="App.marcarTodosChamada('FALTOU')">
+                <i class="bi bi-x-circle me-1"></i> Todos Faltaram
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabela de Alunos da Turma -->
+          <div class="table-responsive border rounded" style="max-height: 420px; overflow-y: auto;">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th style="width: 45px;">#</th>
+                  <th>Nome do Aluno</th>
+                  <th style="width: 140px;" class="text-center">Status</th>
+                  <th style="width: 220px;" class="text-center">Assinalar Frequência</th>
+                </tr>
+              </thead>
+              <tbody id="chamadaTbodyAlunos">
+                <tr>
+                  <td colspan="4" class="text-center py-4 text-muted">
+                    Carregando alunos da turma...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer bg-light d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-success fw-bold px-4" id="btnSalvarChamada" onclick="App.salvarChamada()">
+            <i class="bi bi-check2-circle me-1"></i> Gravar Presenças / Faltas
+          </button>
         </div>
       </div>
     </div>
