@@ -218,66 +218,21 @@
 
         <!-- ================= VIEW: DASHBOARD ================= -->
         <section id="view-dashboard" class="view-content">
-          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <div>
-              <h4 class="fw-bold text-dark mb-1">Painel Geral do Sistema</h4>
-              <p class="text-muted small mb-0">Visão consolidada acadêmica, financeira e acesso rápido a todos os módulos</p>
-            </div>
-            <div class="d-flex gap-2 align-items-center">
-              <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 shadow-sm" id="btnToggleSidebarDash" onclick="App.toggleSidebar()" title="Alternar visibilidade do menu lateral">
-                <i class="bi bi-layout-sidebar-inset fs-6"></i>
-                <span id="btnToggleSidebarDashText">Ocultar Menu Lateral</span>
-              </button>
-              <button class="btn btn-sm btn-primary d-flex align-items-center gap-1 shadow-sm" onclick="App.loadDashboard()">
-                <i class="bi bi-arrow-clockwise"></i> Atualizar Dados
-              </button>
-            </div>
-          </div>
 
-          <!-- CARDS DE ESTATÍSTICA -->
-          <div class="row g-3 mb-4">
-            <div class="col-12 col-sm-6 col-lg-3">
-              <div class="stat-card">
-                <div class="stat-icon primary"><i class="bi bi-mortarboard"></i></div>
-                <div class="stat-label">Alunos Ativos</div>
-                <div class="stat-value" id="statTotalAlunos">-</div>
-              </div>
-            </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-              <div class="stat-card">
-                <div class="stat-icon success"><i class="bi bi-cash-coin"></i></div>
-                <div class="stat-label">Faturamento Mês Atual</div>
-                <div class="stat-value text-success" id="statFaturamentoMes">-</div>
-                <div class="small text-muted mt-1" id="statFaturamentoSub">Faturado no mês</div>
-              </div>
-            </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-              <div class="stat-card">
-                <div class="stat-icon danger"><i class="bi bi-calendar-x"></i></div>
-                <div class="stat-label">Mensalidades a Receber</div>
-                <div class="stat-value text-danger" id="statMensalidadesMes">-</div>
-                <div class="small text-muted mt-1" id="statMensalidadesSub">Mês vigente</div>
-              </div>
-            </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-              <div class="stat-card">
-                <div class="stat-icon warning"><i class="bi bi-diagram-3"></i></div>
-                <div class="stat-label">Turmas Ativas</div>
-                <div class="stat-value" id="statTotalTurmas">-</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ================= ATALHOS DOS MENUS PRINCIPAIS (BOTÕES SIMÉTRICOS QUADRADOS COM BORDAS ARREDONDADAS E CORES DIFERENTES) ================= -->
+          <!-- ================= 1. ATALHOS DOS MENUS PRINCIPAIS (PRIMEIRA VISÃO) ================= -->
           <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
               <div>
-                <h5 class="fw-bold text-dark mb-1">
+                <h4 class="fw-bold text-dark mb-1">
                   <i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Atalhos Rápidos dos Menus Principais
-                </h5>
-                <p class="text-muted small mb-0">Acesso direto e instantâneo às principais áreas do sistema</p>
+                </h4>
+                <p class="text-muted small mb-0">Acesso direto e instantâneo às principais áreas e rotinas do sistema</p>
               </div>
-              <div class="d-flex gap-2 align-items-center">
+              <div class="d-flex gap-2 align-items-center flex-wrap">
+                <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 shadow-sm" id="btnToggleSidebarDash" onclick="App.toggleSidebar()" title="Alternar visibilidade do menu lateral">
+                  <i class="bi bi-layout-sidebar-inset fs-6"></i>
+                  <span id="btnToggleSidebarDashText">Ocultar Menu Lateral</span>
+                </button>
                 <button class="btn btn-sm btn-outline-secondary" onclick="App.abrirModalReimportar()" title="Importar Banco SQL">
                   <i class="bi bi-database-fill-gear text-warning me-1"></i> Importar Banco SQL
                 </button>
@@ -398,6 +353,53 @@
                   </button>
                 </div>
 
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= 2. PAINEL GERAL DO SISTEMA (VISÃO CONSOLIDADA & ESTATÍSTICAS) ================= -->
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+              <h5 class="fw-bold text-dark mb-1">
+                <i class="bi bi-speedometer2 text-secondary me-2"></i>Painel Geral do Sistema
+              </h5>
+              <p class="text-muted small mb-0">Visão consolidada acadêmica, financeira e administrativa do mês vigente</p>
+            </div>
+            <button class="btn btn-sm btn-primary d-flex align-items-center gap-1 shadow-sm" onclick="App.loadDashboard()">
+              <i class="bi bi-arrow-clockwise"></i> Atualizar Dados
+            </button>
+          </div>
+
+          <!-- CARDS DE ESTATÍSTICA -->
+          <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="stat-card">
+                <div class="stat-icon primary"><i class="bi bi-mortarboard"></i></div>
+                <div class="stat-label">Alunos Ativos</div>
+                <div class="stat-value" id="statTotalAlunos">-</div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="stat-card">
+                <div class="stat-icon success"><i class="bi bi-cash-coin"></i></div>
+                <div class="stat-label">Faturamento Mês Atual</div>
+                <div class="stat-value text-success" id="statFaturamentoMes">-</div>
+                <div class="small text-muted mt-1" id="statFaturamentoSub">Faturado no mês</div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="stat-card">
+                <div class="stat-icon danger"><i class="bi bi-calendar-x"></i></div>
+                <div class="stat-label">Mensalidades a Receber</div>
+                <div class="stat-value text-danger" id="statMensalidadesMes">-</div>
+                <div class="small text-muted mt-1" id="statMensalidadesSub">Mês vigente</div>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+              <div class="stat-card">
+                <div class="stat-icon warning"><i class="bi bi-diagram-3"></i></div>
+                <div class="stat-label">Turmas Ativas</div>
+                <div class="stat-value" id="statTotalTurmas">-</div>
               </div>
             </div>
           </div>
