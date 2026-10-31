@@ -368,9 +368,12 @@ body.sidebar-collapsed .main-wrapper {
   text-align: center;
   aspect-ratio: 1 / 1;
   width: 100%;
-  min-height: 155px;
-  border-radius: 24px;
-  padding: 16px 10px;
+  max-width: 146px;
+  max-height: 146px;
+  min-height: 110px;
+  margin: 0 auto;
+  border-radius: 20px;
+  padding: 12px 6px;
   color: #ffffff;
   cursor: pointer;
   position: relative;
@@ -388,7 +391,7 @@ body.sidebar-collapsed .main-wrapper {
   position: absolute;
   top: 0; left: 0; right: 0; height: 42%;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 100%);
-  border-radius: 24px 24px 0 0;
+  border-radius: 20px 20px 0 0;
   pointer-events: none;
 }
 
@@ -402,8 +405,8 @@ body.sidebar-collapsed .main-wrapper {
 }
 
 .dash-main-btn i {
-  font-size: 2.5rem;
-  margin-bottom: 8px;
+  font-size: 2.1rem;
+  margin-bottom: 6px;
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.25));
   transition: transform 0.25s ease;
 }
@@ -413,10 +416,10 @@ body.sidebar-collapsed .main-wrapper {
 }
 
 .dash-main-btn .btn-title {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  line-height: 1.25;
-  margin-bottom: 4px;
+  line-height: 1.2;
+  margin-bottom: 3px;
   letter-spacing: 0.2px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   display: -webkit-box;
@@ -426,14 +429,14 @@ body.sidebar-collapsed .main-wrapper {
 }
 
 .dash-main-btn .btn-sub {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   background: rgba(0, 0, 0, 0.18);
-  padding: 2px 10px;
+  padding: 2px 8px;
   border-radius: 20px;
   backdrop-filter: blur(4px);
-  margin-top: 2px;
+  margin-top: 1px;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -1161,5 +1164,139 @@ body.dark-theme .login-footer-pill {
   background-color: rgba(15, 23, 42, 0.85) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: #94a3b8 !important;
+}
+
+/* ================= ENQUADRAMENTO RESPONSIVO PARA PROPORÇÃO 16:9 ================= */
+@media (min-aspect-ratio: 16/10) {
+  /* Otimização de topo e corpo para telas widescreen 16:9 e 16:10 */
+  .topbar {
+    height: 58px;
+    padding: 0 20px;
+  }
+
+  .content-body {
+    padding: 18px 22px;
+  }
+
+  /* Enquadramento dos Atalhos Rápidos na Primeira Visão */
+  .dash-main-btn {
+    max-width: 140px;
+    max-height: 140px;
+    border-radius: 18px;
+    padding: 10px 6px;
+  }
+
+  .dash-main-btn i {
+    font-size: 2rem;
+    margin-bottom: 4px;
+  }
+
+  .dash-main-btn .btn-title {
+    font-size: 0.85rem;
+    line-height: 1.15;
+    margin-bottom: 2px;
+  }
+
+  .dash-main-btn .btn-sub {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+  }
+
+  /* Modais com enquadramento proporcional e scroll interno que previne cortes verticais */
+  .modal-dialog {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-content {
+    max-height: calc(100vh - 3rem);
+  }
+
+  .modal-body {
+    max-height: calc(100vh - 10rem);
+    overflow-y: auto;
+  }
+
+  /* Rodapé proporcional */
+  .app-footer {
+    padding-top: 0.65rem !important;
+    padding-bottom: 0.65rem !important;
+  }
+}
+
+/* Otimização de enquadramento para telas 16:9 com altura reduzida (Notebooks 1366x768 / 1280x720 / 1600x900) */
+@media (min-aspect-ratio: 16/10) and (max-height: 820px) {
+  .topbar {
+    height: 50px;
+    padding: 0 16px;
+  }
+
+  .topbar-title {
+    font-size: 1rem;
+  }
+
+  .content-body {
+    padding: 12px 16px;
+  }
+
+  .card-header {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  /* Atalhos Rápidos perfeitamente ajustados à primeira dobra da tela */
+  .dash-main-btn {
+    max-width: 114px;
+    max-height: 114px;
+    min-height: 98px;
+    border-radius: 16px;
+    padding: 8px 4px;
+  }
+
+  .dash-main-btn i {
+    font-size: 1.65rem;
+    margin-bottom: 2px;
+  }
+
+  .dash-main-btn .btn-title {
+    font-size: 0.76rem;
+    line-height: 1.1;
+  }
+
+  .dash-main-btn .btn-sub {
+    font-size: 0.6rem;
+    padding: 1px 5px;
+    border-radius: 12px;
+  }
+
+  /* Stat cards mais compactos para caber na primeira visão */
+  .stat-card {
+    padding: 12px 14px;
+  }
+
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 1.3rem;
+  }
+
+  /* Tela de login compacta e elegante */
+  #loginScreen .card {
+    padding: 1.25rem !important;
+    max-width: 380px !important;
+  }
+
+  #loginScreen img {
+    max-height: 55px !important;
+  }
+
+  #loginScreen h4 {
+    font-size: 1.05rem !important;
+  }
 }
 
