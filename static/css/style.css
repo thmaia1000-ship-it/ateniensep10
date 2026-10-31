@@ -1124,10 +1124,10 @@ body.dark-theme .app-footer {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  font-size: 0.8rem;
+  font-size: 6pt;
   font-weight: 700;
   line-height: 1;
   background-color: #e0f2fe;
@@ -1141,6 +1141,15 @@ body.dark-theme .brand-trademark-badge {
   background-color: rgba(14, 165, 233, 0.15) !important;
   color: #38bdf8 !important;
   border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+.footer-dev-text {
+  font-size: 6pt !important;
+  line-height: 1.2;
+}
+
+.footer-dev-text strong {
+  font-size: inherit;
 }
 
 .login-footer-pill {
