@@ -5,18 +5,19 @@
   --secondary-color: #d4a017;
   --secondary-hover: #b8860b;
   --accent-color: #2b7a78;
-  --bg-color: #f4f6f9;
+  --bg-gradient: linear-gradient(135deg, #e4eff8 0%, #edf5fc 40%, #ffffff 100%);
   --sidebar-width: 260px;
-  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --card-shadow: 0 4px 12px -2px rgba(11, 60, 104, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
 }
 
 body {
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background-color: var(--bg-color);
+  background: linear-gradient(135deg, #e4eff8 0%, #edf5fc 40%, #ffffff 100%) fixed;
   color: #333;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
 /* Sidebar */
@@ -149,6 +150,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: transparent;
   transition: margin-left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -198,8 +200,10 @@ body.sidebar-collapsed .main-wrapper {
 
 .topbar {
   height: 64px;
-  background-color: #fff;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(11, 60, 104, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -207,6 +211,34 @@ body.sidebar-collapsed .main-wrapper {
   position: sticky;
   top: 0;
   z-index: 1020;
+}
+
+#sidebarToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(11, 60, 104, 0.18) !important;
+  border-radius: 10px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 5px rgba(11, 60, 104, 0.06);
+}
+
+#sidebarToggle:hover {
+  background: #f0f7ff;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 4px 12px rgba(11, 60, 104, 0.15);
+  transform: translateY(-1px);
+}
+
+.sidebar-toggle-logo {
+  height: 28px;
+  max-width: 38px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .topbar-left {
