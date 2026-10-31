@@ -1,0 +1,2 @@
+# Master Escolar Ateniense - Requisitos do Projeto
+# Esta aplicação utiliza exclusivamente as bibliotecas nativas da standard library do Python (sqlite3, http.server, json, urllib, etc.)
