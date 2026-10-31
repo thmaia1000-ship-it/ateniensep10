@@ -1139,55 +1139,159 @@ const App = {
   },
 
   // 3.5 SECRETARIA - GESTÃO DE TURMAS
+  turmasData: [],
+
   async loadTurmas() {
     try {
       const data = await this.api('/api/turmas');
-      const turmas = data.turmas || [];
-      const countEl = document.getElementById('totalTurmasCount');
-      if (countEl) countEl.innerText = `${turmas.length} turmas cadastradas`;
-
-      const tbody = document.getElementById('tableSecretariaTurmas');
-      if (tbody) {
-        tbody.innerHTML = turmas.map(t => {
-          const ocupacaoPct = t.qtd_alunos > 0 ? Math.min(100, Math.round((t.total_matriculados / t.qtd_alunos) * 100)) : 0;
-          const badgeTurno = t.turno === 'MATUTINO' ? 'bg-primary' : (t.turno === 'VESPERTINO' ? 'bg-warning text-dark' : 'bg-info text-dark');
-          const isInfantil = (t.tipo || '').toLowerCase().includes('infantil') || (t.serie || '').toUpperCase().includes('MATERNAL') || (t.serie || '').toUpperCase().includes('JARDIM');
-          const badgeTipo = isInfantil 
-            ? '<span class="badge bg-warning-subtle text-dark border border-warning"><i class="bi bi-balloon me-1"></i>Ensino Infantil</span>' 
-            : '<span class="badge bg-primary-subtle text-primary border border-primary"><i class="bi bi-book me-1"></i>Ensino Fundamental</span>';
-
-          return `
-            <tr>
-              <td><strong>#${t.id}</strong></td>
-              <td><h6 class="m-0 fw-bold text-primary">${t.nome_turma}</h6></td>
-              <td>${badgeTipo}</td>
-              <td><span class="fw-semibold text-secondary">${t.serie || '-'}</span></td>
-              <td><span class="badge ${badgeTurno}">${t.turno || 'GERAL'}</span></td>
-              <td><span class="small fw-bold text-dark"><i class="bi bi-person me-1"></i>${t.professor_nome || 'Sem Professor'}</span></td>
-              <td>
-                <div class="d-flex align-items-center gap-2">
-                  <span class="fw-bold">${t.total_matriculados} / ${t.qtd_alunos}</span>
-                  <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
-                    <div class="progress-bar ${ocupacaoPct > 90 ? 'bg-danger' : 'bg-success'}" style="width: ${ocupacaoPct}%"></div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="badge bg-light text-muted border">${t.ano_letivo || '2026'}</span></td>
-              <td class="text-end">
-                <button class="btn btn-sm btn-outline-warning text-dark fw-bold me-1" onclick="App.abrirModalEditarTurma(${t.id})" title="Editar turma">
-                  <i class="bi bi-pencil-square me-1"></i> Editar
-                </button>
-                <button class="btn btn-sm btn-outline-primary fw-bold" onclick="App.filtrarAlunosPorTurma(${t.id}, '${t.nome_turma.replace(/'/g, "\\'")}')" title="Ver alunos da turma">
-                  <i class="bi bi-people me-1"></i> Ver Alunos
-                </button>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      }
+      this.turmasData = data.turmas || [];
+      await this.popularFiltrosTurmas();
+      this.filtrarTurmas();
     } catch (e) {
       console.error('Erro ao carregar turmas:', e);
     }
+  },
+
+  async popularFiltrosTurmas() {
+    // Popula Anos
+    const selectAno = document.getElementById('filtroTurmaAno');
+    if (selectAno && selectAno.options.length <= 1) {
+      const anos = [...new Set(this.turmasData.map(t => t.ano_letivo).filter(Boolean))].sort((a, b) => b - a);
+      anos.forEach(ano => {
+        selectAno.add(new Option(ano, ano));
+      });
+    }
+
+    // Popula Professores
+    const selectProf = document.getElementById('filtroTurmaProfessor');
+    if (selectProf && selectProf.options.length <= 1) {
+      try {
+        const dataProfs = await this.api('/api/professores');
+        const profs = dataProfs.professores || [];
+        profs.forEach(p => {
+          selectProf.add(new Option(p.nome, p.id));
+        });
+      } catch (err) {
+        console.error('Erro ao carregar professores para filtro:', err);
+      }
+    }
+  },
+
+  filtrarTurmas() {
+    if (!this.turmasData) return;
+
+    const nomeBusca = (document.getElementById('filtroTurmaNome')?.value || '').trim().toLowerCase();
+    const ano = document.getElementById('filtroTurmaAno')?.value || '';
+    const tipo = document.getElementById('filtroTurmaTipo')?.value || '';
+    const turno = document.getElementById('filtroTurmaTurno')?.value || '';
+    const profId = document.getElementById('filtroTurmaProfessor')?.value || '';
+
+    const filtradas = this.turmasData.filter(t => {
+      // 1. Filtro por Nome
+      if (nomeBusca) {
+        const nomeTurma = (t.nome_turma || '').toLowerCase();
+        const serie = (t.serie || '').toLowerCase();
+        if (!nomeTurma.includes(nomeBusca) && !serie.includes(nomeBusca)) {
+          return false;
+        }
+      }
+      // 2. Filtro por Ano
+      if (ano && String(t.ano_letivo) !== String(ano)) {
+        return false;
+      }
+      // 3. Filtro por Tipo
+      if (tipo) {
+        const isInfantil = (t.tipo || '').toLowerCase().includes('infantil') || (t.serie || '').toUpperCase().includes('MATERNAL') || (t.serie || '').toUpperCase().includes('JARDIM');
+        const tipoTurma = isInfantil ? 'Ensino Infantil' : 'Ensino Fundamental';
+        if (tipoTurma !== tipo) {
+          return false;
+        }
+      }
+      // 4. Filtro por Turno
+      if (turno && (t.turno || '').toUpperCase() !== turno.toUpperCase()) {
+        return false;
+      }
+      // 5. Filtro por Professor
+      if (profId && String(t.idprofessor) !== String(profId)) {
+        return false;
+      }
+      return true;
+    });
+
+    this.renderTurmasTable(filtradas);
+  },
+
+  limparFiltrosTurmas() {
+    if (document.getElementById('filtroTurmaNome')) document.getElementById('filtroTurmaNome').value = '';
+    if (document.getElementById('filtroTurmaAno')) document.getElementById('filtroTurmaAno').value = '';
+    if (document.getElementById('filtroTurmaTipo')) document.getElementById('filtroTurmaTipo').value = '';
+    if (document.getElementById('filtroTurmaTurno')) document.getElementById('filtroTurmaTurno').value = '';
+    if (document.getElementById('filtroTurmaProfessor')) document.getElementById('filtroTurmaProfessor').value = '';
+    this.renderTurmasTable(this.turmasData || []);
+  },
+
+  renderTurmasTable(turmas) {
+    const countEl = document.getElementById('totalTurmasCount');
+    if (countEl) {
+      const totalOriginal = this.turmasData ? this.turmasData.length : turmas.length;
+      if (turmas.length === totalOriginal) {
+        countEl.innerText = `${turmas.length} turmas cadastradas`;
+      } else {
+        countEl.innerText = `${turmas.length} de ${totalOriginal} turmas encontradas`;
+      }
+    }
+
+    const tbody = document.getElementById('tableSecretariaTurmas');
+    if (!tbody) return;
+
+    if (turmas.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center py-4 text-muted">
+            <i class="bi bi-funnel fs-3 d-block mb-2 text-secondary opacity-50"></i>
+            Nenhuma turma encontrada com os filtros selecionados.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = turmas.map(t => {
+      const ocupacaoPct = t.qtd_alunos > 0 ? Math.min(100, Math.round((t.total_matriculados / t.qtd_alunos) * 100)) : 0;
+      const badgeTurno = t.turno === 'MATUTINO' ? 'bg-primary' : (t.turno === 'VESPERTINO' ? 'bg-warning text-dark' : 'bg-info text-dark');
+      const isInfantil = (t.tipo || '').toLowerCase().includes('infantil') || (t.serie || '').toUpperCase().includes('MATERNAL') || (t.serie || '').toUpperCase().includes('JARDIM');
+      const badgeTipo = isInfantil 
+        ? '<span class="badge bg-warning-subtle text-dark border border-warning"><i class="bi bi-balloon me-1"></i>Ensino Infantil</span>' 
+        : '<span class="badge bg-primary-subtle text-primary border border-primary"><i class="bi bi-book me-1"></i>Ensino Fundamental</span>';
+
+      return `
+        <tr>
+          <td><strong>#${t.id}</strong></td>
+          <td><h6 class="m-0 fw-bold text-primary">${t.nome_turma}</h6></td>
+          <td>${badgeTipo}</td>
+          <td><span class="fw-semibold text-secondary">${t.serie || '-'}</span></td>
+          <td><span class="badge ${badgeTurno}">${t.turno || 'GERAL'}</span></td>
+          <td><span class="small fw-bold text-dark"><i class="bi bi-person me-1"></i>${t.professor_nome || 'Sem Professor'}</span></td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="fw-bold">${t.total_matriculados} / ${t.qtd_alunos}</span>
+              <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                <div class="progress-bar ${ocupacaoPct > 90 ? 'bg-danger' : 'bg-success'}" style="width: ${ocupacaoPct}%"></div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge bg-light text-muted border">${t.ano_letivo || '2026'}</span></td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-warning text-dark fw-bold me-1" onclick="App.abrirModalEditarTurma(${t.id})" title="Editar turma">
+              <i class="bi bi-pencil-square me-1"></i> Editar
+            </button>
+            <button class="btn btn-sm btn-outline-primary fw-bold" onclick="App.filtrarAlunosPorTurma(${t.id}, '${t.nome_turma.replace(/'/g, "\\'")}')" title="Ver alunos da turma">
+              <i class="bi bi-people me-1"></i> Ver Alunos
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
   },
 
   async abrirModalNovaTurma() {
