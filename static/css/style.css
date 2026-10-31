@@ -216,11 +216,11 @@ body.sidebar-collapsed .main-wrapper {
 #sidebarToggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   background: #ffffff;
   border: 1px solid rgba(11, 60, 104, 0.18) !important;
   border-radius: 10px;
-  padding: 4px 10px;
+  padding: 4px 8px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   box-shadow: 0 2px 5px rgba(11, 60, 104, 0.06);
@@ -234,11 +234,11 @@ body.sidebar-collapsed .main-wrapper {
 }
 
 .sidebar-toggle-logo {
-  height: 28px;
-  max-width: 38px;
+  height: 32px;
+  width: auto;
+  max-width: 44px;
   object-fit: contain;
-  display: inline-block;
-  vertical-align: middle;
+  display: block;
 }
 
 .topbar-left {
