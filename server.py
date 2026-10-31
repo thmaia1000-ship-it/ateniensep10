@@ -253,6 +253,15 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 self.send_json({'alunos': secretaria_service.get_alunos_turma(turma_id)})
                 return
 
+            if path.startswith('/api/turmas/') and path.count('/') == 3:
+                turma_id = path.split('/')[3]
+                turma = secretaria_service.get_turma(turma_id)
+                if turma:
+                    self.send_json(turma)
+                else:
+                    self.send_json({'error': 'Turma não encontrada'}, 404)
+                return
+
             if path == '/api/professores':
                 self.send_json({'professores': secretaria_service.list_professores()})
                 return
@@ -442,10 +451,16 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 self.send_json({'id': new_id, 'message': 'Aluno cadastrado com sucesso!'})
                 return
 
-            # Turma Criar
+            # Turma Criar ou Atualizar
             if path == '/api/turmas':
                 new_id = secretaria_service.create_turma(body, username)
                 self.send_json({'id': new_id, 'message': 'Turma cadastrada com sucesso!'})
+                return
+
+            if path.startswith('/api/turmas/') and path.count('/') == 3:
+                turma_id = int(path.split('/')[3])
+                secretaria_service.update_turma(turma_id, body, username)
+                self.send_json({'message': 'Turma atualizada com sucesso!'})
                 return
 
             # Professor Criar
@@ -574,6 +589,12 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 aluno_id = path.split('/')[3]
                 secretaria_service.update_aluno(aluno_id, body)
                 self.send_json({'message': 'Aluno atualizado com sucesso!'})
+                return
+
+            if path.startswith('/api/turmas/'):
+                turma_id = int(path.split('/')[3])
+                secretaria_service.update_turma(turma_id, body)
+                self.send_json({'message': 'Turma atualizada com sucesso!'})
                 return
 
             if path.startswith('/api/produtos/'):

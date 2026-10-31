@@ -952,6 +952,7 @@
                   <tr>
                     <th>#ID</th>
                     <th>Nome da Turma</th>
+                    <th>Tipo</th>
                     <th>Série / Etapa</th>
                     <th>Turno</th>
                     <th>Professor Responsável</th>
@@ -2164,23 +2165,27 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: NOVA TURMA ================= -->
+  <!-- ================= MODAL: TURMA (CRIAR E EDITAR) ================= -->
   <div class="modal fade" id="modalNovaTurma" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fw-bold"><i class="bi bi-diagram-3-fill me-2"></i> Cadastrar Nova Turma</h5>
+          <h5 class="modal-title fw-bold" id="modalTurmaTitle"><i class="bi bi-diagram-3-fill me-2"></i> Cadastrar Nova Turma</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body p-4">
+          <input type="hidden" id="inputTurmaId" value="">
           <div class="mb-3">
             <label class="form-label small fw-bold text-secondary">NOME DA TURMA</label>
             <input type="text" id="inputTurmaNome" class="form-control form-control-lg" placeholder="Ex: 1º ANO B - MATUTINO" required>
           </div>
           <div class="row g-2 mb-3">
             <div class="col-6">
-              <label class="form-label small fw-bold text-secondary">SÉRIE / ETAPA</label>
-              <input type="text" id="inputTurmaSerie" class="form-control" placeholder="Ex: 1º ANO">
+              <label class="form-label small fw-bold text-secondary">TIPO</label>
+              <select id="selectTurmaTipo" class="form-select fw-semibold">
+                <option value="Ensino Infantil">Ensino Infantil</option>
+                <option value="Ensino Fundamental">Ensino Fundamental</option>
+              </select>
             </div>
             <div class="col-6">
               <label class="form-label small fw-bold text-secondary">TURNO</label>
@@ -2191,24 +2196,28 @@
               </select>
             </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-secondary">PROFESSOR TITULAR</label>
-            <select id="selectTurmaProfessor" class="form-select"></select>
-          </div>
           <div class="row g-2 mb-3">
             <div class="col-6">
-              <label class="form-label small fw-bold text-secondary">CAPACIDADE MÁXIMA (ALUNOS)</label>
-              <input type="number" id="inputTurmaQtd" class="form-control" value="30">
+              <label class="form-label small fw-bold text-secondary">SÉRIE / ETAPA</label>
+              <input type="text" id="inputTurmaSerie" class="form-control" placeholder="Ex: 1º ANO">
             </div>
             <div class="col-6">
               <label class="form-label small fw-bold text-secondary">ANO LETIVO</label>
               <input type="text" id="inputTurmaAno" class="form-control" value="2026">
             </div>
           </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">PROFESSOR TITULAR</label>
+            <select id="selectTurmaProfessor" class="form-select"></select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">CAPACIDADE MÁXIMA (ALUNOS)</label>
+            <input type="number" id="inputTurmaQtd" class="form-control" value="30">
+          </div>
         </div>
         <div class="modal-footer bg-light">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-primary fw-bold px-4" onclick="App.salvarNovaTurma()">
+          <button type="button" class="btn btn-primary fw-bold px-4" id="btnSalvarTurma" onclick="App.salvarTurma()">
             <i class="bi bi-save me-1"></i> Salvar Turma
           </button>
         </div>

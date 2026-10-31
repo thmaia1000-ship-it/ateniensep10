@@ -400,6 +400,9 @@ def list_turmas():
         t.turno,
         t.ano_letivo,
         t.qtd_alunos,
+        t.idprofessor,
+        t.idetapa,
+        COALESCE(NULLIF(t.tipo, ''), CASE WHEN UPPER(t.serie) LIKE '%MATERNAL%' OR UPPER(t.serie) LIKE '%JARDIM%' THEN 'Ensino Infantil' ELSE 'Ensino Fundamental' END) as tipo,
         COALESCE(p.nome_professor, 'Não atribuído') as professor_nome,
         COUNT(at.idaluno) as total_matriculados
     FROM tb_turmas t
@@ -409,13 +412,35 @@ def list_turmas():
     ORDER BY t.nome_turma ASC
     """)
 
+def get_turma(turma_id):
+    return query_one("""
+    SELECT 
+        t.ID_turma as id,
+        t.nome_turma,
+        t.serie,
+        t.turno,
+        t.ano_letivo,
+        t.qtd_alunos,
+        t.idprofessor,
+        t.idetapa,
+        COALESCE(NULLIF(t.tipo, ''), CASE WHEN UPPER(t.serie) LIKE '%MATERNAL%' OR UPPER(t.serie) LIKE '%JARDIM%' THEN 'Ensino Infantil' ELSE 'Ensino Fundamental' END) as tipo,
+        COALESCE(p.nome_professor, 'Não atribuído') as professor_nome
+    FROM tb_turmas t
+    LEFT JOIN tb_professores p ON t.idprofessor = p.ID_professor
+    WHERE t.ID_turma = ?
+    """, (turma_id,))
+
 def create_turma(data, usuario='ADMIN'):
     data_gerada = datetime.now().strftime('%Y-%m-%d')
     next_turma = query_one("SELECT COALESCE(MAX(ID_turma), 0) + 1 as next_id FROM tb_turmas")
     turma_id = next_turma['next_id'] if next_turma else 1
+    tipo = (data.get('tipo') or '').strip()
+    if not tipo:
+        serie = data.get('serie', '').upper()
+        tipo = 'Ensino Infantil' if ('MATERNAL' in serie or 'JARDIM' in serie) else 'Ensino Fundamental'
     execute("""
-    INSERT INTO tb_turmas (ID_turma, nome_turma, serie, turno, qtd_alunos, idprofessor, ano_letivo, idetapa, data_gerada, usuario)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO tb_turmas (ID_turma, nome_turma, serie, turno, qtd_alunos, idprofessor, ano_letivo, idetapa, data_gerada, usuario, tipo)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         turma_id,
         data.get('nome_turma', ''),
@@ -426,9 +451,37 @@ def create_turma(data, usuario='ADMIN'):
         int(data.get('ano_letivo', datetime.now().strftime('%Y'))),
         int(data.get('idetapa', 1)),
         data_gerada,
-        usuario
+        usuario,
+        tipo
     ))
     return turma_id
+
+def update_turma(turma_id, data, usuario='ADMIN'):
+    tipo = (data.get('tipo') or '').strip()
+    if not tipo:
+        serie = data.get('serie', '').upper()
+        tipo = 'Ensino Infantil' if ('MATERNAL' in serie or 'JARDIM' in serie) else 'Ensino Fundamental'
+    execute("""
+    UPDATE tb_turmas
+    SET nome_turma = ?,
+        serie = ?,
+        turno = ?,
+        qtd_alunos = ?,
+        idprofessor = ?,
+        ano_letivo = ?,
+        tipo = ?
+    WHERE ID_turma = ?
+    """, (
+        data.get('nome_turma', ''),
+        data.get('serie', ''),
+        data.get('turno', 'MATUTINO'),
+        int(data.get('qtd_alunos', 30)),
+        int(data.get('idprofessor', 0)),
+        int(data.get('ano_letivo', datetime.now().strftime('%Y'))),
+        tipo,
+        turma_id
+    ))
+    return True
 
 def list_professores():
     return query_all("""

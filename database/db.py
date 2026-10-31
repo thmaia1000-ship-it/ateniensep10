@@ -58,3 +58,25 @@ def execute(sql: str, params: tuple = ()) -> int:
         cursor.execute(sql, params)
         conn.commit()
         return cursor.lastrowid
+
+def init_db_migrations():
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA table_info(tb_turmas)")
+            cols = [c['name'] for c in cursor.fetchall()]
+            if 'tipo' not in cols:
+                cursor.execute("ALTER TABLE tb_turmas ADD COLUMN tipo TEXT DEFAULT ''")
+                cursor.execute("""
+                    UPDATE tb_turmas 
+                    SET tipo = CASE 
+                        WHEN UPPER(serie) LIKE '%MATERNAL%' OR UPPER(serie) LIKE '%JARDIM%' OR idetapa IN (1, 2, 3, 5) THEN 'Ensino Infantil'
+                        ELSE 'Ensino Fundamental'
+                    END
+                    WHERE tipo IS NULL OR tipo = ''
+                """)
+                conn.commit()
+    except Exception as e:
+        pass
+
+init_db_migrations()
