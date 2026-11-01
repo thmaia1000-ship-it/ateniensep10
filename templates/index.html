@@ -1763,27 +1763,31 @@
 
         <!-- ================= VIEW: USUÁRIOS ================= -->
         <section id="view-config-usuarios" class="view-content d-none">
-          <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div>
-              <h4 class="fw-bold text-dark mb-1">Usuários do Sistema & Permissões</h4>
-              <p class="text-muted small mb-0">Controle de acessos de nível 1 a 5</p>
+              <h4 class="fw-bold text-dark mb-1"><i class="bi bi-people-fill text-primary me-2"></i>Usuários do Sistema & Permissões</h4>
+              <p class="text-muted small mb-0">Controle de acessos de nível 1 a 5 e credenciais de login</p>
             </div>
             <div class="d-flex gap-2">
-              <button class="btn btn-warning fw-bold" onclick="App.abrirModalReimportar()">
+              <button class="btn btn-primary fw-bold shadow-sm" onclick="App.abrirModalNovoUsuario()">
+                <i class="bi bi-person-plus-fill me-1"></i> Novo Usuário
+              </button>
+              <button class="btn btn-outline-warning fw-bold" onclick="App.abrirModalReimportar()">
                 <i class="bi bi-database-fill-gear me-1"></i> Reimportar Banco SQL
               </button>
             </div>
           </div>
           <div class="card border-0 shadow-sm">
             <div class="table-responsive">
-              <table class="table table-custom mb-0">
+              <table class="table table-custom align-middle mb-0">
                 <thead>
                   <tr>
-                    <th>#ID</th>
+                    <th style="width: 80px;">#ID</th>
                     <th>Nome Completo</th>
                     <th>Usuário (Login)</th>
                     <th>Nível de Acesso</th>
                     <th>Status</th>
+                    <th class="text-end" style="width: 150px;">Ações</th>
                   </tr>
                 </thead>
                 <tbody id="tableUsuarios"></tbody>
@@ -2737,6 +2741,75 @@
             <i class="bi bi-play-fill me-1"></i> Iniciar Importação
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CADASTRAR / EDITAR USUÁRIO ================= -->
+  <div class="modal fade" id="modalUsuario" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold" id="modalUsuarioTitulo">
+            <i class="bi bi-person-fill-gear me-2"></i>Cadastrar Novo Usuário
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="formUsuario" onsubmit="App.salvarUsuario(event); return false;">
+          <input type="hidden" id="usuarioId" value="">
+          <div class="modal-body p-4">
+            <div id="usuarioError" class="alert alert-danger py-2 d-none"></div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">NOME COMPLETO *</label>
+              <input type="text" id="usuarioNome" class="form-control" placeholder="Ex: Maria Alice da Silva" required>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-secondary">LOGIN / USERNAME *</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                  <input type="text" id="usuarioUsername" class="form-control" placeholder="Ex: maria" required autocomplete="off">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold text-secondary" id="labelUsuarioSenha">SENHA DE ACESSO *</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                  <input type="password" id="usuarioSenha" class="form-control" placeholder="Senha de acesso" autocomplete="new-password">
+                </div>
+                <div class="form-text small d-none" id="helpUsuarioSenha">Deixe em branco para manter a senha atual.</div>
+              </div>
+            </div>
+
+            <div class="row g-2">
+              <div class="col-md-7">
+                <label class="form-label small fw-bold text-secondary">NÍVEL DE ACESSO *</label>
+                <select id="usuarioNivel" class="form-select" required>
+                  <option value="5">Nível 5 - Administrador Geral (Total)</option>
+                  <option value="4">Nível 4 - Coordenação Pedagógica</option>
+                  <option value="3" selected>Nível 3 - Secretaria / Operacional</option>
+                  <option value="2">Nível 2 - Financeiro / Caixa</option>
+                  <option value="1">Nível 1 - Básico / Consulta</option>
+                </select>
+              </div>
+              <div class="col-md-5">
+                <label class="form-label small fw-bold text-secondary">STATUS *</label>
+                <select id="usuarioStatus" class="form-select" required>
+                  <option value="ATIVO" selected>Ativo</option>
+                  <option value="INATIVO">Inativo</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary fw-bold px-4" id="btnSalvarUsuario">
+              <i class="bi bi-check-lg me-1"></i> Salvar Usuário
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

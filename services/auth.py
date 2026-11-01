@@ -39,25 +39,38 @@ def logout(token):
     return False
 
 def list_users():
-    return query_all("SELECT ID_usuario as id, nome_usuario as nome, username, nivel_usuario as nivel, status FROM tb_usuarios ORDER BY ID_usuario")
+    return query_all("SELECT ID_usuario as id, nome_usuario as nome, username, nivel_usuario as nivel, COALESCE(NULLIF(status, ''), 'ATIVO') as status FROM tb_usuarios ORDER BY ID_usuario")
 
-def create_user(nome, username, senha, nivel):
-    return execute(
-        "INSERT INTO tb_usuarios (nome_usuario, username, senha, nivel_usuario, status) VALUES (?, ?, ?, ?, '')",
-        (nome, username, senha, nivel)
+def get_user(user_id):
+    return query_one(
+        "SELECT ID_usuario as id, nome_usuario as nome, username, nivel_usuario as nivel, COALESCE(NULLIF(status, ''), 'ATIVO') as status FROM tb_usuarios WHERE ID_usuario = ?",
+        (user_id,)
     )
 
-def update_user(user_id, nome, username, senha=None, nivel=None):
-    if senha:
-        return execute(
-            "UPDATE tb_usuarios SET nome_usuario = ?, username = ?, senha = ?, nivel_usuario = ? WHERE ID_usuario = ?",
-            (nome, username, senha, nivel, user_id)
-        )
-    else:
-        return execute(
-            "UPDATE tb_usuarios SET nome_usuario = ?, username = ?, nivel_usuario = ? WHERE ID_usuario = ?",
-            (nome, username, nivel, user_id)
-        )
+def create_user(nome, username, senha, nivel=1, status='ATIVO'):
+    max_id = query_one("SELECT MAX(ID_usuario) as max_id FROM tb_usuarios")
+    next_id = (max_id['max_id'] or 0) + 1 if max_id else 1
+    execute(
+        "INSERT INTO tb_usuarios (ID_usuario, nome_usuario, username, senha, nivel_usuario, status) VALUES (?, ?, ?, ?, ?, ?)",
+        (next_id, (nome or '').strip(), (username or '').strip(), (senha or '').strip(), int(nivel or 1), (status or 'ATIVO').strip())
+    )
+    return next_id
+
+def update_user(user_id, nome, username, senha=None, nivel=None, status=None):
+    campos = ["nome_usuario = ?", "username = ?"]
+    valores = [(nome or '').strip(), (username or '').strip()]
+    if senha and str(senha).strip():
+        campos.append("senha = ?")
+        valores.append(str(senha).strip())
+    if nivel is not None:
+        campos.append("nivel_usuario = ?")
+        valores.append(int(nivel))
+    if status is not None:
+        campos.append("status = ?")
+        valores.append(str(status).strip())
+    valores.append(user_id)
+    sql = f"UPDATE tb_usuarios SET {', '.join(campos)} WHERE ID_usuario = ?"
+    return execute(sql, tuple(valores))
 
 def delete_user(user_id):
     return execute("DELETE FROM tb_usuarios WHERE ID_usuario = ?", (user_id,))

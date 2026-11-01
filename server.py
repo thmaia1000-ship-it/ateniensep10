@@ -434,6 +434,15 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 self.send_json({'usuarios': auth_service.list_users()})
                 return
 
+            if path.startswith('/api/usuarios/'):
+                user_id = int(path.split('/')[3])
+                user_obj = auth_service.get_user(user_id)
+                if user_obj:
+                    self.send_json({'usuario': user_obj})
+                else:
+                    self.send_json({'error': 'Usuário não encontrado'}, 404)
+                return
+
             self.send_json({'error': 'Rota não encontrada'}, 404)
         except Exception as e:
             self.send_json({'error': str(e)}, 500)
@@ -578,7 +587,13 @@ class AtenienseHandler(BaseHTTPRequestHandler):
 
             # Usuário Criar
             if path == '/api/usuarios':
-                res = auth_service.create_user(body.get('nome'), body.get('username'), body.get('senha'), body.get('nivel', 1))
+                res = auth_service.create_user(
+                    nome=body.get('nome'),
+                    username=body.get('username'),
+                    senha=body.get('senha'),
+                    nivel=body.get('nivel', 1),
+                    status=body.get('status', 'ATIVO')
+                )
                 self.send_json({'id': res, 'message': 'Usuário criado com sucesso!'})
                 return
 
@@ -659,6 +674,19 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 b_id = int(path.split('/')[3])
                 res = academico_service.update_bimestre(b_id, body.get('data_inicio'), body.get('data_fim'))
                 self.send_json({'message': 'Bimestre atualizado com sucesso!', 'bimestre': res})
+                return
+
+            if path.startswith('/api/usuarios/'):
+                user_id = int(path.split('/')[3])
+                auth_service.update_user(
+                    user_id=user_id,
+                    nome=body.get('nome'),
+                    username=body.get('username'),
+                    senha=body.get('senha'),
+                    nivel=body.get('nivel'),
+                    status=body.get('status')
+                )
+                self.send_json({'message': 'Usuário atualizado com sucesso!'})
                 return
 
             self.send_json({'error': 'Rota PUT não encontrada'}, 404)

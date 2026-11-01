@@ -4275,7 +4275,252 @@ const App = {
       reader.onerror = (e) => reject(new Error('Falha ao ler o arquivo local.'));
       reader.readAsText(file);
     });
+  },
+
+  // ================= 12. GESTÃO DE USUÁRIOS & PERMISSÕES =================
+  usuariosList: [],
+
+  async loadUsuarios() {
+    const tbody = document.getElementById('tableUsuarios');
+    if (!tbody) return;
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center py-4 text-muted">
+          <div class="spinner-border spinner-border-sm text-primary me-2"></div> Carregando usuários do sistema...
+        </td>
+      </tr>
+    `;
+
+    try {
+      const data = await this.api('/api/usuarios');
+      const usuarios = data.usuarios || [];
+      this.usuariosList = usuarios;
+
+      if (usuarios.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center py-4 text-muted">Nenhum usuário cadastrado.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      const getNivelBadge = (nivel) => {
+        const n = parseInt(nivel, 10);
+        switch (n) {
+          case 5:
+            return '<span class="badge bg-danger shadow-sm"><i class="bi bi-shield-lock-fill me-1"></i>Nível 5 - Administrador</span>';
+          case 4:
+            return '<span class="badge bg-primary shadow-sm"><i class="bi bi-mortarboard-fill me-1"></i>Nível 4 - Coordenação</span>';
+          case 3:
+            return '<span class="badge bg-info text-dark shadow-sm"><i class="bi bi-person-workspace me-1"></i>Nível 3 - Secretaria</span>';
+          case 2:
+            return '<span class="badge bg-warning text-dark shadow-sm"><i class="bi bi-cash-stack me-1"></i>Nível 2 - Financeiro</span>';
+          default:
+            return '<span class="badge bg-secondary shadow-sm"><i class="bi bi-eye me-1"></i>Nível 1 - Básico</span>';
+        }
+      };
+
+      const getStatusBadge = (status) => {
+        const s = (status || '').toUpperCase().trim();
+        if (s === 'INATIVO') {
+          return '<span class="badge bg-secondary">Inativo</span>';
+        }
+        return '<span class="badge bg-success">Ativo</span>';
+      };
+
+      tbody.innerHTML = usuarios.map(u => `
+        <tr>
+          <td><span class="badge bg-light text-dark border">#${u.id}</span></td>
+          <td class="fw-bold text-dark">
+            <div class="d-flex align-items-center gap-2">
+              <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.85rem;">${(u.nome || 'U').charAt(0).toUpperCase()}</div>
+              <div>${u.nome || '-'}</div>
+            </div>
+          </td>
+          <td><code>${u.username || '-'}</code></td>
+          <td>${getNivelBadge(u.nivel)}</td>
+          <td>${getStatusBadge(u.status)}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-primary fw-semibold me-1" onclick="App.abrirModalEditarUsuario(${u.id})" title="Editar Usuário">
+              <i class="bi bi-pencil-square me-1"></i>Editar
+            </button>
+            <button class="btn btn-sm btn-outline-danger" onclick="App.excluirUsuario(${u.id}, '${(u.nome || '').replace(/'/g, "\\'")}')" title="Excluir Usuário">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    } catch (e) {
+      console.error('Erro ao carregar usuários:', e);
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center py-4 text-danger">
+            <i class="bi bi-exclamation-triangle me-1"></i> Falha ao carregar usuários: ${e.message}
+          </td>
+        </tr>
+      `;
+    }
+  },
+
+  abrirModalNovoUsuario() {
+    document.getElementById('usuarioId').value = '';
+    document.getElementById('usuarioNome').value = '';
+    document.getElementById('usuarioUsername').value = '';
+    document.getElementById('usuarioSenha').value = '';
+    document.getElementById('usuarioSenha').required = true;
+    document.getElementById('usuarioNivel').value = '3';
+    document.getElementById('usuarioStatus').value = 'ATIVO';
+
+    const helpSenha = document.getElementById('helpUsuarioSenha');
+    if (helpSenha) helpSenha.classList.add('d-none');
+    const labelSenha = document.getElementById('labelUsuarioSenha');
+    if (labelSenha) labelSenha.textContent = 'SENHA DE ACESSO *';
+
+    const err = document.getElementById('usuarioError');
+    if (err) {
+      err.classList.add('d-none');
+      err.textContent = '';
+    }
+
+    const titulo = document.getElementById('modalUsuarioTitulo');
+    if (titulo) {
+      titulo.innerHTML = '<i class="bi bi-person-plus-fill me-2"></i>Cadastrar Novo Usuário';
+    }
+
+    const modalEl = document.getElementById('modalUsuario');
+    if (modalEl) {
+      const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      modal.show();
+    }
+  },
+
+  abrirModalEditarUsuario(id) {
+    const u = this.usuariosList.find(item => item.id === id);
+    if (!u) {
+      alert('Usuário não encontrado.');
+      return;
+    }
+
+    document.getElementById('usuarioId').value = u.id;
+    document.getElementById('usuarioNome').value = u.nome || '';
+    document.getElementById('usuarioUsername').value = u.username || '';
+    document.getElementById('usuarioSenha').value = '';
+    document.getElementById('usuarioSenha').required = false;
+    document.getElementById('usuarioNivel').value = String(u.nivel || 3);
+    document.getElementById('usuarioStatus').value = (u.status || 'ATIVO').toUpperCase() === 'INATIVO' ? 'INATIVO' : 'ATIVO';
+
+    const helpSenha = document.getElementById('helpUsuarioSenha');
+    if (helpSenha) helpSenha.classList.remove('d-none');
+    const labelSenha = document.getElementById('labelUsuarioSenha');
+    if (labelSenha) labelSenha.textContent = 'NOVA SENHA (OPCIONAL)';
+
+    const err = document.getElementById('usuarioError');
+    if (err) {
+      err.classList.add('d-none');
+      err.textContent = '';
+    }
+
+    const titulo = document.getElementById('modalUsuarioTitulo');
+    if (titulo) {
+      titulo.innerHTML = `<i class="bi bi-pencil-square me-2"></i>Editar Usuário: ${u.nome} (#${u.id})`;
+    }
+
+    const modalEl = document.getElementById('modalUsuario');
+    if (modalEl) {
+      const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+      modal.show();
+    }
+  },
+
+  async salvarUsuario(event) {
+    if (event) event.preventDefault();
+
+    const id = document.getElementById('usuarioId').value;
+    const nome = document.getElementById('usuarioNome').value.trim();
+    const username = document.getElementById('usuarioUsername').value.trim();
+    const senha = document.getElementById('usuarioSenha').value.trim();
+    const nivel = parseInt(document.getElementById('usuarioNivel').value, 10);
+    const status = document.getElementById('usuarioStatus').value;
+    const errBox = document.getElementById('usuarioError');
+
+    if (!nome || !username) {
+      if (errBox) {
+        errBox.textContent = 'Nome completo e nome de usuário são obrigatórios.';
+        errBox.classList.remove('d-none');
+      }
+      return;
+    }
+
+    if (!id && !senha) {
+      if (errBox) {
+        errBox.textContent = 'Informe uma senha para o novo usuário.';
+        errBox.classList.remove('d-none');
+      }
+      return;
+    }
+
+    const btn = document.getElementById('btnSalvarUsuario');
+    if (btn) btn.disabled = true;
+
+    try {
+      const payload = { nome, username, nivel, status };
+      if (senha) payload.senha = senha;
+
+      let res;
+      if (id) {
+        res = await this.api(`/api/usuarios/${encodeURIComponent(id)}`, 'PUT', payload);
+      } else {
+        res = await this.api('/api/usuarios', 'POST', payload);
+      }
+
+      if (res.error) {
+        throw new Error(res.error);
+      }
+
+      const modalEl = document.getElementById('modalUsuario');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+      }
+
+      await this.loadUsuarios();
+      alert(res.message || (id ? 'Usuário atualizado com sucesso!' : 'Usuário criado com sucesso!'));
+    } catch (e) {
+      if (errBox) {
+        errBox.textContent = 'Erro ao salvar usuário: ' + e.message;
+        errBox.classList.remove('d-none');
+      } else {
+        alert('Erro ao salvar usuário: ' + e.message);
+      }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  },
+
+  async excluirUsuario(id, nome) {
+    if (this.user && String(this.user.id) === String(id)) {
+      alert('Atenção: você não pode excluir o seu próprio usuário logado no momento!');
+      return;
+    }
+
+    if (!confirm(`Tem certeza que deseja excluir o usuário "${nome}" (ID #${id})?\nEsta ação não poderá ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      const res = await this.api(`/api/usuarios/${encodeURIComponent(id)}`, 'DELETE');
+      if (res.error) {
+        throw new Error(res.error);
+      }
+      await this.loadUsuarios();
+      alert(res.message || 'Usuário excluído com sucesso!');
+    } catch (e) {
+      alert('Erro ao excluir usuário: ' + e.message);
+    }
   }
 };
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
