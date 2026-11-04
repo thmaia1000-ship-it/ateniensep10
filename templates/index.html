@@ -2004,11 +2004,15 @@
           <div class="row g-2 mb-3">
             <div class="col-6">
               <label class="form-label small text-muted">QUANTIDADE A PAGAR</label>
-              <input type="number" id="pagQtdParcelas" class="form-control" value="1" min="1" onchange="App.calcularSubtotalPagamento()" onkeyup="App.calcularSubtotalPagamento()">
+              <input type="number" id="pagQtdParcelas" class="form-control" value="1" min="1"
+                     onchange="App.calcularSubtotalPagamento()"
+                     oninput="App.calcularSubtotalPagamento()"
+                     onkeydown="App.passarCampoMensalidade(event, 'pagFormaPagamento')">
             </div>
             <div class="col-6">
               <label class="form-label small text-muted">FORMA DE PAGAMENTO</label>
-              <select id="pagFormaPagamento" class="form-select">
+              <select id="pagFormaPagamento" class="form-select"
+                      onkeydown="App.passarCampoMensalidade(event, 'pagDescontoManual')">
                 <option value="DINHEIRO">Dinheiro</option>
                 <option value="PIX">PIX</option>
                 <option value="CARTÃO DE DÉBITO">Cartão de Débito</option>
@@ -2020,12 +2024,16 @@
             <label class="form-label small text-muted fw-bold"><i class="bi bi-tag text-danger me-1"></i>DESCONTO MANUAL (R$)</label>
             <div class="input-group">
               <span class="input-group-text bg-white">R$</span>
-              <input type="number" id="pagDescontoManual" class="form-control" value="0.00" min="0" step="0.01" placeholder="0.00" oninput="App.calcularSubtotalPagamento()" onchange="App.calcularSubtotalPagamento()">
+              <input type="number" id="pagDescontoManual" class="form-control" value="0.00" min="0" step="0.01" placeholder="0.00"
+                     oninput="App.calcularSubtotalPagamento()"
+                     onchange="App.calcularSubtotalPagamento()"
+                     onkeydown="App.passarCampoMensalidade(event, 'pagObs')">
             </div>
           </div>
           <div class="mb-3">
             <label class="form-label small text-muted">OBSERVAÇÕES</label>
-            <input type="text" id="pagObs" class="form-control" placeholder="Ex: Desconto pontualidade...">
+            <input type="text" id="pagObs" class="form-control" placeholder="Ex: Desconto pontualidade..."
+                   onkeydown="App.passarCampoMensalidade(event, 'btnConfirmarPagamentoMensalidade')">
           </div>
           <div class="p-3 bg-light rounded text-center my-3">
             <div class="d-flex justify-content-between align-items-center mb-2 px-2 text-muted small d-none" id="pagDetalheValores">
@@ -2038,7 +2046,11 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-success fw-bold" onclick="App.confirmarPagamentoMensalidade()">Confirmar Pagamento & Emitir Recibo</button>
+          <button type="button" class="btn btn-success fw-bold" id="btnConfirmarPagamentoMensalidade"
+                  onclick="App.confirmarPagamentoMensalidade()"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();App.confirmarPagamentoMensalidade();}">
+            Confirmar Pagamento & Emitir Recibo
+          </button>
         </div>
       </div>
     </div>

@@ -177,6 +177,18 @@ const App = {
         this.toggleTheme();
       });
     });
+
+    // Foco automático ao abrir modal de recebimento de mensalidade
+    const modalPagar = document.getElementById('modalPagarMensalidade');
+    if (modalPagar) {
+      modalPagar.addEventListener('shown.bs.modal', () => {
+        const firstField = document.getElementById('pagQtdParcelas');
+        if (firstField) {
+          firstField.focus();
+          firstField.select();
+        }
+      });
+    }
   },
 
   initTheme() {
@@ -724,6 +736,29 @@ const App = {
     this.calcularSubtotalPagamento();
     const modal = new bootstrap.Modal(document.getElementById('modalPagarMensalidade'));
     modal.show();
+
+    // Auto-foca e seleciona o primeiro campo (Quantidade) para navegação via ENTER
+    setTimeout(() => {
+      const firstField = document.getElementById('pagQtdParcelas');
+      if (firstField) {
+        firstField.focus();
+        firstField.select();
+      }
+    }, 350);
+  },
+
+  passarCampoMensalidade(e, nextId) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      this.calcularSubtotalPagamento();
+      const nextEl = document.getElementById(nextId);
+      if (nextEl) {
+        nextEl.focus();
+        if (typeof nextEl.select === 'function' && nextEl.tagName !== 'SELECT' && nextEl.type !== 'button') {
+          nextEl.select();
+        }
+      }
+    }
   },
 
   calcularSubtotalPagamento() {
