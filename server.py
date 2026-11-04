@@ -287,7 +287,7 @@ class AtenienseHandler(BaseHTTPRequestHandler):
             if path == '/api/mensalidades':
                 status = query.get('status', ['todas'])[0]
                 busca = query.get('busca', [''])[0]
-                limit = int(query.get('limit', [100])[0])
+                limit = int(query.get('limit', [250])[0])
                 self.send_json({'mensalidades': financeiro_service.list_mensalidades(status, busca, limit)})
                 return
 

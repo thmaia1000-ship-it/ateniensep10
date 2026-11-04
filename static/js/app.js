@@ -595,15 +595,60 @@ const App = {
     }
   },
 
-  async loadMensalidades(status = 'todas', busca = '') {
+  mensalidadesStatus: 'todas',
+  buscaMensalidadeDebounceTimer: null,
+
+  async loadMensalidades(status, busca) {
+    if (status !== undefined) {
+      this.mensalidadesStatus = status;
+    }
+    const currentStatus = this.mensalidadesStatus || 'todas';
+    const inputBusca = document.getElementById('inputBuscaMensalidadeAluno');
+    const termoBusca = (busca !== undefined ? busca : (inputBusca?.value || '')).trim();
+
+    // Sincroniza classes visuais dos botões de status
+    const btnTodas = document.getElementById('btnFiltroMensalidadesTodas');
+    const btnAberto = document.getElementById('btnFiltroMensalidadesAberto');
+    const btnPago = document.getElementById('btnFiltroMensalidadesPago');
+    if (btnTodas && btnAberto && btnPago) {
+      btnTodas.classList.toggle('active', currentStatus === 'todas');
+      btnAberto.classList.toggle('active', currentStatus === 'aberto');
+      btnPago.classList.toggle('active', currentStatus === 'pago');
+    }
+
+    const tbody = document.getElementById('tableMensalidades');
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center py-4 text-muted">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+            Buscando mensalidades...
+          </td>
+        </tr>
+      `;
+    }
+
     try {
-      const data = await this.api(`/api/mensalidades?status=${status}&busca=${encodeURIComponent(busca)}`);
-      const tbody = document.getElementById('tableMensalidades');
+      const data = await this.api(`/api/mensalidades?status=${encodeURIComponent(currentStatus)}&busca=${encodeURIComponent(termoBusca)}`);
       if (tbody) {
-        tbody.innerHTML = (data.mensalidades || []).map(m => {
+        const itens = data.mensalidades || [];
+        if (itens.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">
+                <i class="bi bi-search fs-3 d-block mb-2 text-secondary"></i>
+                Nenhuma mensalidade encontrada${termoBusca ? ` para o aluno "<strong>${termoBusca.replace(/</g, '&lt;')}</strong>"` : ''}.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = itens.map(m => {
           const saldo = parseFloat(m.saldo_devedor || 0);
           const total = parseFloat(m.valor_total || 0);
           const isPaga = saldo <= 0;
+          const nomeAlunoEscapado = (m.nome_aluno || 'ALUNO').replace(/'/g, "\\'");
           return `
             <tr>
               <td>#${m.id}</td>
@@ -614,7 +659,7 @@ const App = {
               <td><strong>R$ ${saldo.toFixed(2)}</strong></td>
               <td><span class="badge ${isPaga ? 'bg-success' : 'bg-danger'}">${isPaga ? 'QUITADO' : 'EM ABERTO'}</span></td>
               <td>
-                <button class="btn btn-sm btn-primary" onclick="App.abrirPagamentoMensalidade(${m.id}, '${m.nome_aluno}', ${m.valor_parcela}, ${m.parcelas_pagas}, ${m.n_parcelas})">
+                <button class="btn btn-sm btn-primary" onclick="App.abrirPagamentoMensalidade(${m.id}, '${nomeAlunoEscapado}', ${m.valor_parcela}, ${m.parcelas_pagas}, ${m.n_parcelas})">
                   <i class="bi bi-cash-coin"></i> Receber
                 </button>
                 <button class="btn btn-sm btn-outline-secondary" onclick="App.imprimirCarne(${m.idaluno})">
@@ -627,7 +672,43 @@ const App = {
       }
     } catch (e) {
       console.error(e);
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-4 text-danger">
+              <i class="bi bi-exclamation-triangle fs-3 d-block mb-2"></i>
+              Erro ao carregar mensalidades.
+            </td>
+          </tr>
+        `;
+      }
     }
+  },
+
+  setFiltroMensalidadesStatus(status) {
+    this.mensalidadesStatus = status;
+    const busca = document.getElementById('inputBuscaMensalidadeAluno')?.value || '';
+    this.loadMensalidades(status, busca);
+  },
+
+  onBuscaMensalidadeAlunoInput(valor) {
+    clearTimeout(this.buscaMensalidadeDebounceTimer);
+    this.buscaMensalidadeDebounceTimer = setTimeout(() => {
+      this.filtrarMensalidades();
+    }, 250);
+  },
+
+  filtrarMensalidades() {
+    clearTimeout(this.buscaMensalidadeDebounceTimer);
+    const busca = document.getElementById('inputBuscaMensalidadeAluno')?.value || '';
+    this.loadMensalidades(this.mensalidadesStatus || 'todas', busca);
+  },
+
+  limparBuscaMensalidades() {
+    const input = document.getElementById('inputBuscaMensalidadeAluno');
+    if (input) input.value = '';
+    this.mensalidadesStatus = 'todas';
+    this.loadMensalidades('todas', '');
   },
 
   abrirPagamentoMensalidade(id, aluno, valorParcela, pagas, totalParcelas) {

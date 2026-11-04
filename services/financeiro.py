@@ -87,13 +87,18 @@ def create_movimentacao(data, usuario='ADMIN'):
         data.get('idaluno')
     ))
 
-def list_mensalidades(status='todas', busca='', limit=100, offset=0):
+def list_mensalidades(status='todas', busca='', limit=250, offset=0):
     params = []
     where_clauses = []
     
     if busca:
-        where_clauses.append("(a.nome_aluno LIKE ? OR m.ID_mensalidade = ?)")
-        params.extend([f"%{busca}%", busca if busca.isdigit() else -1])
+        busca_clean = str(busca).strip()
+        if busca_clean.isdigit():
+            where_clauses.append("(m.ID_mensalidade = ? OR a.ID_aluno = ? OR a.nome_aluno LIKE ?)")
+            params.extend([int(busca_clean), int(busca_clean), f"%{busca_clean}%"])
+        else:
+            where_clauses.append("a.nome_aluno LIKE ?")
+            params.append(f"%{busca_clean}%")
         
     if status == 'aberto':
         where_clauses.append("CAST(m.saldo_devedor AS REAL) > 0")
