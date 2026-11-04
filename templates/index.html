@@ -2017,10 +2017,21 @@
             </div>
           </div>
           <div class="mb-3">
+            <label class="form-label small text-muted fw-bold"><i class="bi bi-tag text-danger me-1"></i>DESCONTO MANUAL (R$)</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white">R$</span>
+              <input type="number" id="pagDescontoManual" class="form-control" value="0.00" min="0" step="0.01" placeholder="0.00" oninput="App.calcularSubtotalPagamento()" onchange="App.calcularSubtotalPagamento()">
+            </div>
+          </div>
+          <div class="mb-3">
             <label class="form-label small text-muted">OBSERVAÇÕES</label>
             <input type="text" id="pagObs" class="form-control" placeholder="Ex: Desconto pontualidade...">
           </div>
           <div class="p-3 bg-light rounded text-center my-3">
+            <div class="d-flex justify-content-between align-items-center mb-2 px-2 text-muted small d-none" id="pagDetalheValores">
+              <span>Subtotal: <strong id="pagSubtotalBruto">R$ 0,00</strong></span>
+              <span class="text-danger">Desconto: <strong id="pagValorDescontoExibido">- R$ 0,00</strong></span>
+            </div>
             <div class="text-muted small text-uppercase">TOTAL A RECEBER</div>
             <h3 class="text-success fw-bold m-0" id="pagSubtotal">R$ 0,00</h3>
           </div>

@@ -54,10 +54,13 @@ def create_despesa(data, usuario='ADMIN'):
     # Se solicitado, lança saída no caixa
     if data.get('lancar_caixa'):
         hoje = datetime.now()
+        next_caixa_row = query_one("SELECT COALESCE(MAX(ID_caixa), 0) + 1 as next_id FROM tb_caixa")
+        next_caixa_id = next_caixa_row['next_id'] if next_caixa_row else 1
         execute("""
-        INSERT INTO tb_caixa (valor_total, forma, tipo_movimentacao, nome, descricao, usuario, data, horario, curso, observacao)
-        VALUES (?, ?, 'SAÍDA', 'DESPESA', ?, ?, ?, ?, 'ENSINO REGULAR', ?)
+        INSERT INTO tb_caixa (ID_caixa, valor_total, forma, tipo_movimentacao, nome, descricao, usuario, data, horario, curso, observacao, idforma2)
+        VALUES (?, ?, ?, 'SAÍDA', 'DESPESA', ?, ?, ?, ?, 'ENSINO REGULAR', ?, 0)
         """, (
+            next_caixa_id,
             data.get('valor', 0.0),
             data.get('forma', 'DINHEIRO'),
             f"DESPESA: {data.get('descricao', '')}",

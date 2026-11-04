@@ -102,10 +102,13 @@ def realizar_venda(cliente_nome, itens, forma_pagamento='DINHEIRO', usuario='ADM
         ))
         
     # Insere entrada no tb_caixa
-    caixa_id = execute("""
-    INSERT INTO tb_caixa (valor_total, forma, tipo_movimentacao, nome, descricao, usuario, data, horario, curso, codigovenda)
-    VALUES (?, ?, 'ENTRADA', ?, ?, ?, ?, ?, 'VENDA PRODUTOS', ?)
+    next_caixa_row = query_one("SELECT COALESCE(MAX(ID_caixa), 0) + 1 as next_id FROM tb_caixa")
+    next_caixa_id = next_caixa_row['next_id'] if next_caixa_row else 1
+    execute("""
+    INSERT INTO tb_caixa (ID_caixa, valor_total, forma, tipo_movimentacao, nome, descricao, usuario, data, horario, curso, codigovenda, idforma2)
+    VALUES (?, ?, ?, 'ENTRADA', ?, ?, ?, ?, ?, 'VENDA PRODUTOS', ?, 0)
     """, (
+        next_caixa_id,
         f"{total_geral:.2f}",
         forma_pagamento,
         cliente_nome or 'CONSUMIDOR',
@@ -115,6 +118,7 @@ def realizar_venda(cliente_nome, itens, forma_pagamento='DINHEIRO', usuario='ADM
         hora_str,
         codigo_venda
     ))
+    caixa_id = next_caixa_id
     
     return {
         'codigo_venda': codigo_venda,

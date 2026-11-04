@@ -508,7 +508,8 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 qtd = int(body.get('quantidade_parcelas', 1))
                 forma = body.get('forma_pagamento', 'DINHEIRO')
                 obs = body.get('observacao', '')
-                res = financeiro_service.pagar_mensalidade(mid, qtd, forma, username, obs)
+                desconto = float(body.get('desconto', 0.0) or 0.0)
+                res = financeiro_service.pagar_mensalidade(mid, qtd, forma, username, obs, desconto=desconto)
                 self.send_json(res)
                 return
 

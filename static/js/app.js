@@ -717,32 +717,65 @@ const App = {
     document.getElementById('pagValorParcela').value = valorParcela;
     document.getElementById('pagParcelasPagas').value = `${pagas} de ${totalParcelas}`;
     document.getElementById('pagQtdParcelas').value = 1;
+    const inputDesc = document.getElementById('pagDescontoManual');
+    if (inputDesc) inputDesc.value = '0.00';
+    const inputObs = document.getElementById('pagObs');
+    if (inputObs) inputObs.value = '';
     this.calcularSubtotalPagamento();
     const modal = new bootstrap.Modal(document.getElementById('modalPagarMensalidade'));
     modal.show();
   },
 
   calcularSubtotalPagamento() {
-    const valor = parseFloat(document.getElementById('pagValorParcela').value || 0);
-    const qtd = parseInt(document.getElementById('pagQtdParcelas').value || 1);
-    const subtotal = valor * qtd;
-    document.getElementById('pagSubtotal').innerText = `R$ ${subtotal.toFixed(2)}`;
+    const valor = parseFloat(document.getElementById('pagValorParcela')?.value || 0);
+    const qtd = parseInt(document.getElementById('pagQtdParcelas')?.value || 1);
+    const bruto = Math.max(0, valor * qtd);
+    let desconto = parseFloat(document.getElementById('pagDescontoManual')?.value || 0);
+    if (isNaN(desconto) || desconto < 0) {
+      desconto = 0;
+    }
+    if (desconto > bruto) {
+      desconto = bruto;
+    }
+    const total = Math.max(0, bruto - desconto);
+
+    const detalheEl = document.getElementById('pagDetalheValores');
+    const brutoEl = document.getElementById('pagSubtotalBruto');
+    const descEl = document.getElementById('pagValorDescontoExibido');
+    const totalEl = document.getElementById('pagSubtotal');
+
+    if (detalheEl && brutoEl && descEl) {
+      if (desconto > 0) {
+        detalheEl.classList.remove('d-none');
+        brutoEl.innerText = `R$ ${bruto.toFixed(2)}`;
+        descEl.innerText = `- R$ ${desconto.toFixed(2)}`;
+      } else {
+        detalheEl.classList.add('d-none');
+      }
+    }
+
+    if (totalEl) {
+      totalEl.innerText = `R$ ${total.toFixed(2)}`;
+    }
   },
 
   async confirmarPagamentoMensalidade() {
-    const id = document.getElementById('pagMensalidadeId').value;
-    const qtd = parseInt(document.getElementById('pagQtdParcelas').value || 1);
-    const forma = document.getElementById('pagFormaPagamento').value;
-    const obs = document.getElementById('pagObs').value;
+    const id = document.getElementById('pagMensalidadeId')?.value;
+    const qtd = parseInt(document.getElementById('pagQtdParcelas')?.value || 1);
+    const forma = document.getElementById('pagFormaPagamento')?.value || 'DINHEIRO';
+    const obs = document.getElementById('pagObs')?.value || '';
+    const desconto = parseFloat(document.getElementById('pagDescontoManual')?.value || 0);
 
     try {
       const res = await this.api('/api/mensalidades/pagar', 'POST', {
         mensalidade_id: id,
         quantidade_parcelas: qtd,
         forma_pagamento: forma,
+        desconto: isNaN(desconto) ? 0 : Math.max(0, desconto),
         observacao: obs
       });
-      alert(`Pagamento de R$ ${res.total_pago.toFixed(2)} efetuado com sucesso!`);
+      const descMsg = (res.desconto_aplicado && res.desconto_aplicado > 0) ? ` (Desconto aplicado: R$ ${res.desconto_aplicado.toFixed(2)})` : '';
+      alert(`Pagamento de R$ ${res.total_pago.toFixed(2)} efetuado com sucesso!${descMsg}`);
       bootstrap.Modal.getInstance(document.getElementById('modalPagarMensalidade')).hide();
       this.loadMensalidades();
       if (res.caixa_id) {

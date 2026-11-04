@@ -67,13 +67,16 @@ def create_movimentacao(data, usuario='ADMIN'):
     hoje = datetime.now()
     data_str = data.get('data') or hoje.strftime('%Y-%m-%d')
     hora_str = data.get('horario') or hoje.strftime('%H:%M:%S')
+    next_row = query_one("SELECT COALESCE(MAX(ID_caixa), 0) + 1 as next_id FROM tb_caixa")
+    next_id = next_row['next_id'] if next_row else 1
     
-    return execute("""
+    execute("""
     INSERT INTO tb_caixa (
-        valor_total, forma, tipo_movimentacao, nome, descricao,
-        usuario, data, horario, curso, observacao, idaluno
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ID_caixa, valor_total, forma, tipo_movimentacao, nome, descricao,
+        usuario, data, horario, curso, observacao, idaluno, idforma2
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
     """, (
+        next_id,
         data.get('valor_total', 0.0),
         data.get('forma', 'DINHEIRO'),
         data.get('tipo_movimentacao', 'ENTRADA'),
@@ -86,6 +89,7 @@ def create_movimentacao(data, usuario='ADMIN'):
         data.get('observacao', ''),
         data.get('idaluno')
     ))
+    return next_id
 
 def list_mensalidades(status='todas', busca='', limit=250, offset=0):
     params = []
@@ -133,7 +137,7 @@ def list_mensalidades(status='todas', busca='', limit=250, offset=0):
     params.extend([limit, offset])
     return query_all(sql, tuple(params))
 
-def pagar_mensalidade(mensalidade_id, qtd_parcelas, forma_pagamento, usuario='ADMIN', observacao=''):
+def pagar_mensalidade(mensalidade_id, qtd_parcelas, forma_pagamento, usuario='ADMIN', observacao='', desconto=0.0):
     m = query_one("SELECT * FROM tb_mensalidades WHERE ID_mensalidade = ?", (mensalidade_id,))
     if not m:
         raise ValueError("Mensalidade não encontrada")
@@ -143,9 +147,14 @@ def pagar_mensalidade(mensalidade_id, qtd_parcelas, forma_pagamento, usuario='AD
     n_parcelas = int(m['n_parcelas'] or 0)
     saldo_devedor = float(m['saldo_devedor'] or 0)
     
-    total_a_pagar = valor_parcela * qtd_parcelas
+    valor_bruto = valor_parcela * qtd_parcelas
+    desconto_val = max(0.0, float(desconto or 0.0))
+    if desconto_val > valor_bruto:
+        desconto_val = valor_bruto
+    total_a_pagar = max(0.0, valor_bruto - desconto_val)
+    
     novas_parcelas_pagas = parcelas_pagas_atual + qtd_parcelas
-    novo_saldo_devedor = max(0.0, saldo_devedor - total_a_pagar)
+    novo_saldo_devedor = max(0.0, saldo_devedor - valor_bruto)
     
     # Atualiza tb_mensalidades
     execute("""
@@ -160,14 +169,25 @@ def pagar_mensalidade(mensalidade_id, qtd_parcelas, forma_pagamento, usuario='AD
     
     hoje = datetime.now()
     desc = f"PAGAMENTO DE MENSALIDADE ({qtd_parcelas} PARCELA(S)) - PARCELAS {parcelas_pagas_atual+1} A {novas_parcelas_pagas}"
+    if desconto_val > 0:
+        desc += f" (DESCONTO MANUAL: R$ {desconto_val:.2f})"
+        
+    obs_final = observacao or ''
+    if desconto_val > 0:
+        obs_desconto = f"Desconto manual: R$ {desconto_val:.2f}"
+        obs_final = f"{obs_final} | {obs_desconto}".strip(" |")
     
     # Lança no Caixa
-    caixa_id = execute("""
+    next_caixa_row = query_one("SELECT COALESCE(MAX(ID_caixa), 0) + 1 as next_id FROM tb_caixa")
+    next_caixa_id = next_caixa_row['next_id'] if next_caixa_row else 1
+    
+    execute("""
     INSERT INTO tb_caixa (
-        valor_total, forma, tipo_movimentacao, nome, descricao,
-        usuario, data, horario, curso, observacao, idaluno, mensalidades_paga, idmensalidade
-    ) VALUES (?, ?, 'ENTRADA', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ID_caixa, valor_total, forma, tipo_movimentacao, nome, descricao,
+        usuario, data, horario, curso, observacao, idaluno, mensalidades_paga, idmensalidade, idforma2
+    ) VALUES (?, ?, ?, 'ENTRADA', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
     """, (
+        next_caixa_id,
         f"{total_a_pagar:.2f}",
         forma_pagamento,
         aluno_nome,
@@ -176,16 +196,19 @@ def pagar_mensalidade(mensalidade_id, qtd_parcelas, forma_pagamento, usuario='AD
         hoje.strftime('%Y-%m-%d'),
         hoje.strftime('%H:%M:%S'),
         m['curso'] or 'ENSINO REGULAR',
-        observacao,
+        obs_final,
         m['idaluno'],
         qtd_parcelas,
         mensalidade_id
     ))
+    caixa_id = next_caixa_id
     
     return {
         'caixa_id': caixa_id,
         'mensalidade_id': mensalidade_id,
         'total_pago': total_a_pagar,
+        'valor_bruto': valor_bruto,
+        'desconto_aplicado': desconto_val,
         'saldo_restante': novo_saldo_devedor,
         'parcelas_pagas': novas_parcelas_pagas,
         'aluno_nome': aluno_nome
