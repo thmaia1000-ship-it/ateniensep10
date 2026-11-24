@@ -391,8 +391,13 @@ def delete_aluno(aluno_id):
     execute("DELETE FROM tb_alunos_turmas WHERE idaluno = ?", (aluno_id,))
     return execute("DELETE FROM tb_alunos WHERE ID_aluno = ?", (aluno_id,))
 
-def list_turmas():
-    return query_all("""
+def list_turmas(id_professor=None):
+    where_clause = ""
+    params = ()
+    if id_professor:
+        where_clause = "WHERE (t.idprofessor = ? OR t.ID_turma IN (SELECT idturma FROM tb_professores_turmas WHERE idprofessor = ?))"
+        params = (int(id_professor), int(id_professor))
+    return query_all(f"""
     SELECT 
         t.ID_turma as id,
         t.nome_turma,
@@ -408,9 +413,10 @@ def list_turmas():
     FROM tb_turmas t
     LEFT JOIN tb_professores p ON t.idprofessor = p.ID_professor
     LEFT JOIN tb_alunos_turmas at ON t.ID_turma = at.idturma
+    {where_clause}
     GROUP BY t.ID_turma
     ORDER BY t.nome_turma ASC
-    """)
+    """, params)
 
 def get_turma(turma_id):
     return query_one("""
@@ -498,13 +504,20 @@ def list_professores():
 def create_professor(data):
     next_prof = query_one("SELECT COALESCE(MAX(ID_professor), 0) + 1 as next_id FROM tb_professores")
     prof_id = next_prof['next_id'] if next_prof else 1
-    nome = (data.get('nome') or data.get('nome_professor', '')).strip()
+    nome = (data.get('nome') or data.get('nome_professor', '')).strip().upper()
     telefone = (data.get('telefone', '')).strip()
     username = (data.get('username') or nome.lower().replace(' ', '')[:15]).strip()
     senha = (data.get('senha') or '123456').strip()
     execute(
         "INSERT INTO tb_professores (ID_professor, nome_professor, telefone, username, senha) VALUES (?, ?, ?, ?, ?)",
         (prof_id, nome, telefone, username, senha)
+    )
+    # Vincula / cria login automaticamente em tb_usuarios
+    next_u = query_one("SELECT COALESCE(MAX(ID_usuario), 0) + 1 as next_id FROM tb_usuarios")
+    u_id = next_u['next_id'] if next_u else 1
+    execute(
+        "INSERT INTO tb_usuarios (ID_usuario, nome_usuario, username, senha, status, nivel_usuario, id_professor) VALUES (?, ?, ?, ?, 'ATIVO', 1, ?)",
+        (u_id, nome, username, senha, prof_id)
     )
     return prof_id
 

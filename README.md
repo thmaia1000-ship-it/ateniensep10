@@ -21,13 +21,26 @@ E acesse `http://localhost:8080` no navegador.
 
 ---
 
-## 🔐 Credenciais de Acesso (Importadas do Banco Original)
+## 🔐 Níveis de Acesso e Credenciais
 
-| Usuário | Senha | Nível | Perfil |
-| :--- | :--- | :--- | :--- |
-| **admin** | `140602` | **5** | Administrador Geral |
-| **IURY** | `iury1304a` | **5** | Direção / Gestão |
-| **emelly** | `emelly26` | **3** | Secretaria / Operacional |
+### Níveis do Sistema:
+- **1 - Professor(a):** Acesso liberado **apenas** ao menu **Acadêmico** (Gerar Boletim e Diário Online).
+- **2 - Secretaria:** Acesso liberado aos menus **Secretaria**, **Financeiro** e **Produtos / PDV**.
+- **3 - Administrador geral:** Acesso total a todos os menus e recursos do sistema.
+
+### Credenciais Cadastradas:
+| Usuário | Senha | Nível | Perfil | Turmas Atribuídas |
+| :--- | :--- | :--- | :--- | :--- |
+| **admin** | `140602` | **3** | Administrador geral | Acesso Total (Todas as turmas) |
+| **IURY** | `iury1304a` | **3** | Administrador geral | Acesso Total (Todas as turmas) |
+| **emelly** | `emelly26` | **2** | Secretaria | Secretaria, Financeiro, Produtos/PDV |
+| **kivia** | `kivia2026` | **1** | Professor(a) | 1º Ano (Matutino e Vespertino) |
+| **adrielly** | `adrielly2025` | **1** | Professor(a) | Maternal I e Maternal II |
+| **sarah** | `sarah2026` | **1** | Professor(a) | Jardim I (Matutino e Vespertino) |
+| **alessandra** | `sampaio2026` | **1** | Professor(a) | Jardim II (Matutino e Vespertino) |
+| **professor** | `prof123` | **1** | Professor(a) (Teste) | Vinculado a Kivia Kaline (1º Ano) |
+
+> 🔒 **Regra de Isolamento Docente:** Cada professor autenticado possui acesso **exclusivo** às turmas sob sua titularidade. Nas telas de Diário Online e Boletim, os seletores listam apenas suas salas e qualquer tentativa de acesso a dados de outras turmas é bloqueada automaticamente pelo servidor (HTTP 403).
 
 ---
 
@@ -71,12 +84,12 @@ O banco de dados foi completamente importado a partir do dump oficial **`dbateni
 - **Termo de Responsabilidade:** Emissão em formato oficial timbrado com assinatura.
 - **Gerar Carnê Escolar:** Emissão de boletos/carnê com todas as parcelas do ano.
 - **Professores:** Cadastro e consulta do corpo docente.
+- **Definir Bimestres:** Datas de início e término dos períodos letivos.
 
 ### 2. Acadêmico
 - **Gerar Boletim Escolar:** Cálculo automático de notas do 1º ao 4º bimestre, médias, faltas e situação do aluno (Aprovado / Recuperação).
 - **Diário Online:** Registro de aulas, atividades pedagógicas, recursos e objetivos.
 - **Gestão de Turmas:** Visualização das turmas, turnos, professores alocados e alunos.
-- **Definir Bimestres:** Datas de início e término dos períodos letivos.
 
 ### 3. Financeiro
 - **Livro Caixa:** Extrato em tempo real de entradas e saídas, com cálculo do saldo líquido atual, filtros por período e forma de pagamento.

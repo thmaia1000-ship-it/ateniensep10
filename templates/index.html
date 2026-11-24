@@ -99,7 +99,7 @@
 
       <ul class="sidebar-nav">
         <!-- Dashboard -->
-        <li class="nav-item">
+        <li class="nav-item" data-menu-group="dashboard">
           <a class="nav-link active" data-view="dashboard">
             <i class="bi bi-speedometer2"></i>
             <span>Painel Principal</span>
@@ -107,8 +107,8 @@
         </li>
 
         <!-- 1. SECRETARIA -->
-        <li class="nav-section-title">SECRETARIA</li>
-        <li class="nav-item has-sub">
+        <li class="nav-section-title" data-menu-group="secretaria">SECRETARIA</li>
+        <li class="nav-item has-sub" data-menu-group="secretaria">
           <a class="nav-link">
             <i class="bi bi-person-lines-fill"></i>
             <span>Secretaria</span>
@@ -122,14 +122,15 @@
             <li><a class="sub-link" data-view="secretaria-resp-fin"><i class="bi bi-wallet2 me-1"></i> Resp. Financeiro</a></li>
             <li><a class="sub-link" data-view="secretaria-turmas"><i class="bi bi-diagram-3 me-1"></i> Gestão de Turmas</a></li>
             <li><a class="sub-link" data-view="secretaria-professores"><i class="bi bi-person-badge me-1"></i> Professores</a></li>
+            <li><a class="sub-link" data-view="secretaria-bimestre"><i class="bi bi-calendar4-week me-1"></i> Definir Bimestres</a></li>
             <li><a class="sub-link" data-view="secretaria-declaracoes"><i class="bi bi-file-earmark-text me-1"></i> Declarações Oficiais</a></li>
             <li><a class="sub-link" data-view="secretaria-contratos"><i class="bi bi-file-earmark-ruled me-1"></i> Contratos</a></li>
           </ul>
         </li>
 
         <!-- 2. ACADÊMICO -->
-        <li class="nav-section-title">ACADÊMICO</li>
-        <li class="nav-item has-sub">
+        <li class="nav-section-title" data-menu-group="academico">ACADÊMICO</li>
+        <li class="nav-item has-sub" data-menu-group="academico">
           <a class="nav-link">
             <i class="bi bi-journal-bookmark"></i>
             <span>Acadêmico</span>
@@ -138,13 +139,12 @@
           <ul class="nav-submenu">
             <li><a class="sub-link" data-view="academico-boletim"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Gerar Boletim</a></li>
             <li><a class="sub-link" data-view="academico-diario"><i class="bi bi-book me-1"></i> Diário Online</a></li>
-            <li><a class="sub-link" data-view="academico-bimestre"><i class="bi bi-calendar4-week me-1"></i> Definir Bimestres</a></li>
           </ul>
         </li>
 
         <!-- 3. FINANCEIRO -->
-        <li class="nav-section-title">FINANCEIRO</li>
-        <li class="nav-item has-sub">
+        <li class="nav-section-title" data-menu-group="financeiro">FINANCEIRO</li>
+        <li class="nav-item has-sub" data-menu-group="financeiro">
           <a class="nav-link">
             <i class="bi bi-cash-stack"></i>
             <span>Financeiro</span>
@@ -158,8 +158,8 @@
         </li>
 
         <!-- 4. CONTÁBIL & DRE -->
-        <li class="nav-section-title">CONTÁBIL</li>
-        <li class="nav-item has-sub">
+        <li class="nav-section-title" data-menu-group="contabil">CONTÁBIL</li>
+        <li class="nav-item has-sub" data-menu-group="contabil">
           <a class="nav-link">
             <i class="bi bi-calculator"></i>
             <span>Contábil & DRE</span>
@@ -172,8 +172,8 @@
         </li>
 
         <!-- 5. PRODUTOS & PDV -->
-        <li class="nav-section-title">PRODUTOS & PDV</li>
-        <li class="nav-item has-sub">
+        <li class="nav-section-title" data-menu-group="produtos">PRODUTOS & PDV</li>
+        <li class="nav-item has-sub" data-menu-group="produtos">
           <a class="nav-link">
             <i class="bi bi-cart3"></i>
             <span>Produtos / Vendas</span>
@@ -186,14 +186,14 @@
         </li>
 
         <!-- 6. CONFIGURAÇÕES -->
-        <li class="nav-section-title">SISTEMA</li>
-        <li class="nav-item">
+        <li class="nav-section-title" data-menu-group="sistema">SISTEMA</li>
+        <li class="nav-item" data-menu-group="sistema">
           <a class="nav-link" data-view="config-usuarios">
             <i class="bi bi-people"></i>
             <span>Gestão de Usuários</span>
           </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" data-menu-group="sistema">
           <a class="nav-link" style="color: #ffc107;" onclick="App.abrirModalReimportar()">
             <i class="bi bi-database-fill-gear text-warning"></i>
             <span>Importar Banco SQL</span>
@@ -201,8 +201,8 @@
         </li>
 
         <!-- 8. APLICATIVOS -->
-        <li class="nav-section-title">APLICATIVOS</li>
-        <li class="nav-item">
+        <li class="nav-section-title" data-menu-group="aplicativos">APLICATIVOS</li>
+        <li class="nav-item" data-menu-group="aplicativos">
           <a class="nav-link" data-view="aplicativos">
             <i class="bi bi-window-desktop text-info"></i>
             <span>Aplicativo Windows (.exe)</span>
@@ -1626,8 +1626,8 @@
           </div>
         </section>
 
-        <!-- ================= VIEW: ACADÊMICO - DEFINIR BIMESTRES ================= -->
-        <section id="view-academico-bimestre" class="view-content d-none">
+        <!-- ================= VIEW: SECRETARIA - DEFINIR BIMESTRES ================= -->
+        <section id="view-secretaria-bimestre" class="view-content d-none">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h4 class="fw-bold text-dark mb-1"><i class="bi bi-calendar4-week text-primary me-2"></i>Calendário Escolar - Definição de Bimestres</h4>
@@ -1808,6 +1808,7 @@
                     <th>Nome Completo</th>
                     <th>Usuário (Login)</th>
                     <th>Nível de Acesso</th>
+                    <th>Vínculo Docente</th>
                     <th>Status</th>
                     <th class="text-end" style="width: 150px;">Ações</th>
                   </tr>
@@ -2370,7 +2371,7 @@
         <div class="modal-body p-4">
           <div class="mb-3">
             <label class="form-label small fw-bold text-secondary">NOME COMPLETO DO PROFESSOR</label>
-            <input type="text" id="inputProfNome" class="form-control form-control-lg" placeholder="Ex: Maria das Graças" required>
+            <input type="text" id="inputProfNome" class="form-control form-control-lg text-uppercase" placeholder="EX: MARIA DAS GRAÇAS" oninput="this.value = this.value.toUpperCase()" required>
           </div>
           <div class="mb-3">
             <label class="form-label small fw-bold text-secondary">TELEFONE / WHATSAPP</label>
@@ -2828,15 +2829,13 @@
               </div>
             </div>
 
-            <div class="row g-2">
+            <div class="row g-2 mb-3">
               <div class="col-md-7">
                 <label class="form-label small fw-bold text-secondary">NÍVEL DE ACESSO *</label>
-                <select id="usuarioNivel" class="form-select" required>
-                  <option value="5">Nível 5 - Administrador Geral (Total)</option>
-                  <option value="4">Nível 4 - Coordenação Pedagógica</option>
-                  <option value="3" selected>Nível 3 - Secretaria / Operacional</option>
-                  <option value="2">Nível 2 - Financeiro / Caixa</option>
-                  <option value="1">Nível 1 - Básico / Consulta</option>
+                <select id="usuarioNivel" class="form-select" required onchange="App.onUsuarioNivelChange()">
+                  <option value="1">1 - Professor(a)</option>
+                  <option value="2">2 - Secretaria</option>
+                  <option value="3" selected>3 - Administrador geral</option>
                 </select>
               </div>
               <div class="col-md-5">
@@ -2845,6 +2844,19 @@
                   <option value="ATIVO" selected>Ativo</option>
                   <option value="INATIVO">Inativo</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- VINCULAR AO PROFESSOR (visível quando nível 1) -->
+            <div class="mb-3 d-none" id="divUsuarioProfessor">
+              <label class="form-label small fw-bold text-primary">
+                <i class="bi bi-mortarboard-fill me-1"></i>VINCULAR AO CADASTRO DO PROFESSOR *
+              </label>
+              <select id="usuarioProfessor" class="form-select border-primary">
+                <option value="">-- Selecione o Professor --</option>
+              </select>
+              <div class="form-text small text-muted">
+                <i class="bi bi-shield-lock me-1"></i>O professor terá acesso restrito exclusivamente às turmas atribuídas a ele.
               </div>
             </div>
           </div>

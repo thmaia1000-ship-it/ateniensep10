@@ -244,16 +244,32 @@ class AtenienseHandler(BaseHTTPRequestHandler):
 
             # Turmas & Professores
             if path == '/api/turmas':
-                self.send_json({'turmas': secretaria_service.list_turmas()})
+                user = self.get_user_from_header()
+                id_prof = None
+                if user and int(user.get('nivel') or 1) == 1:
+                    id_prof = user.get('id_professor')
+                elif 'id_professor' in query and query['id_professor'][0]:
+                    try:
+                        id_prof = int(query['id_professor'][0])
+                    except ValueError:
+                        pass
+                self.send_json({'turmas': secretaria_service.list_turmas(id_professor=id_prof)})
                 return
 
             if path.startswith('/api/turmas/') and path.endswith('/alunos'):
-                turma_id = path.split('/')[3]
+                turma_id = int(path.split('/')[3])
+                user = self.get_user_from_header()
+                if user and int(user.get('nivel') or 1) == 1:
+                    id_prof = user.get('id_professor')
+                    turmas_prof = [t['id'] for t in secretaria_service.list_turmas(id_professor=id_prof)]
+                    if turma_id not in turmas_prof:
+                        self.send_json({'error': 'Acesso não autorizado a esta turma'}, 403)
+                        return
                 self.send_json({'alunos': secretaria_service.get_alunos_turma(turma_id)})
                 return
 
             if path.startswith('/api/turmas/') and path.count('/') == 3:
-                turma_id = path.split('/')[3]
+                turma_id = int(path.split('/')[3])
                 turma = secretaria_service.get_turma(turma_id)
                 if turma:
                     self.send_json(turma)
@@ -309,9 +325,13 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 return
 
             if path == '/api/diario':
+                user = self.get_user_from_header()
+                id_prof = None
+                if user and int(user.get('nivel') or 1) == 1:
+                    id_prof = user.get('id_professor')
                 turma_id = query.get('turma_id', [None])[0]
                 busca = query.get('busca', [None])[0]
-                self.send_json({'diario': academico_service.list_diario(turma_id, busca)})
+                self.send_json({'diario': academico_service.list_diario(turma_id, busca, id_professor=id_prof)})
                 return
 
             if path.startswith('/api/diario/') and path.endswith('/frequencia'):
@@ -329,7 +349,15 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 if not turma_id:
                     self.send_json({'error': 'Parâmetro turma_id é obrigatório'}, 400)
                     return
-                res = academico_service.get_frequencia(int(turma_id), data_chamada)
+                t_id = int(turma_id)
+                user = self.get_user_from_header()
+                if user and int(user.get('nivel') or 1) == 1:
+                    id_prof = user.get('id_professor')
+                    turmas_prof = [t['id'] for t in secretaria_service.list_turmas(id_professor=id_prof)]
+                    if t_id not in turmas_prof:
+                        self.send_json({'error': 'Acesso não autorizado a esta turma'}, 403)
+                        return
+                res = academico_service.get_frequencia(t_id, data_chamada)
                 self.send_json(res)
                 return
 
@@ -593,7 +621,8 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                     username=body.get('username'),
                     senha=body.get('senha'),
                     nivel=body.get('nivel', 1),
-                    status=body.get('status', 'ATIVO')
+                    status=body.get('status', 'ATIVO'),
+                    id_professor=body.get('id_professor')
                 )
                 self.send_json({'id': res, 'message': 'Usuário criado com sucesso!'})
                 return
@@ -685,7 +714,8 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                     username=body.get('username'),
                     senha=body.get('senha'),
                     nivel=body.get('nivel'),
-                    status=body.get('status')
+                    status=body.get('status'),
+                    id_professor=body.get('id_professor')
                 )
                 self.send_json({'message': 'Usuário atualizado com sucesso!'})
                 return

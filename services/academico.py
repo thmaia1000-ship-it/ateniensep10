@@ -128,9 +128,12 @@ def get_boletim(aluno_id, ano=None):
         'total_faltas': total_faltas
     }
 
-def list_diario(turma_id=None, busca=None, limit=100):
+def list_diario(turma_id=None, busca=None, limit=100, id_professor=None):
     params = []
     where_clauses = []
+    if id_professor:
+        where_clauses.append("(t.idprofessor = ? OR d.turma IN (SELECT ID_turma FROM tb_turmas WHERE idprofessor = ? OR ID_turma IN (SELECT idturma FROM tb_professores_turmas WHERE idprofessor = ?)))")
+        params.extend([int(id_professor), int(id_professor), int(id_professor)])
     if turma_id:
         where_clauses.append("(d.turma = ? OR t.ID_turma = ?)")
         params.extend([turma_id, turma_id])

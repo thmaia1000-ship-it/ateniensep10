@@ -310,6 +310,69 @@ const App = {
     document.getElementById('appScreen').classList.add('d-none');
   },
 
+  getNivelNome(nivel) {
+    const n = parseInt(nivel, 10);
+    switch (n) {
+      case 1:
+        return '1 - Professor(a)';
+      case 2:
+        return '2 - Secretaria';
+      case 3:
+      default:
+        return '3 - Administrador geral';
+    }
+  },
+
+  isViewAllowed(view, nivel) {
+    const n = parseInt(nivel, 10);
+    if (n >= 3) return true; // Administrador geral tem acesso total
+
+    if (n === 1) {
+      // 1 - Professor(a): Apenas o menu Acadêmico
+      return view.startsWith('academico-');
+    }
+
+    if (n === 2) {
+      // 2 - Secretaria: Secretaria, Financeiro, Produtos/PDV
+      return view.startsWith('secretaria-') || 
+             view.startsWith('financeiro-') || 
+             view.startsWith('produtos-');
+    }
+
+    return false;
+  },
+
+  getDefaultViewForNivel(nivel) {
+    const n = parseInt(nivel, 10);
+    if (n >= 3) return 'dashboard';
+    if (n === 2) return 'secretaria-consultar';
+    if (n === 1) return 'academico-diario';
+    return 'dashboard';
+  },
+
+  applyPermissions() {
+    const nivel = parseInt(this.user?.nivel || 1, 10);
+
+    // Mapeamento de grupos de menu da barra lateral:
+    // Nível 1 - Professor(a): Liberar APENAS Acadêmico
+    // Nível 2 - Secretaria: Liberar Secretaria, Financeiro, Produtos/PDV
+    // Nível 3 - Administrador geral: Liberar tudo
+    document.querySelectorAll('[data-menu-group]').forEach(el => {
+      const group = el.getAttribute('data-menu-group');
+      let allowed = false;
+
+      if (nivel >= 3) {
+        allowed = true;
+      } else if (nivel === 2) {
+        allowed = (group === 'secretaria' || group === 'financeiro' || group === 'produtos');
+      } else if (nivel === 1) {
+        allowed = (group === 'academico');
+      }
+
+      el.classList.toggle('d-none', !allowed);
+    });
+  },
+
   showApp() {
     document.getElementById('loginScreen').classList.add('d-none');
     document.getElementById('appScreen').classList.remove('d-none');
@@ -317,11 +380,16 @@ const App = {
     // Atualiza dados do usuário na barra
     if (this.user) {
       document.getElementById('userNameBadge').innerText = this.user.nome || this.user.username;
-      document.getElementById('userNivelBadge').innerText = `Nível ${this.user.nivel}`;
+      document.getElementById('userNivelBadge').innerText = this.getNivelNome(this.user.nivel);
       document.getElementById('userAvatarLetter').innerText = (this.user.nome || this.user.username)[0].toUpperCase();
     }
     
-    this.navigate('dashboard');
+    this.applyPermissions();
+
+    const nivel = parseInt(this.user?.nivel || 1, 10);
+    const defaultView = this.getDefaultViewForNivel(nivel);
+    const viewToNavigate = (this.currentView && this.isViewAllowed(this.currentView, nivel)) ? this.currentView : defaultView;
+    this.navigate(viewToNavigate);
   },
 
   logout() {
@@ -336,6 +404,15 @@ const App = {
   },
 
   async navigate(view) {
+    const nivel = parseInt(this.user?.nivel || 1, 10);
+    if (!this.isViewAllowed(view, nivel)) {
+      const fallback = this.getDefaultViewForNivel(nivel);
+      if (view !== fallback) {
+        this.navigate(fallback);
+      }
+      return;
+    }
+
     this.currentView = view;
     
     // Fecha menu no mobile ao navegar
@@ -350,7 +427,7 @@ const App = {
 
     // Oculta todas as views e exibe a selecionada
     document.querySelectorAll('.view-content').forEach(el => el.classList.add('d-none'));
-    const target = document.getElementById(`view-${view}`);
+    const target = document.getElementById(`view-${view}`) || (view === 'academico-bimestre' ? document.getElementById('view-secretaria-bimestre') : null);
     if (target) {
       target.classList.remove('d-none');
     }
@@ -371,6 +448,10 @@ const App = {
         break;
       case 'secretaria-turmas':
         await this.loadTurmas();
+        break;
+      case 'secretaria-bimestre':
+      case 'academico-bimestre':
+        await this.loadBimestres();
         break;
       case 'secretaria-professores':
         await this.loadProfessores();
@@ -401,9 +482,6 @@ const App = {
         break;
       case 'academico-diario':
         await this.loadDiario();
-        break;
-      case 'academico-bimestre':
-        await this.loadBimestres();
         break;
       case 'contabil-despesas':
         await this.loadDespesas();
@@ -1611,7 +1689,7 @@ const App = {
   },
 
   async salvarNovoProfessor() {
-    const nome = (document.getElementById('inputProfNome')?.value || '').trim();
+    const nome = (document.getElementById('inputProfNome')?.value || '').trim().toUpperCase();
     if (!nome) {
       alert('Por favor, informe o nome do professor.');
       return;
@@ -3200,11 +3278,16 @@ const App = {
       const selAluno = document.getElementById('boletimAlunoSelect');
 
       if (selTurma) {
-        selTurma.innerHTML = '<option value="">-- Selecione a Turma --</option>' + 
-          (dataTurmas.turmas || []).map(t => {
-            const anoStr = t.ano_letivo ? ` (${t.ano_letivo})` : '';
-            return `<option value="${t.id}">${t.nome_turma}${anoStr}</option>`;
-          }).join('');
+        const turmas = dataTurmas.turmas || [];
+        if (turmas.length === 0) {
+          selTurma.innerHTML = '<option value="">Nenhuma turma atribuída a você no momento</option>';
+        } else {
+          selTurma.innerHTML = '<option value="">-- Selecione a Turma --</option>' + 
+            turmas.map(t => {
+              const anoStr = t.ano_letivo ? ` (${t.ano_letivo})` : '';
+              return `<option value="${t.id}">${t.nome_turma}${anoStr}</option>`;
+            }).join('');
+        }
       }
 
       if (selAluno) {
@@ -3442,12 +3525,15 @@ const App = {
 
   async loadDiario(turmaId = '', busca = '') {
     try {
-      // Carrega turmas no select de filtro se ainda não carregado
+      // Carrega turmas no select de filtro
       const selTurma = document.getElementById('filtroDiarioTurma');
-      if (selTurma && selTurma.options.length <= 1) {
+      if (selTurma) {
         const dataTurmas = await this.api('/api/turmas');
+        const turmas = dataTurmas.turmas || [];
+        const currentSel = selTurma.value;
         selTurma.innerHTML = '<option value="">Todas as Turmas / Salas</option>' + 
-          (dataTurmas.turmas || []).map(t => `<option value="${t.id}">${t.nome_turma}</option>`).join('');
+          turmas.map(t => `<option value="${t.id}">${t.nome_turma}</option>`).join('');
+        if (currentSel) selTurma.value = currentSel;
       }
 
       let url = '/api/diario?limit=100';
@@ -3510,15 +3596,29 @@ const App = {
       const selProf = document.getElementById('inputDiarioProfessor');
       if (selProf) {
         selProf.innerHTML = (dataProfs.professores || []).map(p => `<option value="${p.nome}">${p.nome}</option>`).join('');
+        if (this.user && parseInt(this.user.nivel, 10) === 1) {
+          const profEncontrado = (dataProfs.professores || []).find(p => p.id === this.user.id_professor || p.nome.toUpperCase() === (this.user.nome || '').toUpperCase());
+          if (profEncontrado) {
+            selProf.value = profEncontrado.nome;
+            selProf.disabled = true;
+          }
+        } else {
+          selProf.disabled = false;
+        }
       }
 
       // Carrega Turmas
       const dataTurmas = await this.api('/api/turmas');
       const selTurma = document.getElementById('inputDiarioTurma');
       if (selTurma) {
-        selTurma.innerHTML = (dataTurmas.turmas || []).map(t => 
-          `<option value="${t.id}" data-serie="${t.serie || ''}">${t.nome_turma}</option>`
-        ).join('');
+        const turmas = dataTurmas.turmas || [];
+        if (turmas.length === 0) {
+          selTurma.innerHTML = '<option value="">Nenhuma turma atribuída a você</option>';
+        } else {
+          selTurma.innerHTML = turmas.map(t => 
+            `<option value="${t.id}" data-serie="${t.serie || ''}">${t.nome_turma}</option>`
+          ).join('');
+        }
       }
 
       this.onDiarioTurmaChange();
@@ -4309,6 +4409,10 @@ const App = {
   selectedSqlFile: null,
 
   abrirModalReimportar() {
+    if (parseInt(this.user?.nivel || 1, 10) < 3) {
+      alert('Acesso restrito ao Administrador geral.');
+      return;
+    }
     this.selectedSqlFile = null;
     const filePicker = document.getElementById('inputSqlFilePicker');
     if (filePicker) filePicker.value = '';
@@ -4458,16 +4562,13 @@ const App = {
       const getNivelBadge = (nivel) => {
         const n = parseInt(nivel, 10);
         switch (n) {
-          case 5:
-            return '<span class="badge bg-danger shadow-sm"><i class="bi bi-shield-lock-fill me-1"></i>Nível 5 - Administrador</span>';
-          case 4:
-            return '<span class="badge bg-primary shadow-sm"><i class="bi bi-mortarboard-fill me-1"></i>Nível 4 - Coordenação</span>';
-          case 3:
-            return '<span class="badge bg-info text-dark shadow-sm"><i class="bi bi-person-workspace me-1"></i>Nível 3 - Secretaria</span>';
+          case 1:
+            return '<span class="badge bg-secondary shadow-sm"><i class="bi bi-mortarboard me-1"></i>1 - Professor(a)</span>';
           case 2:
-            return '<span class="badge bg-warning text-dark shadow-sm"><i class="bi bi-cash-stack me-1"></i>Nível 2 - Financeiro</span>';
+            return '<span class="badge bg-info text-dark shadow-sm"><i class="bi bi-person-lines-fill me-1"></i>2 - Secretaria</span>';
+          case 3:
           default:
-            return '<span class="badge bg-secondary shadow-sm"><i class="bi bi-eye me-1"></i>Nível 1 - Básico</span>';
+            return '<span class="badge bg-danger shadow-sm"><i class="bi bi-shield-lock-fill me-1"></i>3 - Administrador geral</span>';
         }
       };
 
@@ -4490,6 +4591,7 @@ const App = {
           </td>
           <td><code>${u.username || '-'}</code></td>
           <td>${getNivelBadge(u.nivel)}</td>
+          <td>${u.professor_nome ? `<span class="badge bg-light text-primary border"><i class="bi bi-mortarboard me-1"></i>${u.professor_nome}</span>` : '<span class="text-muted small">-</span>'}</td>
           <td>${getStatusBadge(u.status)}</td>
           <td class="text-end">
             <button class="btn btn-sm btn-outline-primary fw-semibold me-1" onclick="App.abrirModalEditarUsuario(${u.id})" title="Editar Usuário">
@@ -4505,7 +4607,7 @@ const App = {
       console.error('Erro ao carregar usuários:', e);
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" class="text-center py-4 text-danger">
+          <td colspan="7" class="text-center py-4 text-danger">
             <i class="bi bi-exclamation-triangle me-1"></i> Falha ao carregar usuários: ${e.message}
           </td>
         </tr>
@@ -4513,14 +4615,44 @@ const App = {
     }
   },
 
-  abrirModalNovoUsuario() {
+  async onUsuarioNivelChange() {
+    const nivel = parseInt(document.getElementById('usuarioNivel')?.value, 10);
+    const divProf = document.getElementById('divUsuarioProfessor');
+    const selProf = document.getElementById('usuarioProfessor');
+    if (nivel === 1) {
+      if (divProf) divProf.classList.remove('d-none');
+      if (selProf) {
+        try {
+          const data = await this.api('/api/professores');
+          const profs = data.professores || [];
+          const currentVal = selProf.value;
+          selProf.innerHTML = '<option value="">-- Selecione o Professor --</option>' +
+            profs.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+          if (currentVal) selProf.value = currentVal;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    } else {
+      if (divProf) divProf.classList.add('d-none');
+      if (selProf) selProf.value = '';
+    }
+  },
+
+  async abrirModalNovoUsuario() {
     document.getElementById('usuarioId').value = '';
     document.getElementById('usuarioNome').value = '';
     document.getElementById('usuarioUsername').value = '';
     document.getElementById('usuarioSenha').value = '';
     document.getElementById('usuarioSenha').required = true;
-    document.getElementById('usuarioNivel').value = '3';
+    document.getElementById('usuarioNivel').value = '2';
     document.getElementById('usuarioStatus').value = 'ATIVO';
+
+    const divProf = document.getElementById('divUsuarioProfessor');
+    if (divProf) divProf.classList.add('d-none');
+    const selProf = document.getElementById('usuarioProfessor');
+    if (selProf) selProf.value = '';
+    await this.onUsuarioNivelChange();
 
     const helpSenha = document.getElementById('helpUsuarioSenha');
     if (helpSenha) helpSenha.classList.add('d-none');
@@ -4545,7 +4677,7 @@ const App = {
     }
   },
 
-  abrirModalEditarUsuario(id) {
+  async abrirModalEditarUsuario(id) {
     const u = this.usuariosList.find(item => item.id === id);
     if (!u) {
       alert('Usuário não encontrado.');
@@ -4557,8 +4689,15 @@ const App = {
     document.getElementById('usuarioUsername').value = u.username || '';
     document.getElementById('usuarioSenha').value = '';
     document.getElementById('usuarioSenha').required = false;
-    document.getElementById('usuarioNivel').value = String(u.nivel || 3);
+    let nivelVal = parseInt(u.nivel, 10);
+    if (nivelVal > 3) nivelVal = 3;
+    document.getElementById('usuarioNivel').value = String(nivelVal || 2);
     document.getElementById('usuarioStatus').value = (u.status || 'ATIVO').toUpperCase() === 'INATIVO' ? 'INATIVO' : 'ATIVO';
+
+    await this.onUsuarioNivelChange();
+    if (u.id_professor && document.getElementById('usuarioProfessor')) {
+      document.getElementById('usuarioProfessor').value = String(u.id_professor);
+    }
 
     const helpSenha = document.getElementById('helpUsuarioSenha');
     if (helpSenha) helpSenha.classList.remove('d-none');
@@ -4610,11 +4749,20 @@ const App = {
       return;
     }
 
+    const id_professor = (nivel === 1) ? (document.getElementById('usuarioProfessor')?.value || null) : null;
+    if (nivel === 1 && !id_professor) {
+      if (errBox) {
+        errBox.textContent = 'Por favor, selecione o professor vinculado a este login.';
+        errBox.classList.remove('d-none');
+      }
+      return;
+    }
+
     const btn = document.getElementById('btnSalvarUsuario');
     if (btn) btn.disabled = true;
 
     try {
-      const payload = { nome, username, nivel, status };
+      const payload = { nome, username, nivel, status, id_professor };
       if (senha) payload.senha = senha;
 
       let res;
