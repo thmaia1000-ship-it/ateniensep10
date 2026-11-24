@@ -30,6 +30,7 @@ import services.contabil as contabil_service
 import services.produtos as produtos_service
 import services.cursos as cursos_service
 import services.documentos as documentos_service
+import services.mercadopago as mp
 import import_database
 
 class AtenienseHandler(BaseHTTPRequestHandler):
@@ -90,6 +91,25 @@ class AtenienseHandler(BaseHTTPRequestHandler):
             return auth_service.get_current_user(token)
         return None
 
+    def allow_api(self, path):
+        if not mp.enabled() or not path.startswith('/api/'):
+            return True
+        if self.command == 'POST' and path in ('/api/auth/login', '/api/mp/webhook', '/api/mp/parcela', '/api/mp/checkout'):
+            return True
+        user = self.get_user_from_header()
+        if not user:
+            self.send_json({'error': 'Faça login para continuar'}, 401)
+            return False
+        level = int(user['nivel'] or 0)
+        if path.startswith('/api/database/reimport'):
+            self.send_json({'error': 'Importação bloqueada durante a integração financeira'}, 409)
+            return False
+        if ((path.startswith('/api/usuarios') and level < 3)
+                or (path.startswith(('/api/mp/', '/api/mensalidades', '/api/financeiro', '/api/caixa')) and level < 2)):
+            self.send_json({'error': 'Acesso restrito'}, 403)
+            return False
+        return True
+
     def read_json_body(self):
         content_length = int(self.headers.get('Content-Length', 0))
         if content_length > 0:
@@ -100,6 +120,8 @@ class AtenienseHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+        if not self.allow_api(path):
+            return
         query = urllib.parse.parse_qs(parsed.query)
 
         # 1. Roteamento de Arquivos Estáticos e UI
@@ -107,9 +129,15 @@ class AtenienseHandler(BaseHTTPRequestHandler):
             self.send_file(os.path.join(BASE_DIR, 'templates', 'index.html'), 'text/html; charset=utf-8')
             return
             
+        if path == '/pagamentos' and mp.enabled():
+            self.send_file(os.path.join(BASE_DIR, 'templates', 'pagamentos.html'), 'text/html; charset=utf-8')
+            return
         if path.startswith('/static/'):
             rel_path = path[8:]
             full_path = os.path.join(BASE_DIR, 'static', rel_path)
+            if os.path.commonpath([os.path.realpath(full_path), os.path.join(BASE_DIR, 'static')]) != os.path.join(BASE_DIR, 'static'):
+                self.send_error(404)
+                return
             content_type = 'application/octet-stream'
             if path.endswith('.css'): content_type = 'text/css'
             elif path.endswith('.js'): content_type = 'application/javascript'
@@ -304,7 +332,7 @@ class AtenienseHandler(BaseHTTPRequestHandler):
                 status = query.get('status', ['todas'])[0]
                 busca = query.get('busca', [''])[0]
                 limit = int(query.get('limit', [250])[0])
-                self.send_json({'mensalidades': financeiro_service.list_mensalidades(status, busca, limit)})
+                self.send_json({'mercadopago': mp.enabled(), 'mensalidades': financeiro_service.list_mensalidades(status, busca, limit)})
                 return
 
             if path == '/api/financeiro/tabela-mensalidades':
@@ -478,11 +506,36 @@ class AtenienseHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+        if not self.allow_api(path):
+            return
         body = self.read_json_body()
         user = self.get_user_from_header()
         username = user['username'] if user else 'ADMIN'
 
         try:
+            if path.startswith('/api/mp/'):
+                if not mp.enabled():
+                    self.send_json({'error': 'Integração desativada'}, 404)
+                    return
+                if path == '/api/mp/webhook':
+                    query = urllib.parse.parse_qs(parsed.query)
+                    pid = query.get('data.id', [''])[0]
+                    if not mp.signed(pid, self.headers):
+                        self.send_json({'error': 'Assinatura inválida'}, 401)
+                        return
+                    if body.get('type') == 'payment':
+                        mp.reconcile(pid)
+                    self.send_json({'ok': True})
+                elif path == '/api/mp/portal':
+                    self.send_json(mp.staff_link(int(body['contrato'])))
+                elif path == '/api/mp/parcela':
+                    row = mp.current(body.get('token', ''))
+                    self.send_json({'parcela': row['parcela'], 'centavos': row['valor']} if row else {})
+                elif path == '/api/mp/checkout':
+                    self.send_json(mp.checkout(body.get('token', '')))
+                else:
+                    self.send_error(404)
+                return
             # Login
             if path == '/api/auth/login':
                 u = body.get('username')
@@ -667,6 +720,8 @@ class AtenienseHandler(BaseHTTPRequestHandler):
     def do_PUT(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+        if not self.allow_api(path):
+            return
         body = self.read_json_body()
 
         try:
@@ -727,6 +782,8 @@ class AtenienseHandler(BaseHTTPRequestHandler):
     def do_DELETE(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+        if not self.allow_api(path):
+            return
 
         try:
             if path.startswith('/api/alunos/'):
@@ -764,6 +821,7 @@ class AtenienseHandler(BaseHTTPRequestHandler):
             self.send_json({'error': str(e)}, 500)
 
 def run(port=8080):
+    mp.initialize()
     server_address = ('0.0.0.0', port)
     httpd = ThreadingHTTPServer(server_address, AtenienseHandler)
     print(f"==================================================")

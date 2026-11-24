@@ -749,6 +749,7 @@ const App = {
               <td><strong>R$ ${saldo.toFixed(2)}</strong></td>
               <td><span class="badge ${isPaga ? 'bg-success' : 'bg-danger'}">${isPaga ? 'QUITADO' : 'EM ABERTO'}</span></td>
               <td>
+                ${data.mercadopago ? `<button class="btn btn-sm btn-outline-secondary" onclick="App.portalPagamento(${Number(m.id)})">Portal de pagamento</button>` : ''}
                 <button class="btn btn-sm btn-primary" onclick="App.abrirPagamentoMensalidade(${m.id}, '${nomeAlunoEscapado}', ${m.valor_parcela}, ${m.parcelas_pagas}, ${m.n_parcelas})">
                   <i class="bi bi-cash-coin"></i> Receber
                 </button>
@@ -799,6 +800,14 @@ const App = {
     if (input) input.value = '';
     this.mensalidadesStatus = 'todas';
     this.loadMensalidades('todas', '');
+  },
+
+  async portalPagamento(contrato) {
+    const data = await this.api('/api/mp/portal', 'POST', {contrato});
+    if (!data.portal) return alert(data.error || 'Portal indisponível');
+    const pendencias = data.revisar.map(item => item.id + ' — ' + item.status);
+    const aviso = pendencias.length ? '\nConferir no Mercado Pago: ' + pendencias.join(', ') : '';
+    window.prompt('Copie o link exclusivo para o responsável.' + aviso, data.portal);
   },
 
   abrirPagamentoMensalidade(id, aluno, valorParcela, pagas, totalParcelas) {

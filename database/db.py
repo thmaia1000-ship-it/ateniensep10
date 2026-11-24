@@ -10,6 +10,11 @@ import shutil
 from typing import List, Dict, Any, Optional
 
 def get_db_path() -> str:
+    configured = os.environ.get('ATENIENSE_DB_PATH')
+    if configured:
+        if not os.path.isabs(configured) or not os.path.isfile(configured):
+            raise RuntimeError("ATENIENSE_DB_PATH deve apontar para um banco existente em caminho absoluto")
+        return configured
     if getattr(sys, 'frozen', False):
         # Executável compilado (.exe)
         exe_dir = os.path.dirname(sys.executable)

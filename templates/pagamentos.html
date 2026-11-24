@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer"><title>Mensalidades | Ateniense</title>
+<style>body{font:18px system-ui;background:#f4f6fa;color:#172744;margin:0}main{max-width:32rem;margin:8vh auto;padding:2rem;background:white;border-radius:1rem}img{width:6rem}button{background:#19375b;color:white;border:0;border-radius:.4rem;padding:.8rem;font:inherit;cursor:pointer}</style></head>
+<body><main><img src="/static/img/LogoAteniense.png" alt="Ateniense"><h1>Minha mensalidade</h1>
+<p id="status" role="status">Consultando parcela…</p><button id="pay" hidden>Pagar com Mercado Pago</button></main>
+<script>
+const token = location.hash.slice(1);
+const statusText = document.getElementById('status');
+const button = document.getElementById('pay');
+async function request(action) {
+  const response = await fetch('/api/mp/' + action, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token})});
+  if (!response.ok) throw Error('Não foi possível consultar a cobrança. Tente novamente.');
+  return response.json();
+}
+request('parcela').then(data => {
+  if (!data.parcela) {statusText.textContent = 'Nenhuma parcela disponível neste link. Em caso de dúvida, consulte a secretaria.'; return;}
+  statusText.textContent = 'Parcela ' + data.parcela + ' · ' + (data.centavos/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  button.hidden = false;
+}).catch(error => statusText.textContent = error.message);
+button.onclick = async () => {
+  button.disabled = true;
+  try {location.assign((await request('checkout')).url);}
+  catch (error) {statusText.textContent = error.message; button.disabled = false;}
+};
+</script></body></html>

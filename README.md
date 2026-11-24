@@ -157,3 +157,21 @@ Basta rodar no servidor:
 ./deploy.sh
 ```
 
+
+## Mercado Pago para mensalidades
+
+A integração usa Checkout Pro. A secretaria abre **Financeiro → Mensalidades → Portal de pagamento** e copia o convite exclusivo do contrato para o responsável. Quem recebe o link consegue abrir e pagar a próxima parcela disponível. A escola deve entregá-lo pelo canal privado do responsável.
+
+O servidor gera as parcelas do mês e recupera competências anteriores a cada inicialização e a cada hora em atividade. A competência inicial vem de `data_inicio`. O responsável paga primeiro a parcela mais antiga. A preferência de checkout é criada no primeiro clique. A disponibilidade de Pix depende da configuração da conta recebedora.
+
+### Homologação no Render
+
+1. Prepare um serviço de teste com disco persistente e uma cópia SQLite com cadastros fictícios. Informe o caminho absoluto do arquivo existente em `ATENIENSE_DB_PATH`. Use um banco separado por ambiente e uma única instância do serviço.
+2. Configure as variáveis do exemplo no painel Environment. O servidor lê as variáveis do processo. Use o Access Token do vendedor de teste e o segredo de assinatura da aplicação de teste.
+3. Cadastre a URL HTTPS do serviço seguida de `/api/mp/webhook` para notificações de pagamentos. Configure Pix e cartão na conta. Defina `MP_ENABLED=true` e reinicie.
+4. Entre como secretaria, abra um contrato com parcela disponível e copie o link do portal. Teste o Pix e o cartão conforme as modalidades disponíveis em sua conta de teste. Confira no caixa o valor, a parcela e o identificador da transação. Reenvie a notificação e confira que existe uma única entrada.
+5. A tela da secretaria informa os IDs que exigem conferência em caso de valor divergente, pagamento duplicado, estorno ou contestação. A reversão financeira exige conciliação manual. O retorno do navegador não efetua baixa.
+
+Execute os testes locais com `python3 -m unittest discover -s tests -v`. Para habilitar produção após homologação, configure as credenciais da aplicação de produção, o domínio, o segredo correspondente, o disco com o banco operacional e `MP_ENVIRONMENT=production`. Antes de usar dados reais, restrinja o acesso ao banco e aos dumps, substitua credenciais distribuídas no repositório e valide o backup e a restauração do disco.
+
+Referências oficiais do Mercado Pago: [preferências](https://www.mercadopago.com.br/developers/pt/reference/online-payments/checkout-pro-preferences/overview) e [notificações de pagamento](https://www.mercadopago.com.br/developers/pt/docs/checkout-pro-preferences/payment-notifications).
